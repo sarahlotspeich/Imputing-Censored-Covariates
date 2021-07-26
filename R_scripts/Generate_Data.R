@@ -1,19 +1,20 @@
 # n: sample size for single simulation
 # n.sims: number of simulations
-# beta0: true intercept
-# beta1: true slope on x
-# sigma: true sd for epsilon
+# beta0: intercept
+# betaX: coefficient for covariate x
+# betaZ: coefficient for covariate(s) z
+# sigma: sd for random error in outcome model
 # xshape: shape parameter for sim. of x
 # xscale: scale parameter for sim. of x
-# cshape: shape parameter for sim. of c
-# cscale: scale parameter for sim. of c
+# c.lower: minimum for sim. of c
+# c.upper: maximum for sim. of c
 generate.data = function(n, n.sims, 
                          beta0, betaX, betaZ = NULL, sigma = 1,
                          x = NULL, z = NULL,
                          xshape = 0.75, xscale = 0.25,
                          c.lower = 0, c.upper = 1) {
   # total number of rows
-  N = n*n.sims
+  N <- n*n.sims
   
   # subject id and simulation id
   subj.id <- rep(1:n, n.sims)
@@ -32,17 +33,19 @@ generate.data = function(n, n.sims,
   delta <- as.numeric(x <= cens)
   t <- ifelse(delta, x, cens)
   
-  # If no Z variables, return id's, response, t, and delta
+  # If no z coefficient is provided, return id's, response, t, and delta
   if (is.null(betaZ)) {
     data.frame(subj.id, sim.id, y, t, delta) %>% 
       return()
   }
   else {
     pZ <- length(betaZ)
-    # Generate z if not provided
+    # Generate design matrix fof covariates z if not provided
     if (is.null(z)) { z <- rnorm(n = N*pZ, mean = 0, sd = 1) %>% matrix(nrow = N, ncol = pZ) }
     colnames(z) = paste0("Z", 1:pZ)
+    # Add the effect of z to the outcome
     y <- y + z %*% betaZ
+    # return id's, response, t, delta, and z
     data.frame(subj.id, sim.id, y, t, delta) %>% 
       cbind(z) %>%
       return()
@@ -50,12 +53,21 @@ generate.data = function(n, n.sims,
 }
 
 # Simulate survival data based on Bender (2005)
+# n: sample size
+# param: coefficients for simulation
+# covariate: covaraites for simulation
+# dist: desired outcome distribution
+# lambda: simulation parameter
+# nu: simulation parameter
+# alpha: simulation parameter
 cox.simulation = function(n, param, covariate, dist = "Exponential", 
                           lambda = 1, nu = NULL, alpha = NULL) {
+  # Generate n iid unif(0, 1) random variable
   U = runif(n = n, min = 0, max = 1)
-  lin.pred = covariate %*% param
-  H_0.T = -log(U)*exp(-lin.pred)
+  # Calculate H_0(T) according to Bender (2005)
+  H_0.T = -log(U)*exp(-covariate %*% param)
   
+  # Return simulated response based on distribution character provided
   if (dist == "Exponential") { return(H_0.T/lambda) }
   else if (dist == "Weibull") { return((H_0.T/lambda)^{1/nu}) }
   else if (dist == "Gompertz") { return(log(1 + alpha*t/lambda)/alpha) }
@@ -71,7 +83,7 @@ aft.simulation = function(n, gamma, a = NULL, sigma = 0.1) {
   # number of parameters in AFT model
   p <- length(gamma)
   
-  # generate auxiliary variables if not provided
+  # generate covariates if not provided
   if (is.null(a)) { 
     a <- rnorm(n = n*(p - 1), sd = 1) %>%
       matrix(nrow = n, ncol = p - 1)
@@ -80,26 +92,12 @@ aft.simulation = function(n, gamma, a = NULL, sigma = 0.1) {
   # generate outcome
   x <- exp(gamma[1] + a %*% gamma[-1] + rnorm(n = n, sd = sigma))
   
-  # data table to be returned as result
-  result = data.table(x = x)
+  # data frame to be returned as result
+  result = data.frame(x = x)
   result = result %>%
-    cbind(as.data.table(a))
+    cbind(as.data.frame(a))
   
-  # name columns of data table and return
+  # name columns of data and return
   colnames(result) = c("x", paste0("A",1:(p - 1)))
-  return(result)
-}
-
-# Returns vector of preceding events (x[i] for which delta[i] == 1)
-# for each element of x
-# x: vector of event times
-# delta: vector of event indicators
-prev.event = function(x, delta) {
-  result = x
-  events = x[delta == 1]
-  for (i in which(delta == 0)) {
-    result[i] = max(events[events < result[i]])
-  }
-  
   return(result)
 }
