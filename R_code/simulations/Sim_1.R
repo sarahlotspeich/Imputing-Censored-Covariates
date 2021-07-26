@@ -10,9 +10,9 @@ library(survival)
 # setwd("../../")
 ### R scripts
 getwd()
-source("R_code/R_source/Generate_Data.R")
-source("R_code/R_source/Cox_Imputation_DF.R")
-source("R_code/R_source/KM_Imputation.R")
+source("R_code/source/Generate_Data.R")
+source("R_code/source/Cox_Imputation_DF.R")
+source("R_code/source/KM_Imputation.R")
 
 ### Simulation parameters
 # Sample size
@@ -99,5 +99,5 @@ results.tab <- all.results %>%
 sim.result = list(Detail = paste("n.sims =", n.sims, "censoring rate =", 1 - mean(sim.data$delta)),
                   Table = results.tab)
 
-saveRDS(sim.result, "Simulation_Results/Sim_1_Results.RDS")
-readRDS("Simulation_Results/Sim_1_Results.RDS")
+saveRDS(sim.result, "Simulation_results/Sim_1_Results.RDS")
+readRDS("Simulation_results/Sim_1_Results.RDS")
