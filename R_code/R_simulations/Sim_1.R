@@ -1,26 +1,26 @@
 ### Clear workspace
 rm(list = ls())
 
-print("Scenario 1: Light censoring")
+print("Simulation 1: One Cox covariate with one auxiliary variable; Light censoring")
 
 ### Dependencies
 library(tidyverse)
-library(data.table)
 library(survival)
 
-# setwd("Documents/GitHub/re-impute/Misspecification_Studies/Experiments_Set1")
+# setwd("../../")
 ### R scripts
-source("R_scripts/Generate_Data.R")
-source("R_scripts/Cox_Imputation_DF.R")
-source("R_scripts/KM_Imputation.R")
+getwd()
+source("R_code/R_source/Generate_Data.R")
+source("R_code/R_source/Cox_Imputation_DF.R")
+source("R_code/R_source/KM_Imputation.R")
 
 ### Simulation parameters
 # Sample size
-n.to.test <- c(500)
+n.to.test <- c(100, 500, 1000)
 # Imputation models
 models.to.test <- list(c("y", "a"), c("y"), c("a"), "KM")
 # Number of simulations
-n.sims <- 100
+n.sims <- 1000
 # Outcome model parameters
 beta0 <- 1; beta1 <- 0.5
 # Regression, shape, and scale parameters in TRUE model for generation of X
@@ -96,19 +96,8 @@ results.tab <- all.results %>%
             beta1.estimate = mean(beta1.est),
             beta1.se = mean(beta1.se))
 
-# base.data = sim.data[1, ]
-# base.data[1, ] = 0
-# mod = coxph(Surv(t, delta) ~ y + a, sim.data)
-# base.data
-# base.fit = survival::survfit(mod, base.data)
-# base.data = data.frame(base.surv = base.fit$surv,
-#                        t = base.fit$time)
-# with.base.surv = sim.data %>%
-#   left_join(base.data, by = "t")
-
-
 sim.result = list(Detail = paste("n.sims =", n.sims, "censoring rate =", 1 - mean(sim.data$delta)),
                   Table = results.tab)
 
-saveRDS(sim.result, "result_tables/Scenario_1_Results.RDS")
-readRDS("result_tables/Scenario_1_Results.RDS")
+saveRDS(sim.result, "Simulation_Results/Sim_1_Results.RDS")
+readRDS("Simulation_Results/Sim_1_Results.RDS")
