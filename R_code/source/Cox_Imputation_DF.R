@@ -42,13 +42,13 @@ csi.cox.df = function(imp.vars = c("y"), surv.data) {
   # initialize imputed times as observed times
   imp.t = surv.order$t
   
-  # COPIED THIS FROM SARAH: GIVE CREDIT :)
-  if (surv.order[n, "delta"] == 0) {
-    max.event <- max(which(surv.order[, "delta"] == 1))
-    surv.max.event <- surv.order[max.event, "base.surv"]
-    t.max <- surv.order[n, "t"]
-    surv.order[n, "base.surv"] <- exp(t.max * log(surv.max.event))
-  }
+  # # COPIED THIS FROM SARAH: GIVE CREDIT :)
+  # if (surv.order[n, "delta"] == 0) {
+  #   max.event <- max(which(surv.order[, "delta"] == 1))
+  #   surv.max.event <- surv.order[max.event, "base.surv"]
+  #   t.max <- surv.order[n, "t"]
+  #   surv.order[n, "base.surv"] <- exp(t.max * log(surv.max.event))
+  # }
   
   t.diff = c(surv.order[-1, "t"] - surv.order[-n, "t"])
   
@@ -59,14 +59,14 @@ csi.cox.df = function(imp.vars = c("y"), surv.data) {
     impute = impute/2
     
     # find terms of summation which are > 0
-    positive.summands <- as.numeric(surv.order$t > surv.order[i, "t"])
+    positive.summands <- ifelse(surv.order$t > surv.order[i, "t"], 1, NA)
     
     # baseline survival estimates raised to exponentiated linear predictor
     exp.surv.i <- (positive.summands*surv.order$base.surv)^exp.lin.pred.i
     exp.surv.sum.i <- exp.surv.i[-n] + exp.surv.i[-1]
     
     # summation on second line of equation 5
-    impute = impute * sum(t.diff*exp.surv.sum.i)
+    impute = impute * sum(t.diff*exp.surv.sum.i, na.rm = T)
     
     # add observed time according to third line of equation 5
     imp.t[i] = imp.t[i] + impute
