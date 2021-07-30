@@ -1,3 +1,4 @@
 .DS_Store
 .RHistory
 slurm*out
+.Rproj.user
