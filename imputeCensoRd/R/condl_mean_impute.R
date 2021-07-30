@@ -12,13 +12,13 @@
 #' @return A dataframe augmenting \code{data} with a column of imputed covariate values called \code{imp}.
 #'
 #' @export
-condl_mean_impute <- function(fit, obs, delta, covar = NULL, data, approx_beyond = "expo", est_S0 = "breslow") {
-  if (is.null(covar)) {
+condl_mean_impute <- function(fit, obs, delta, addl_covar = NULL, data, approx_beyond = "expo") {
+  if (is.null(addl_covar)) {
     # Estimate baseline survival from Kaplan-Meier estimator
     surv_df <- with(fit, data.frame(t = time, surv = surv))
   } else {
     # Estimate baseline survival from Cox model fit
-    data$hr <- exp(fit$coefficients * data[, covar])
+    data$hr <- exp(fit$coefficients * data[, addl_covar])
     cox_surv <- breslow_estimator(time = obs, delta = delta, hr = "hr", data = data)
     surv_df <- with(cox_surv, data.frame(t = times, surv = basesurv))
   }
@@ -55,7 +55,7 @@ condl_mean_impute <- function(fit, obs, delta, covar = NULL, data, approx_beyond
     }
   }
   # Distinct rows (in case of non-unique obs values)
-  data_dist <- unique(data[, c(obs, delta, covar, "surv")])
+  data_dist <- unique(data[, c(obs, delta, addl_covar, "surv")])
   # [T_{(i+1)} - T_{(i)}]
   t_diff <- data_dist[-1, obs] - data_dist[-nrow(data_dist), obs]
   # Censored subject values (to impute)
@@ -63,9 +63,9 @@ condl_mean_impute <- function(fit, obs, delta, covar = NULL, data, approx_beyond
   # For people with events, obs = X
   data$imp <- data[, obs]
 
-  if (is.null(covar)) {
+  if (is.null(addl_covar)) {
     for (x in which(!uncens)) {
-      Zj <- data[x, covar]
+      Zj <- data[x, addl_covar]
       Cj <- data[x, obs]
       Sj <- data_dist[-1, "surv"] + data_dist[-nrow(data_dist), "surv"]
       num <- sum((data_dist[-nrow(data_dist), obs] > Cj) * Sj * t_diff)
@@ -74,7 +74,7 @@ condl_mean_impute <- function(fit, obs, delta, covar = NULL, data, approx_beyond
     }
   } else {
     for (x in which(!uncens)) {
-      Zj <- data[x, covar]
+      Zj <- data[x, addl_covar]
       Cj <- data[x, obs]
       Sj <- data_dist[-1, "surv"] ^ (exp(fit$coefficients * Zj)) + data_dist[-nrow(data_dist), "surv"] ^ (exp(fit$coefficients * Zj))
       num <- sum((data_dist[-nrow(data_dist), obs] > Cj) * Sj * t_diff)

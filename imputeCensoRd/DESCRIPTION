@@ -6,6 +6,8 @@ Author: Sarah Lotspeich and Kyle Grosser
 Maintainer: Sarah Lotspeich <slotspeich@unc.edu>
 Description: More about what it does (maybe more than one line)
     Use four spaces when indenting paragraphs within the Description.
+Imports: 
+  survival
 License: What license is it under?
 Encoding: UTF-8
 LazyData: true

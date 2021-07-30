@@ -8,10 +8,9 @@ condl_mean_impute(
   fit,
   obs,
   delta,
-  covar = NULL,
+  addl_covar = NULL,
   data,
-  approx_beyond = "expo",
-  est_S0 = "breslow"
+  approx_beyond = "expo"
 )
 }
 \arguments{
@@ -21,11 +20,11 @@ condl_mean_impute(
 
 \item{delta}{String column name for the censoring indicator of the covariate.}
 
+\item{addl_covar}{(Optional) string or vector of strings for the additional fully-observed covariates. Default is \code{NULL}.}
+
 \item{data}{Datafrane containing columns \code{obs}, \code{delta}, and (if provided) \code{addl_covar}.}
 
 \item{approx_beyond}{Choice of approximation used to extrapolate the survival function beyond the last observed covariate value. Default is \code{"expo"} for the exponential approximation. Other choices include \code{"zero"} or \code{"carryforward"}.}
-
-\item{addl_covar}{(Optional) string or vector of strings for the additional fully-observed covariates. Default is \code{NULL}.}
 }
 \value{
 A dataframe augmenting \code{data} with a column of imputed covariate values called \code{imp}.
