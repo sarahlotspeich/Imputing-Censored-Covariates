@@ -24,6 +24,7 @@
 #' \item{t}
 #' \item{delta}
 #' \item{z}
+#' }
 #'
 #' @export
 generate.data = function(n, n.sims = 1,
