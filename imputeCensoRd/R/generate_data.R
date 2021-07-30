@@ -6,15 +6,15 @@
 #' @param n sample size for single simulation
 #' @param n.sims number of simulations
 #' @param beta0 intercept
-#' @param betaX coefficient for covariate x
-#' @param betaZ coefficient for covariate(s) z. If betaZ NULL, then it is assumed that the model does not include z.
+#' @param betaX coefficient for covariate \code{x}
+#' @param betaZ coefficient for covariate(s) \code{z}. If \code{betaZ} NULL, then it is assumed that the model does not include \code{z}.
 #' @param sigma sd for random error in outcome model
-#' @param x the censored covariate. If x NULL, then x is generated from Weibull(xshape, xscale).
-#' @param z the observed covariate(s). If betaZ is provided and z NULL, then z is generated from N_p(0, I).
-#' @param xshape shape parameter for simulation of x (if x NULL)
-#' @param xscale scale parameter for simulation of x (if x NULL)
-#' @param c.lower minimum for simulation of c
-#' @param c.upper maximum for simulation of c
+#' @param x the censored covariate. If \code{x} NULL, then \code{x} is generated from Weibull(\code{xshape}, \code{xscale}).
+#' @param z the observed covariate(s). If \code{betaZ} is provided and \code{z} NULL, then \code{z} is generated from N_p(0, I).
+#' @param xshape shape parameter for simulation of \code{x} (if \code{x} NULL)
+#' @param xscale scale parameter for simulation of \code{x} (if \code{x} NULL)
+#' @param c.lower minimum for simulation of \code{c}
+#' @param c.upper maximum for simulation of \code{c}
 #'
 #' @return a data.frame with the following elements:
 #' \itemize{
@@ -24,9 +24,10 @@
 #' \item{t}
 #' \item{delta}
 #' \item{z}
-#'
+#' }
+#' 
 #' @export
-generate.data = function(n, n.sims = 1,
+generate_data = function(n, n.sims = 1,
                          beta0, betaX, betaZ = NULL, sigma = 1,
                          x = NULL, z = NULL,
                          xshape = 0.75, xscale = 0.25,
