@@ -17,9 +17,9 @@ breslow_estimator(time, delta, hr, data)
 }
 \value{
 A dataframe of the same length and in the same order as \code{data} with the following columns:
-\item{times}: unique values of \code{data[, time]}
-\item{basesurv}: baseline survival estimates
-\item{basehaz}: baseline cumulative hazard estimates
+\item{times}{unique values of \code{data[, time]}}
+\item{basesurv}{baseline survival estimates}
+\item{basehaz}{baseline cumulative hazard estimates}
 }
 \description{
 Estimates the baseling survival function from a Cox proportional hazards model following Breslow's esimator.

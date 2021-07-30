@@ -8,9 +8,9 @@
 #' @param data Datafrane containing columns \code{time}, \code{delta}, and \code{hr}.
 #'
 #' @return A dataframe of the same length and in the same order as \code{data} with the following columns:
-#' \item{times}: unique values of \code{data[, time]}
-#' \item{basesurv}: baseline survival estimates
-#' \item{basehaz}: baseline cumulative hazard estimates
+#' \item{times}{unique values of \code{data[, time]}}
+#' \item{basesurv}{baseline survival estimates}
+#' \item{basehaz}{baseline cumulative hazard estimates}
 #'
 #' @export
 
