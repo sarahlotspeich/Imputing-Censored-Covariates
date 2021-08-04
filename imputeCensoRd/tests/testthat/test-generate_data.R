@@ -4,7 +4,7 @@ test_that("simple errors for bad input", {
   # no arguments given
   expect_error(generate_data())
   
-  # n or n.sims not positive integers
+  # n not a positive integer
   expect_error(generate_data(n = -1, beta0 = 0, betaX = 1))
   expect_error(generate_data(n = 1.5, beta0 = 0, betaX = 1))
   
