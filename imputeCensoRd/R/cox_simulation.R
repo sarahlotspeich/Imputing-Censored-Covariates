@@ -20,7 +20,7 @@ cox_simulation = function(n, logHR, A, dist = "Exponential",
   # test for bad input
   if (n %% 1 != 0 | n < 1) stop("n must be positive integer")
   if (!is.matrix(A)) stop("A must be a matrix of covariates")
-  if (length(HR) != ncol(A)) stop("length(logHR) not equal to ncol(A)")
+  if (length(logHR) != ncol(A)) stop("length(logHR) not equal to ncol(A)")
   if (!(dist %in% c("Exponential", "Weibull", "Gompertz"))) stop("argument dist must be one of: Exponential, Weibull, or Gompertz")
   if (lambda <= 0) stop("lambda must be positive")
   if (nu <= 0) stop("nu must be positive")
