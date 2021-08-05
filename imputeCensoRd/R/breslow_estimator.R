@@ -16,9 +16,9 @@
 
 #### SARAH: can we change that argument name data to something else? df? surv.data?
 # Also, what restrictions do we have for time, delta, and hr? Is it as follows:
-# time must be positive
+# time must be (stricly?) positive
 # delta must be \in (0, 1)
-# hr must be positive
+# hr must be (strictly?) positive
 # ?
 breslow_estimator <- function(time, delta, hr, data) {
   # test for bad input
@@ -30,6 +30,12 @@ breslow_estimator <- function(time, delta, hr, data) {
   if (!(time %in% colnames(data))) { stop(paste("data does not have column with name ", time)) }
   if (!(delta %in% colnames(data))) { stop(paste("data does not have column with name ", delta)) }
   if (!(hr %in% colnames(data))) { stop(paste("data does not have column with name ", hr)) }
+  # test for improper entries in columns of data
+  #### Still deciding whether the following conditions should produce errors (stop()) or warnings
+  if (any(data[, time] < 0)) { warning(paste("elements of column ", time, " must be positive")) }
+  if (!all(data[, delta] %in% c(0, 1))) { warning(paste("elements of column ", delta, " must be either 0 or 1")) }
+  if (any(data[, hr] < 0)) { warning(paste("elements of column ", hr, " must be inclusively between 0 and 1"))}
+  
   
   #### SARAH: can you help me to add comments starting from here, or correct any of the comments I've added?
   # observed time
