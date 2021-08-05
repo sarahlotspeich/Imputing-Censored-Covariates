@@ -1,5 +1,5 @@
 # tests that bad input produces simple errors
-# 4 tests in total
+# 5 tests in total
 test_that("simple errors for bad input", {
   # no arguments given
   expect_error(cox_simulation())
