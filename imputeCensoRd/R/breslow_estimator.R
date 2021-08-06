@@ -8,18 +8,20 @@
 #' @param data Datafrane containing columns \code{time}, \code{delta}, and \code{hr}.
 #'
 #' @return A list with the following three elements:
-#' \item{times}{unique values of \code{data[, time]}}
+#' \item{times}{a vector of the unique values of \code{data[, time]}}
 #' \item{basesurv}{baseline survival estimates}
 #' \item{basehaz}{baseline cumulative hazard estimates}
 #'
 #' @export
 
 #### SARAH: can we change that argument name data to something else? df? surv.data?
-# Also, what restrictions do we have for time, delta, and hr? Is it as follows:
+#### Also, what restrictions do we have for time, delta, and hr? Is it as follows:
 # time must be (stricly?) positive
 # delta must be \in (0, 1)
 # hr must be (strictly?) positive
 # ?
+#### Also, based on my tests of the function, it seems to only return unique EVENT times (rather than all unqieu times). 
+#### Is that intended? If so, we just need to make a small adjustment to the return description above
 breslow_estimator <- function(time, delta, hr, data) {
   # test for bad input
   if (!is.character(time)) { stop("argument time must be a character") }
