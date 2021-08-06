@@ -18,14 +18,14 @@ impute_censored_surv <- function(at_time, time, delta, surv, data) {
   if (!is.character(surv)) { stop("argument surv must be a character") }
   if (!is.data.frame(data)) { stop("argument data must be a data frame") }
   # test that data contains columns with specified names
-  if (!(time %in% colnames(data))) { stop(paste("data does not have column with name ", time)) }
-  if (!(delta %in% colnames(data))) { stop(paste("data does not have column with name ", delta)) }
-  if (!(surv %in% colnames(data))) { stop(paste("data does not have column with name ", surv)) }
+  if (!(time %in% colnames(data))) { stop(paste("data does not have column with name", time)) }
+  if (!(delta %in% colnames(data))) { stop(paste("data does not have column with name", delta)) }
+  if (!(surv %in% colnames(data))) { stop(paste("data does not have column with name", surv)) }
   # test for improper entries in columns of data
   #### Still deciding whether the following conditions should produce errors (stop()) or warnings
-  if (any(data[, time] < 0)) { warning(paste("elements of column ", time, " must be positive")) }
-  if (!all(data[, delta] %in% c(0, 1))) { warning(paste("elements of column ", delta, " must be either 0 or 1")) }
-  if (any(data[, surv] < 0 | data[, surv] > 1)) { warning(paste("elements of column ", surv, " must be inclusively between 0 and 1"))}
+  if (any(data[, time] < 0)) { stop(paste("elements of column", time, "must be positive")) }
+  if (!all(data[, delta] %in% c(0, 1))) { stop(paste("elements of column", delta, "must be either 0 or 1")) }
+  if (any(data[, surv] < 0 | data[, surv] > 1)) { stop(paste("elements of column", surv, "must be inclusively between 0 and 1"))}
   
   # which (if any) event times are equal to at_time, to 8 decimcal places?
   same_time <- which(round(data[, time] - at_time, 8) == 0 & data[, delta] == 1)
