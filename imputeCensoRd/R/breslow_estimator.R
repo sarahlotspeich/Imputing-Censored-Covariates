@@ -5,23 +5,15 @@
 #' @param time String column name for the observed times.
 #' @param delta String column name for the censoring indicator of the covariate.
 #' @param hr String column name for the hazard ratios calculated from a \code{coxph} model fit.
-#' @param data Datafrane containing columns \code{time}, \code{delta}, and \code{hr}.
+#' @param data Dataframe containing columns \code{time}, \code{delta}, and \code{hr}.
 #'
 #' @return A list with the following three elements:
-#' \item{times}{a vector of the unique values of \code{data[, time]}}
+#' \item{times}{a vector of the unique observed failure times}
 #' \item{basesurv}{baseline survival estimates}
 #' \item{basehaz}{baseline cumulative hazard estimates}
 #'
 #' @export
 
-#### SARAH: can we change that argument name data to something else? df? surv.data?
-#### Also, what restrictions do we have for time, delta, and hr? Is it as follows:
-# time must be (stricly?) positive
-# delta must be \in (0, 1)
-# hr must be (strictly?) positive
-# ?
-#### Also, based on my tests of the function, it seems to only return unique EVENT times (rather than all unqieu times). 
-#### Is that intended? If so, we just need to make a small adjustment to the return description above
 breslow_estimator <- function(time, delta, hr, data) {
   # test for bad input
   if (!is.character(time)) { stop("argument time must be a character") }
@@ -38,14 +30,11 @@ breslow_estimator <- function(time, delta, hr, data) {
   if (!all(data[, delta] %in% c(0, 1))) { warning(paste("elements of column", delta, "must be either 0 or 1")) }
   if (any(data[, hr] < 0)) { warning(paste("elements of column", hr, "must be inclusively between 0 and 1"))}
   
-  
-  #### SARAH: can you help me to add comments starting from here, or correct any of the comments I've added?
-  # observed time
-  tj <- data[, time]
-  dj <- aggregate(formula = as.formula(paste(delta, "~", time)), FUN = sum, data = data)
-  dj <- dj[dj[, delta] > 0, ]
-  # observed failure times
-  tauj <- dj[, time]
+  tj <- data[, time] # save vector of observed times 
+  dj <- aggregate(formula = as.formula(paste(delta, "~", time)), FUN = sum, data = data) # tabulate number of deaths per tj 
+  dj <- dj[dj[, delta] > 0, ] # subset to times with at least one death (i.e., dj > 0)
+  tauj <- dj[, time] # observed failure times
+  # create a dataframe for the riskset containing number of people still alive at or just before each tauj 
   riskset <- data.frame(tauj = rep(tauj, times = length(tj)),
                         tj = rep(tj, each = length(tauj)),
                         hr = rep(data[, hr], each = length(tauj)))
@@ -61,5 +50,5 @@ breslow_estimator <- function(time, delta, hr, data) {
   # baseline survival estimate
   surv0 <- exp(- cumhaz0)
   
-  return(list(times = tauj, basesurv = surv0, basehaz = cumhaz0))
+  return(list(times = tauj, basesurv = surv0, basecumhaz = cumhaz0))
 }
