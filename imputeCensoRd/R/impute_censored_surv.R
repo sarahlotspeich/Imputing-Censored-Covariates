@@ -25,7 +25,7 @@ impute_censored_surv <- function(at_time, time, event, surv, data) {
   #### Still deciding whether the following conditions should produce errors (stop()) or warnings
   if (any(data[, time] < 0)) { warning(paste("elements of column", time, "must be positive")) }
   if (!all(data[, event] %in% c(0, 1))) { warning(paste("elements of column", event, "must be either 0 or 1")) }
-  if (any(data[, surv] < 0 | data[, surv] > 1)) { warning(paste("elements of column", surv, "must be inclusively between 0 and 1"))}
+  if (any(data[, surv][!is.na(data[, surv])] < 0 | data[, surv][!is.na(data[, surv])] > 1)) { warning(paste("elements of column", surv, "must be inclusively between 0 and 1"))}
   
   # which (if any) event times are equal to at_time?
   same_time <- which(round(data[, time] - at_time, 8) == 0 & data[, event] == 1 & !is.na(data[, surv]))
