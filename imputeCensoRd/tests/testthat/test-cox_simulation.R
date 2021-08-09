@@ -1,3 +1,6 @@
+set.seed(95)
+library(usethis)
+
 # tests that bad input produces simple errors
 # 5 tests in total
 test_that("simple errors for bad input", {
