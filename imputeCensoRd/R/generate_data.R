@@ -23,7 +23,7 @@
 #' \item{y} response
 #' \item{x} true value of the covariate subject to censoring
 #' \item{t} minimum of covariate \code{x} and censoring variable \code{c}
-#' \item{delta} 1 if \code{x} <= \code{c}; 0 otherwise
+#' \item{event} 1 if \code{x} <= \code{c}; 0 otherwise
 #' \item{z} observed covariates
 #' }
 #' 
@@ -60,12 +60,12 @@ generate_data = function(n, n.sims = 1,
 
   # Censoring mechanism
   cens <- runif(n = N, min = c.lower, max = c.upper)
-  delta <- as.numeric(x <= cens)
-  t <- ifelse(delta, x, cens)
+  event <- as.numeric(x <= cens)
+  t <- ifelse(event, x, cens)
 
-  # If no z coefficient is provided, return id's, response, x, t, and delta
+  # If no z coefficient is provided, return id's, response, x, t, and event
   if (is.null(betaZ)) {
-    data.frame(subj.id, sim.id, y, x, t, delta) %>%
+    data.frame(subj.id, sim.id, y, x, t, event) %>%
       return()
   }
   else {
@@ -75,8 +75,8 @@ generate_data = function(n, n.sims = 1,
     colnames(z) = paste0("Z", 1:pZ)
     # Add the effect of z to the outcome
     y <- y + z %*% betaZ
-    # return id's, response, x, t, delta, and z
-    data.frame(subj.id, sim.id, y, x, t, delta) %>%
+    # return id's, response, x, t, event, and z
+    data.frame(subj.id, sim.id, y, x, t, event) %>%
       cbind(z) %>%
       return()
   }
