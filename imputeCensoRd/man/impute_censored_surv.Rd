@@ -4,18 +4,18 @@
 \alias{impute_censored_surv}
 \title{Impute survival at censored time}
 \usage{
-impute_censored_surv(at_time, time, delta, surv, data)
+impute_censored_surv(at_time, time, event, surv, data)
 }
 \arguments{
 \item{at_time}{A scalar time}
 
 \item{time}{String column name for the censored covariate.}
 
-\item{delta}{String column name for the censoring indicator of the covariate.}
+\item{event}{String column name for the censoring indicator of the covariate.}
 
 \item{surv}{String column name for the survival estimate.}
 
-\item{data}{Datafrane containing columns \code{obs}, \code{delta}, and \code{surv}.}
+\item{data}{Datafrane containing columns \code{obs}, \code{event}, and \code{surv}.}
 }
 \value{
 Scalar survival estimate for value \code{at_time}.
