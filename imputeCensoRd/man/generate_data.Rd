@@ -52,7 +52,7 @@ a data.frame with the following elements:
 \item{y} response
 \item{x} true value of the covariate subject to censoring
 \item{t} minimum of covariate \code{x} and censoring variable \code{c}
-\item{delta} 1 if \code{x} <= \code{c}; 0 otherwise
+\item{event} 1 if \code{x} <= \code{c}; 0 otherwise
 \item{z} observed covariates
 }
 }
