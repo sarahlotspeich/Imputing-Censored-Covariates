@@ -1,4 +1,5 @@
 set.seed(95)
+library(usethis)
 
 # tests that bad input produces simple errors
 # 11 tests in total
@@ -37,15 +38,15 @@ test_that("simple errors for bad input", {
   # negative t
   bad.sample.data = sample.data
   bad.sample.data[1, "t"] = -1
-  expect_error(impute_censored_surv(at_time = at_time, time = "t", delta = "delta", surv = "base.surv", data = bad.sample.data), "must be positive")
+  expect_warning(impute_censored_surv(at_time = at_time, time = "t", delta = "delta", surv = "base.surv", data = bad.sample.data), "must be positive")
   # delta not 0 or 1
   bad.sample.data = sample.data
   bad.sample.data[1, "delta"] = 2
-  expect_error(impute_censored_surv(at_time = at_time, time = "t", delta = "delta", surv = "base.surv", data = bad.sample.data), "either 0 or 1")
+  expect_warning(impute_censored_surv(at_time = at_time, time = "t", delta = "delta", surv = "base.surv", data = bad.sample.data), "either 0 or 1")
   # negative base.surv
   bad.sample.data = sample.data
   bad.sample.data[1, "base.surv"] = -1
-  expect_error(impute_censored_surv(at_time = at_time, time = "t", delta = "delta", surv = "base.surv", data = bad.sample.data), "between 0 and 1")
+  expect_warning(impute_censored_surv(at_time = at_time, time = "t", delta = "delta", surv = "base.surv", data = bad.sample.data), "between 0 and 1")
 })
 
 # # test that elements of the returned have expected properties

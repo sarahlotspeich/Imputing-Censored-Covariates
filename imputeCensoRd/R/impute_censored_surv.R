@@ -16,7 +16,7 @@ impute_censored_surv <- function(at_time, time, delta, surv, data) {
   if (!is.character(time)) { stop("argument time must be a character") }
   if (!is.character(delta)) { stop("argument delta must be a character") }
   if (!is.character(surv)) { stop("argument surv must be a character") }
-  if (!is.data.frame(data)) { stop("argument data must be a data frame") }
+  if (!is.data.frame(data) & !is.matrix(data)) { stop("argument data must be a data frame") }
   # test that data contains columns with specified names
   if (!(time %in% colnames(data))) { stop(paste("data does not have column with name", time)) }
   if (!(delta %in% colnames(data))) { stop(paste("data does not have column with name", delta)) }
