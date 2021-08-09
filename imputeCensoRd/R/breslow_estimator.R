@@ -44,7 +44,7 @@ breslow_estimator <- function(time, event, hr, data) {
   haz0_denom <- aggregate(formula = atrisk_hr ~ tauj, FUN = sum, data = riskset)
   
   # baseline hazard estimate
-  haz0 <- dj$d / haz0_denom$atrisk_hr
+  haz0 <- dj[, event] / haz0_denom$atrisk_hr
   # baseline cumulative hazard estimate
   cumhaz0 <- cumsum(haz0)
   # baseline survival estimate
