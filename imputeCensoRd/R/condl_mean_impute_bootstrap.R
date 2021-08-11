@@ -4,9 +4,9 @@
 #'
 #' @param fit A \code{coxph} or \code{survfit} imputation model object.
 #' @param obs String column name for the censored covariate.
-#' @param delta String column name for the censoring indicator of the covariate.
+#' @param event String column name for the censoring indicator of the covariate.
 #' @param addl_covar (Optional) string or vector of strings for the additional fully-observed covariates. Default is \code{NULL}.
-#' @param data Datafrane containing columns \code{obs}, \code{delta}, and (if provided) \code{addl_covar}.
+#' @param data Datafrane containing columns \code{obs}, \code{event}, and (if provided) \code{addl_covar}.
 #' @param approx_beyond Choice of approximation used to extrapolate the survival function beyond the last observed covariate value. Default is \code{"expo"} for the exponential approximation. Other choices include \code{"zero"} or \code{"carryforward"}.
 #' @param M number of bootstrap samples to be taken from \code{data}
 #'
@@ -15,20 +15,37 @@
 #' @importFrom dplyr filter
 #' 
 #' @export
-condl_mean_impute_bootstrap <- function(fit, obs, delta, addl_covar = NULL, data, approx_beyond = "expo", M) {
+condl_mean_impute_bootstrap <- function(fit, obs, event, addl_covar = NULL, data, approx_beyond = "expo", M) {
+  # test for bad input
+  if (!is.character(obs)) { stop("argument obs must be a character") }
+  if (!is.character(event)) { stop("argument event must be a character") }
+  if (!is.null(addl_covar) & !is.character(addl_covar)) { stop("when supplied, argument addl_covar must be a character") }
+  if (!is.data.frame(data) & !is.matrix(data)) { stop("argument data must be a data frame or a matrix") }
+  # if (!(M >= 1 & is.integer(M))) { stop("argument M must be a positive integer")}
+  # test that data contains columns with specified names
+  if (!(obs %in% colnames(data))) { stop(paste("data does not have column with name", obs)) }
+  if (!(event %in% colnames(data))) { stop(paste("data does not have column with name", event)) }
+  if (!is.null(addl_covar) & !all(addl_covar %in% colnames(data))) { stop(paste("data does not have columns with names:", paste(addl_covar, collapse = ", ")))}
+  # test that approx_beyond is one of three acceptable options
+  if (!(approx_beyond %in% c("expo", "zero", "carryforward"))) { stop("argument approx_beyond must be expo, zero, or carryforward") }
+  # test for improper entries in columns of data
+  #### Still deciding whether the following conditions should produce errors (stop()) or warnings
+  if (any(data[, obs] < 0)) { warning(paste("elements of column", obs, "must be positive")) }
+  if (!all(data[, event] %in% c(0, 1))) { warning(paste("elements of column", event, "must be either 0 or 1")) }
+  
   # list of imputed datasets to be returned
   imputed.datasets = list()
   n = nrow(data)
   
   # create M bootstrap samples of size n
-  bs.data = data[sample(x = 1:(M*n), size = n, replace = T), ]
+  bs.data = data[sample(x = 1:n, size = M*n, replace = T), ]
   bs.data$m = rep(1:M, each = n)
   
   # perform conditional mean imputation on each bootstrap sample
-  for (m in 1:M) {
-    imputed.datasets[m] <- dplyr::filter(bs.data, m == m) %>%
-      condl_mean_impute(fit = fit, obs = obs, delta = delta, addl_covar = addl_covar,
-                        data = data, approx_beyond = approx_beyond)
+  for (i in 1:M) {
+    imputed.datasets[[i]] <- dplyr::filter(bs.data, m == i) %>%
+      condl_mean_impute(fit = fit, obs = obs, event = event, addl_covar = addl_covar,
+                        data = ., approx_beyond = approx_beyond)
   }
   
   # return list of imputed datasets
