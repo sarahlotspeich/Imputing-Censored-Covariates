@@ -1,4 +1,4 @@
-# 10 tests in total
+# 13 tests in total
 set.seed(95)
 library(usethis)
 
@@ -28,4 +28,21 @@ test_that("simple errors for bad input", {
   expect_error(condl_mean_impute_bootstrap(fit = sample.fit, obs = "t", event = "d", data = sample.data, M = 20), "column with name d")
   expect_error(condl_mean_impute_bootstrap(fit = sample.fit, obs = "t", event = "event", addl_covar = "a", data = sample.data, M = 20), "columns with names: a")
   expect_error(condl_mean_impute_bootstrap(fit = sample.fit, obs = "t", event = "event", addl_covar = c("a", "z"), data = sample.data, M = 20), "columns with names: a, z")
+})
+
+# test that the returned list has expected properties
+# 3 test in total
+test_that("test for proper output", {
+  # generate sample data and KM fit for test
+  sample.data <- generate_data(n = 10, n.sims = 1, beta0 = 0, betaX = 1)
+  sample.fit <- with(sample.data, survival::survfit(formula = survival::Surv(x, event) ~ 1))
+  # perform conditional mean imputation
+  imp.sample.data <- condl_mean_impute_bootstrap(fit = sample.fit, obs = "t", event = "event", 
+                                                 data = sample.data, M = 20)
+
+  # expect 20 data frames in returned list
+  expect_true(length(imp.sample.data) == 20)
+  expect_true(all(unlist(lapply(X = imp.sample.data, is.data.frame))))
+  # expect that imputed values are greater than or equal to observed times
+  expect_true(all(unlist(lapply(X = imp.sample.data, FUN = function(x) all(x[, "t"] <= x[, "imp"])))))
 })
