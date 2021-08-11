@@ -10,7 +10,7 @@ test_that("simple errors for bad input", {
   sample.fit <- with(sample.data, survival::survfit(formula = survival::Surv(x, event) ~ 1))
   
   # no arguments given
-  expect_error()
+  expect_error(condl_mean_impute())
 
   # time, event, or addl_covar not characters
   expect_error(condl_mean_impute(fit = sample.fit, obs = 2, event = "event", data = sample.data), "obs must be a character")
