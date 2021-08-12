@@ -6,9 +6,10 @@
 #' @param imputed_list A list with dataframe elements that have been completed via conditional mean imputation, such as by \code{condl_mean_impute_bootstrap()}. 
 #' @param formula A formula object used to fit a linear model to each dataframe in \code{imputed_list}
 #' 
-#' @return A list with the following two elements:
+#' @return A list with the following three elements:
 #' \item{Coef}{A vector of the \code{p} average coefficient estimates obtained from fitting \code{formula} to each dataframe in \code{imputed_list}}
-#' \item{SE}{A vector of the \code{p} average standard error estimates obtained from fitting \code{formula} to each dataframe in \code{imputed_list}}
+#' \item{Var}{A vector of the \code{p} average variance estimates obtained from fitting \code{formula} to each dataframe in \code{imputed_list}}
+#' \item{Pooled_Var}{A vector of the \code{p} pooled variance estimates, calculated using Rubin's rules}
 #' 
 #' @export
 fit_lm_to_imputed_list = function(imputed_list, formula) {
@@ -19,23 +20,37 @@ fit_lm_to_imputed_list = function(imputed_list, formula) {
   estimates_list <- lapply(X = imputed_list, 
                            FUN = function(x) {
                              model <- lm(formula = formula, data = x)
-                             estimates <- c(model$coefficients, sqrt(diag(vcov(model))))
+                             estimates <- c(model$coefficients, diag(vcov(model)))
                            })
   
   # capture number of parameters
   p <- length(estimates_list[[1]])/2
 
   # collapse list of parameter estimates into M x p matrix
-  estimates_matrix <- matrix(0, nrow = M, ncol = p)
-  SE_matrix <- matrix(0, nrow = M, ncol = p)
+  coef_matrix <- matrix(0, nrow = M, ncol = p)
+  var_matrix <- matrix(0, nrow = M, ncol = p)
   for (i in 1:M) { 
-    estimates_matrix[i, ] <- estimates_list[[i]][1:p]
-    SE_matrix[i, ] <- estimates_list[[i]][-(1:p)]
+    coef_matrix[i, ] <- estimates_list[[i]][1:p]
+    var_matrix[i, ] <- estimates_list[[i]][-(1:p)]
   }
   # name columns
-  dimnames(estimates_matrix)[[2]] <- dimnames(SE_matrix)[[2]] <- names(estimates_list[[1]])[1:p]
+  dimnames(coef_matrix)[[2]] <- dimnames(var_matrix)[[2]] <- names(estimates_list[[1]])[1:p]
+  
+  # calcualte the average within-imputation variance
+  within_imp_var <- colMeans(var_matrix)
+  # calculate the total imputation variance according to Rubin's rules
+  total_imp_var <- within_imp_var + (1 + 1/M)*apply(coef_matrix, 2, var)
   
   # return column means
-  list(Coef = colMeans(estimates_matrix), 
-       SE = colMeans(SE_matrix))
+  list(Coef = colMeans(coef_matrix), 
+       Var = within_imp_var,
+       Pooled_Var = total_imp_var)
 }
+
+# # generate sample data and KM fit for test
+# sample.data <- generate_data(n = 500, n.sims = 1, beta0 = 0, betaX = 1)
+# sample.fit <- with(sample.data, survival::survfit(formula = survival::Surv(x, event) ~ 1))
+# # perform conditional mean imputation
+# imp.sample.data <- condl_mean_impute_bootstrap(fit = sample.fit, obs = "t", event = "event", 
+#                                                data = sample.data, M = 20)
+# fit_lm_to_imputed_list(imputed_list = imp.sample.data, formula = as.formula(y ~ imp))
