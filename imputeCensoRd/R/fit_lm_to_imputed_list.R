@@ -13,6 +13,12 @@
 #' 
 #' @export
 fit_lm_to_imputed_list = function(imputed_list, formula) {
+  # test for bad input
+  # are all elements of imputed_list a data.frame or matrix?
+  if (!all(unlist(lapply(imputed_list, function(x) (is.data.frame(x) | is.matrix(x)))))) { stop("elements of imputed_list must be data.frame or matrix")}
+  # do all elements of imputed_list contain columns needed for formula?
+  if (!all(unlist(lapply(imputed_list, function(x) (all.vars(formula) %in% colnames(x)))))) { stop("elements of imputed_list do not contain columns needed for formula")}
+  
   # determine number of bootstrap samples
   M = length(imputed_list)
   
@@ -51,6 +57,7 @@ fit_lm_to_imputed_list = function(imputed_list, formula) {
 # sample.data <- generate_data(n = 500, n.sims = 1, beta0 = 0, betaX = 1)
 # sample.fit <- with(sample.data, survival::survfit(formula = survival::Surv(x, event) ~ 1))
 # # perform conditional mean imputation
-# imp.sample.data <- condl_mean_impute_bootstrap(fit = sample.fit, obs = "t", event = "event", 
+# imp.sample.data <- condl_mean_impute_bootstrap(fit = sample.fit, obs = "t", event = "event",
 #                                                data = sample.data, M = 20)
 # fit_lm_to_imputed_list(imputed_list = imp.sample.data, formula = as.formula(y ~ imp))
+# fit_lm_to_imputed_list(imputed_list = imp.sample.data, formula = as.formula(y ~ s))
