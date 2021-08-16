@@ -80,23 +80,26 @@ condl_mean_impute <- function(fit, obs, event, addl_covar = NULL, data, approx_b
   data$imp <- data[, obs]
 
   if (is.null(addl_covar)) {
+    # Follow formula without additional covariates Z
     for (x in which(!uncens)) {
-      Zj <- data[x, addl_covar] # ?
       Cj <- data[x, obs]
       Sj <- data_dist[-1, "surv"] + data_dist[-nrow(data_dist), "surv"]
-      num <- sum((data_dist[-nrow(data_dist), obs] > Cj) * Sj * t_diff) # should this now be >= ?
+      num <- sum((data_dist[-nrow(data_dist), obs] >= Cj) * Sj * t_diff)
       denom <- data[x, "surv"]
       data$imp[x] <- (1 / 2) * (num / denom) + Cj
     }
   } else {
+    # Follow formula assuming Cox model with additional covariates Z
     for (x in which(!uncens)) {
       Zj <- data[x, addl_covar]
       Cj <- data[x, obs]
       Sj <- data_dist[-1, "surv"] ^ (exp(fit$coefficients * Zj)) + data_dist[-nrow(data_dist), "surv"] ^ (exp(fit$coefficients * Zj))
-      num <- sum((data_dist[-nrow(data_dist), obs] > Cj) * Sj * t_diff) # should this now be >= ?
+      num <- sum((data_dist[-nrow(data_dist), obs] >= Cj) * Sj * t_diff) 
       denom <- data[x, "surv"] ^ (exp(fit$coefficients * Zj))
       data$imp[x] <- (1 / 2) * (num / denom) + Cj
     }
   }
+  
+  # Return input dataset with appended column imp containing imputed values 
   return(data)
 }
