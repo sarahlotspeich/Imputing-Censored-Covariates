@@ -44,9 +44,9 @@ There is a built-in function, `imputeCensoRd::cox_simulation()` which generates 
 - `logHR`: log hazard ratio coefficients for linear predictor of Cox model 
 - `A`: matrix of auxiliary covariates for linear predictor of Cox model
 - `dist`: desired distribution, with choices `"Exponential"`, `"Weibull"`, or `"Gompertz"`. Default is `"Exponential"`.
-- `lambda`: (KYLE WILL FILL IN FOR SARAH PLEASE). Default is `1`.
-- `nu`: (KYLE WILL FILL IN FOR SARAH PLEASE). Default is `NULL`.
-- `alpha`: (KYLE WILL FILL IN FOR SARAH PLEASE). Default is `NULL`.
+- `lambda`: For `"Exponential"`, `"Weibull"`, and `"Gompertz"`, `lambda` is the scale parameter. Must be positive. Default is `1`.
+- `nu`: For `"Weibull"`, `nu` is the shape parameter. Must be positive. Default is `NULL`.
+- `alpha`: For `"Gompertz"`, `alpha` is the shape parameter. Default is `NULL`.
 
 ```{r}
 x <- imputeCensoRd::cox_simulation(n = N, logHR = lambda, covariate = matrix(z, ncol = 1), dist = "Exponential", lambda = 5)
