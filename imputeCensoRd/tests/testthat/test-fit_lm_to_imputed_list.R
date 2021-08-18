@@ -1,4 +1,4 @@
-# 6 tests in total
+# 4 tests in total
 set.seed(95)
 library(usethis)
 
@@ -26,7 +26,7 @@ test_that("simple errors for bad input", {
 })
 
 # test that the returned list has expected properties
-# 3 test in total
+# 1 test in total
 test_that("test for proper output", {
   # generate sample data and KM fit for test
   sample.data <- generate_data(n = 10, n.sims = 1, beta0 = 0, betaX = 1)
@@ -36,8 +36,6 @@ test_that("test for proper output", {
                                                  data = sample.data, M = 20)
   est.summary <- fit_lm_to_imputed_list(imputed_list = imp.sample.data, formula = as.formula(y ~ imp))
   
-  # check that the variance estimates obey simple rules
-  expect_true(all(est.summary$Var <= est.summary$Pooled_Var))
-  expect_true(all(est.summary$Var >= 0))
+  # check that the variance estimates obey simple rule
   expect_true(all(est.summary$Pooled_Var >= 0))
 })

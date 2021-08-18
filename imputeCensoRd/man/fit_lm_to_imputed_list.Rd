@@ -12,9 +12,8 @@ fit_lm_to_imputed_list(imputed_list, formula)
 \item{formula}{A formula object used to fit a linear model to each dataframe in \code{imputed_list}}
 }
 \value{
-A list with the following three elements:
+A list with the following two elements:
 \item{Coef}{A vector of the \code{p} average coefficient estimates obtained from fitting \code{formula} to each dataframe in \code{imputed_list}}
-\item{Var}{A vector of the \code{p} average variance estimates obtained from fitting \code{formula} to each dataframe in \code{imputed_list}}
 \item{Pooled_Var}{A vector of the \code{p} pooled variance estimates, calculated using Rubin's rules}
 }
 \description{
