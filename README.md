@@ -80,7 +80,7 @@ sim_dat_imp <- imputeCensoRd::condl_mean_impute(fit = imp_mod, obs = "t", event 
 The single imputation values are illustrated below, where the x-axis is the observed value `t` and the y-axis is the imputed value. Note: for uncensored subjects, there is no need for imputation so observed and imputed are the same. 
 
 <p align="center">
-![](Imputed-Observed-SI.png)
+<img src="Imputed-Observed-SI.png" />
 *Illustration of conditional mean single imputation values for a censored covariate.*
 </p>
 
