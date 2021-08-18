@@ -49,6 +49,9 @@ There is a built-in function, `imputeCensoRd::cox_simulation()` which generates 
 - `alpha`: For `"Gompertz"`, `alpha` is the shape parameter. Default is `NULL`.
 
 - `Exponential`: <img src="https://render.githubusercontent.com/render/math?math=f_0(x) = \lambda \exp(\lambda x)">
+- `Weibull`: <img src="https://render.githubusercontent.com/render/math?math=f_0(x) = \lambda \nu \x^{\nu - 1} \exp(\lambda x^{\nu})">
+- `Gompertz`: <img src="https://render.githubusercontent.com/render/math?math=f_0(x) = \lambda \exp(\alpha x) \exp(\frac{\lambda}{\alpha})">
+
 
 ```{r}
 x <- imputeCensoRd::cox_simulation(n = N, logHR = lambda, covariate = matrix(z, ncol = 1), dist = "Exponential", lambda = 5)
