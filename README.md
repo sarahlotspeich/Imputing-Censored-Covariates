@@ -15,9 +15,29 @@ The complete R package `imputeCensoRd` and code for the simulations included in 
 
 # Example
 
-## Setup 
-
 ![](Sim-Setup.png)
+
+```{r}
+sim_seed <- 114
+
+# Set parameters 
+N <- 1000
+lambda <- -2
+beta0 <- 1
+beta1 <- 1
+beta2 <- 0.25
+
+# Simulate data
+z <- rbinom(n = N, size = 1, prob = 0.25)
+x <- sim_cox(n = N, logHR = lambda, covariate = matrix(z, ncol = 1), dist = "Exponential", lambda = 5)
+e <- rnorm(n = N, mean = 0, sd = 1)
+y <- beta0 + beta1 * x + beta2 * z + e
+c <- rexp(n = N, rate = 4)
+delta <- as.numeric(x <= c)
+t <- pmin(x, c)
+x[delta == 0] <- NA
+sim_dat <- data.frame(y, x, t, z, delta)
+```
 
 # References
 
