@@ -2,15 +2,6 @@
 ## Lotspeich, Grosser & Garcia 
 ### Statistical methods to impute censored covariates. 
 
-# Repo Organization 
-
-- bash_scripts: Bash scripts used to run R simulations on cluster
-- R_code: contains R code for
-	- markdowns: RMD files used to show results from simulations
-	- simulations: R scripts to run simulations of censored covariate imputation
-	- source: functions used in simulations
-- Simulation_results: contain RDS files created by simulations
-
 # Installation 
 
 The `R` package `imputeCensoRd` which implements statistical methods to impute censored covariates can be installed using the `devtools` package in `R` as follows. 
@@ -22,7 +13,7 @@ library(imputeCensoRd)
 
 # Example
 ## Simulate Data
-![](Sim-Setup.png)
+![](images/Sim-Setup.png)
 
 ```{r}
 set.seed(114)
@@ -85,7 +76,7 @@ sim_dat_imp <- imputeCensoRd::condl_mean_impute(fit = imp_mod, obs = "t", event 
 
 The single imputation values are illustrated below, where the x-axis is the observed value `t` and the y-axis is the imputed value. Note: for uncensored subjects, there is no need for imputation so observed and imputed are the same. 
 
-![](Imputed-Observed-SI.png)
+![](images/Imputed-Observed-SI.png)
 
 **Fig. 1.** Illustration of conditional mean single imputation values for a censored covariate.
 
@@ -108,7 +99,7 @@ While they might offer bias corrections, single imputation approaches like this 
 
 The single imputation procedure can be broken down into two steps: (1) conditional mean imputation using a semi- or non-parametric survival function and (2) analysis wherein parameter estimatse are obtained with standard complete data procedures. With multiple imputation, we use bootstrap resampling to draw new data in each iteration and then we apply these same two steps to each of the `M` datasets. We then pool these analyses into one set of parameters which are expected to be unbiased and with appropriate variability estimates. This process is briefly illustrated in the following diagram. 
 
-![](MI_Diagram.png)
+![](images/MI_Diagram.png)
 **Fig. 2.** Multiple imputation: Overview of the steps. *This figure was adapted from Figure 1.6. in Buuren, S. (2012). Flexible imputation of missing data. Boca Raton, FL: CRC Press.*
 
 ### Imputing and Analyzing
@@ -145,7 +136,7 @@ head(sim_dat_imp[[1]])
 
 The multiple imputation values are illustrated below, where the x-axis is the observed value `t` and the y-axis is the imputed value. Each row corresponds to the imputations from a single iteration. Note: for uncensored subjects, there is no need for imputation so observed and imputed are the same. 
 
-![](Imputed-Observed-MI.png)
+![](images/Imputed-Observed-MI.png)
 
 **Fig. 3.** Illustration of conditional mean multiple imputation values for a censored covariate.
 
