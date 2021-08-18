@@ -86,6 +86,12 @@ Null Deviance:	    2211
 Residual Deviance: 1624 	AIC: 3331
 ```
 
+While they might offer bias corrections, single imputation approaches like this are known to underestimate the variability due to the imputed values (since they are treated with the same certainty as the actual observed `x` values). This means that statistical inference based on single imputation will be invalid, so we instead turn to the following multiple imputation approach to correct for this. 
+
+## Multiple Imputation 
+
+
+
 # References
 
 Bender, R., Augustin, T., and Blettner, M. (2005). Generating survival times to simulate Cox proportional hazards models. *Statistics in Medicine*, 24:1713–1723.
