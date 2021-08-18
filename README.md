@@ -124,7 +124,7 @@ The function `imputeCensoRd::condl_mean_impute_bootstrap()` imputes censored cov
 sim_dat_imp <- imputeCensoRd::condl_mean_impute_bootstrap(obs = "t", event = "delta", addl_covar = "z", data = sim_dat, approx_beyond = "expo", M = 5)
 ```
 
-In this case, `sim_dat_imp` is actually a list of length `M` containing the imputed datasets from each imputation. Consider the following slices as examples:
+In this case, `sim_dat_imp` is actually a list of length `M` containing the imputed datasets from each imputation. Individual datasets can be accessed as follows: 
 
 ```{r}
 head(sim_dat_imp[[1]])
@@ -151,6 +151,8 @@ head(sim_dat_imp[[5]])
 789 0.0005663319  1.6539132           NA 1     0 5 0.163021 0.9962121 0.5956039464
 418 0.0005863644  1.6800965 0.0005863644 0     1 5 1.000000 0.9949496 0.0005863644
 ```
+
+
 
 # References
 
