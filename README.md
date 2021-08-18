@@ -48,11 +48,6 @@ There is a built-in function, `imputeCensoRd::cox_simulation()` which generates 
 - `nu`: For `"Weibull"`, `nu` is the shape parameter. Must be positive. Default is `NULL`.
 - `alpha`: For `"Gompertz"`, `alpha` is the shape parameter. Default is `NULL`.
 
-- `Exponential`: <img src="https://render.githubusercontent.com/render/math?math=f_0(x) = \lambda \exp(\lambda x)">
-- `Weibull`: <img src="https://render.githubusercontent.com/render/math?math=f_0(x) = \lambda \nu \x^{\nu - 1} \exp(\lambda x^{\nu})">
-- `Gompertz`: <img src="https://render.githubusercontent.com/render/math?math=f_0(x) = \lambda \exp(\alpha x) \exp(\frac{\lambda}{\alpha})">
-
-
 ```{r}
 x <- imputeCensoRd::cox_simulation(n = N, logHR = lambda, covariate = matrix(z, ncol = 1), dist = "Exponential", lambda = 5)
 e <- rnorm(n = N, mean = 0, sd = 1)
@@ -110,6 +105,8 @@ The single imputation procedure can be broken down into two steps: (1) condition
 ![](MI_Diagram.png)
 **Fig. 2.** Multiple imputation: Overview of the steps. *This figure was adapted from Figure 1.6. in Buuren, S. (2012). Flexible imputation of missing data. Boca Raton, FL: CRC Press.*
 
+### Imputing and Analyzing
+
 The function `imputeCensoRd::condl_mean_impute_bootstrap()` imputes censored covariates with their conditional mean given censored value and additional covariates (where supplied) using bootstrap resamples from the supplied dataset. This is conditional mean multiple imputation. We can use it to impute censored `x` in `M` bootstrap samples of the simulated data and then fit the model for `y ~ x + z` to the `M` completed datasets. This function takes in the following parameters: 
 
 - `obs`: String column name for the censored covariate.
@@ -140,33 +137,23 @@ head(sim_dat_imp[[1]])
 324 0.0005863644  1.6800965 0.0005863644 0     1 1 1.0000000 0.9934624 0.0005863644
 ```
 
-```{r}
-head(sim_dat_imp[[5]])
-```
-```{r}
-               t          y            x z delta m       hr      surv          imp
-469 0.0000681393  0.3608872 0.0000681393 0     1 5 1.000000 0.9987375 0.0000681393
-598 0.0001519918  3.4185226           NA 1     0 5 0.163021 0.9981060 0.5954196657
-620 0.0001519918  3.4185226           NA 1     0 5 0.163021 0.9981060 0.5954196657
-452 0.0002868707 -0.6203306 0.0002868707 0     1 5 1.000000 0.9974745 0.0002868707
-789 0.0005663319  1.6539132           NA 1     0 5 0.163021 0.9962121 0.5956039464
-418 0.0005863644  1.6800965 0.0005863644 0     1 5 1.000000 0.9949496 0.0005863644
-```
-
 The multiple imputation values are illustrated below, where the x-axis is the observed value `t` and the y-axis is the imputed value. Each row corresponds to the imputations from a single iteration. Note: for uncensored subjects, there is no need for imputation so observed and imputed are the same. 
 
 ![](Imputed-Observed-MI.png)
 
 **Fig. 3.** Illustration of conditional mean multiple imputation values for a censored covariate.
 
-## Pooling the Results
+### Pooling the Results
 
-We can now fit a linear model to each dataframe in sim_dat_imp, the list of `M` imputed dataframe. 
+We can now fit a linear model to each imputed dataset in `sim_dat_imp`. The function `fit_lm_to_imputed_list()` fits the `base R` function `lm()` using a user-specified formula to each element in a list of imputed dataframes. The function then pools the results of parameter estimation for each linear model using Rubin's rules. This functions takes the following two arguments:
 
-The function `fit_lm_to_imputed_list()` fits the function `lm()` using a user-specified formula to each element in a list of imputed dataframes. The function then pools the results of parameter estimation for each linear model. This functions takes the following two arguments:
+- `imputed_list`: A list with dataframe elements that have been completed via conditional mean imputation, returned by `condl_mean_impute_bootstrap()`.
+- `formula`: A formula object used to fit a linear model to element of `imputed_list`.
 
-- `imputed_list`: A list with dataframe elements that have been completed via conditional mean imputation, such as by `condl_mean_impute_bootstrap()` 
-- `formula`: A formula object used to fit a linear model to element of `imputed_list`
+```{r}
+# Pooling Analysis Results
+pooled_lm_res <- imputeCensoRd::fit_lm_to_imputed_list(imputed_list = sim_dat_imp, formula = y ~ imp + z)
+```
 
 The function returns a list with the following three vectors each of length `p` (the number of regression parameters in `formula`):
 
@@ -174,9 +161,26 @@ The function returns a list with the following three vectors each of length `p` 
 - `Var`: The average variance estimates obtained from fitting `formula` to each dataframe in `imputed_list`
 - `Pooled_Var`: The pooled variance estimates, calculated using Rubin's rules
 
+In our simulation, this looks like
+
 ```{r}
-# Pooling Analysis Results
-pooled_lm_res <- imputeCensoRd::fit_lm_to_imputed_list(imputed_list = sim_dat_imp, formula = as.formula(y ~ imp + z))
+$Coef
+(Intercept)         imp           z 
+  0.8348876   1.8622895   0.6744820 
+
+$Var
+(Intercept)         imp           z 
+0.004266492 0.047960054 0.019882889 
+
+$Pooled_Var
+(Intercept)         imp           z 
+0.008711573 0.096049517 0.102880558 
+```
+
+Finally, from this output we have the following interpretations about the association between the outcome, `y`, censored covariate, `x`, after controlling for fully-observed covariate `z`. If we were to compare two populations of subjects with the same value for `z` but whose `x` values differed by 1, the group with the higher `x` is expected to have a `y` value 1.86 higher, as well. Using `pooled_lm_res$Pooled_Var`, we can estimate the standard error (`se`) for this association, which could be used for significance testing or to build confidence intervals. 
+
+```{r}
+se <- sqrt(pooled_lm_res$Pooled_Var)[2]
 ```
 
 # References
