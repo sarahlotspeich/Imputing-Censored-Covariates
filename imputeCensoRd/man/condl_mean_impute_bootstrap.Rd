@@ -7,7 +7,7 @@
 condl_mean_impute_bootstrap(
   fit,
   obs,
-  delta,
+  event,
   addl_covar = NULL,
   data,
   approx_beyond = "expo",
@@ -19,11 +19,11 @@ condl_mean_impute_bootstrap(
 
 \item{obs}{String column name for the censored covariate.}
 
-\item{delta}{String column name for the censoring indicator of the covariate.}
+\item{event}{String column name for the censoring indicator of the covariate.}
 
 \item{addl_covar}{(Optional) string or vector of strings for the additional fully-observed covariates. Default is \code{NULL}.}
 
-\item{data}{Datafrane containing columns \code{obs}, \code{delta}, and (if provided) \code{addl_covar}.}
+\item{data}{Datafrane containing columns \code{obs}, \code{event}, and (if provided) \code{addl_covar}.}
 
 \item{approx_beyond}{Choice of approximation used to extrapolate the survival function beyond the last observed covariate value. Default is \code{"expo"} for the exponential approximation. Other choices include \code{"zero"} or \code{"carryforward"}.}
 

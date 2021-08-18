@@ -32,9 +32,9 @@ generate_data(
 
 \item{sigma}{sd for random error in outcome model}
 
-\item{x}{the censored covariate. If \code{x} NULL, then \code{x} is generated from Weibull(\code{xshape}, \code{xscale}).}
+\item{x}{censored covariate. If \code{x} NULL, then \code{x} is generated from Weibull(\code{xshape}, \code{xscale}).}
 
-\item{z}{the observed covariate(s). If \code{betaZ} is provided and \code{z} NULL, then \code{z} is generated from N_p(0, I).}
+\item{z}{matrix of observed covariate(s). If \code{betaZ} is provided and \code{z} NULL, then \code{z} is generated from N_p(0, I).}
 
 \item{xshape}{shape parameter for simulation of \code{x} (if \code{x} NULL)}
 
@@ -47,12 +47,13 @@ generate_data(
 \value{
 a data.frame with the following elements:
 \itemize{
-\item{subj.id}
-\item{sim.id}
-\item{y}
-\item{t}
-\item{delta}
-\item{z}
+\item{subj.id} subject id
+\item{sim.id} simulation id
+\item{y} response
+\item{x} true value of the covariate subject to censoring
+\item{t} minimum of covariate \code{x} and censoring variable \code{c}
+\item{event} 1 if \code{x} <= \code{c}; 0 otherwise
+\item{z} observed covariates
 }
 }
 \description{

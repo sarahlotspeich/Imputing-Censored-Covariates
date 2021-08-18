@@ -7,7 +7,7 @@
 cox_simulation(
   n,
   logHR,
-  covariate,
+  A,
   dist = "Exponential",
   lambda = 1,
   nu = NULL,
@@ -19,7 +19,7 @@ cox_simulation(
 
 \item{logHR}{coefficients for linear predictor of Cox model}
 
-\item{covariate}{covaraites for linear predictor of Cox model}
+\item{A}{matrix of auxiliary covariates for linear predictor of Cox model}
 
 \item{dist}{desired outcome distribution; choices include "Exponential," (default) "Weibull," or "Gompertz"}
 

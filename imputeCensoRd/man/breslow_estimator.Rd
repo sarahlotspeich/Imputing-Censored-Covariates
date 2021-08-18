@@ -4,23 +4,23 @@
 \alias{breslow_estimator}
 \title{Breslow estimator of baseline survival}
 \usage{
-breslow_estimator(time, delta, hr, data)
+breslow_estimator(time, event, hr, data)
 }
 \arguments{
 \item{time}{String column name for the observed times.}
 
-\item{delta}{String column name for the censoring indicator of the covariate.}
+\item{event}{String column name for the censoring indicator of the covariate.}
 
 \item{hr}{String column name for the hazard ratios calculated from a \code{coxph} model fit.}
 
-\item{data}{Datafrane containing columns \code{time}, \code{delta}, and \code{hr}.}
+\item{data}{Dataframe containing columns \code{time}, \code{event}, and \code{hr}.}
 }
 \value{
-A dataframe of the same length and in the same order as \code{data} with the following columns:
-\item{times}{unique values of \code{data[, time]}}
+A list with the following three elements:
+\item{times}{a vector of the unique observed failure times}
 \item{basesurv}{baseline survival estimates}
 \item{basehaz}{baseline cumulative hazard estimates}
 }
 \description{
-Estimates the baseling survival function from a Cox proportional hazards model following Breslow's esimator.
+Estimates the baseline survival function from a Cox proportional hazards model following Breslow's estimator.
 }
