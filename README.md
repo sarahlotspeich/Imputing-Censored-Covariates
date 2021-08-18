@@ -15,9 +15,29 @@ The complete R package `imputeCensoRd` and code for the simulations included in 
 
 # Example
 
-## Setup 
+![](Sim-Setup.png)
 
-Samples of `n=1000` subjects were created, beginning with fully-observed binary covariate `Z` which was generated from a Bernoulli distribution with P(Z = 1) = 0.25. The right censoring variable, `C`, was independently generated from its own exponential distribution with rate=4. Covariate `X` was generated to have an exponential baseline survival function with rate=5 following the procedure of Bender et al. (2005). To do so, we generated U from a uniform distribution with min=0 and max=1 and constructed the baseline cumulative hazard as $H_0(X) = -\log(U)\exp(-\lambda Z)$, from which we have $X = H_0(X) / \lambda$. The $\lambda$ used to generate `X` is the log hazard ratio, and values of $\lambda = -2, -1, 0, 1, 2$ were considered, leading to an average of 55%, 51%, 45%, 39%, and 0.36% censoring, respectively. Finally, observed values were constructed as T = min(X, C). The outcome, $Y$, is calculated as `Y = 1 + X + 0.25Z + e`, with random errors `e` generated independently from a standard normal distribution. Each setting was replicated 1000 times. 
+```{r}
+sim_seed <- 114
+
+# Set parameters 
+N <- 1000
+lambda <- -2
+beta0 <- 1
+beta1 <- 1
+beta2 <- 0.25
+
+# Simulate data
+z <- rbinom(n = N, size = 1, prob = 0.25)
+x <- sim_cox(n = N, logHR = lambda, covariate = matrix(z, ncol = 1), dist = "Exponential", lambda = 5)
+e <- rnorm(n = N, mean = 0, sd = 1)
+y <- beta0 + beta1 * x + beta2 * z + e
+c <- rexp(n = N, rate = 4)
+delta <- as.numeric(x <= c)
+t <- pmin(x, c)
+x[delta == 0] <- NA
+sim_dat <- data.frame(y, x, t, z, delta)
+```
 
 # References
 
