@@ -36,7 +36,20 @@ beta2 <- 0.25
 
 # Simulate data
 z <- rbinom(n = N, size = 1, prob = 0.25)
-x <- sim_cox(n = N, logHR = lambda, covariate = matrix(z, ncol = 1), dist = "Exponential", lambda = 5)
+```
+
+There is a built-in function, `imputeCensoRd::cox_simulation()` which generates the covariate X as described. It takes in the following parameters and is implemented for our simulation in the code chunk below: 
+
+- `n`: sample size
+- `logHR`: log hazard ratio coefficients for linear predictor of Cox model 
+- `A`: matrix of auxiliary covariates for linear predictor of Cox model
+- `dist`: desired distribution, with choices `"Exponential"`, `"Weibull"`, or `"Gompertz"`. Default is `"Exponential"`.
+- `lambda`: (KYLE WILL FILL IN FOR SARAH PLEASE). Default is `1`.
+- `nu`: (KYLE WILL FILL IN FOR SARAH PLEASE). Default is `NULL`.
+- `alpha`: (KYLE WILL FILL IN FOR SARAH PLEASE). Default is `NULL`.
+
+```{r}
+x <- imputeCensoRd::cox_simulation(n = N, logHR = lambda, covariate = matrix(z, ncol = 1), dist = "Exponential", lambda = 5)
 e <- rnorm(n = N, mean = 0, sd = 1)
 y <- beta0 + beta1 * x + beta2 * z + e
 c <- rexp(n = N, rate = 4)
