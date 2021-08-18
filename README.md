@@ -152,6 +152,26 @@ head(sim_dat_imp[[5]])
 418 0.0005863644  1.6800965 0.0005863644 0     1 5 1.000000 0.9949496 0.0005863644
 ```
 
+## Pooling the Results
+
+We can now fit a linear model to each dataframe in sim_dat_imp, the list of `M` imputed dataframe. 
+
+The function `fit_lm_to_imputed_list()` fits the function `lm()` using a user-specified formula to each element in a list of imputed dataframes. The function then pools the results of parameter estimation for each linear model. This functions takes the following two arguments:
+
+- `imputed_list`: A list with dataframe elements that have been completed via conditional mean imputation, such as by `condl_mean_impute_bootstrap()` 
+- `formula`: A formula object used to fit a linear model to element of `imputed_list`
+
+The function returns a list with the following three vectors each of length `p` (the number of regression parameters in `formula`):
+
+- `Coef`: The average coefficient estimates obtained from fitting `formula` to each dataframe in `imputed_list`
+- `Var`: The average variance estimates obtained from fitting `formula` to each dataframe in `imputed_list`
+- `Pooled_Var`: The pooled variance estimates, calculated using Rubin's rules
+
+```{r}
+# Pooling Analysis Results
+pooled_lm_res <- imputeCensoRd::fit_lm_to_imputed_list(imputed_list = sim_dat_imp, formula = as.formula(y ~ imp + z))
+```
+
 # References
 
 Bender, R., Augustin, T., and Blettner, M. (2005). Generating survival times to simulate Cox proportional hazards models. *Statistics in Medicine*, 24:1713–1723.
