@@ -7,7 +7,7 @@
 #' @param formula A formula object used to fit a linear model to each dataframe in \code{imputed_list}
 #' 
 #' @return A list with the following two elements:
-#' \item{Coef}{A vector of the \code{p} average coefficient estimates obtained from fitting \code{formula} to each dataframe in \code{imputed_list}}
+#' \item{Pooled_Coef}{A vector of the \code{p} average coefficient estimates obtained from fitting \code{formula} to each dataframe in \code{imputed_list}}
 #' \item{Pooled_Var}{A vector of the \code{p} pooled variance estimates, calculated using Rubin's rules}
 #' 
 #' @export
@@ -45,6 +45,6 @@ fit_lm_to_imputed_list = function(imputed_list, formula) {
   total_imp_var <- colMeans(var_matrix) + (1 + 1/M)*apply(coef_matrix, 2, var)
   
   # return column means
-  list(Coef = colMeans(coef_matrix),
+  list(Pooled_Coef = colMeans(coef_matrix),
        Pooled_Var = total_imp_var)
 }

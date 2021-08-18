@@ -13,7 +13,7 @@ fit_lm_to_imputed_list(imputed_list, formula)
 }
 \value{
 A list with the following two elements:
-\item{Coef}{A vector of the \code{p} average coefficient estimates obtained from fitting \code{formula} to each dataframe in \code{imputed_list}}
+\item{Pooled_Coef}{A vector of the \code{p} average coefficient estimates obtained from fitting \code{formula} to each dataframe in \code{imputed_list}}
 \item{Pooled_Var}{A vector of the \code{p} pooled variance estimates, calculated using Rubin's rules}
 }
 \description{
