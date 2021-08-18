@@ -105,12 +105,12 @@ While they might offer bias corrections, single imputation approaches like this 
 
 ## Multiple Imputation 
 
-Instead of imputing censored variables just once, multiple imputation approaches iteratively repeat the (1) imputation and (2) analysis steps many times, and ultimately pool these analyses into one set of parameters which are expected to be unbiased and with appropriate variability estimates. This process is briefly illustrated in the following diagram. 
+The single imputation procedure can be broken down into two steps: (1) conditional mean imputation using a semi- or non-parametric survival function and (2) analysis wherein parameter estimatse are obtained with standard complete data procedures. With multiple imputation, we use bootstrap resampling to draw new data in each iteration and then we apply these same two steps to each of the `M` datasets. We then pool these analyses into one set of parameters which are expected to be unbiased and with appropriate variability estimates. This process is briefly illustrated in the following diagram. 
 
 ![](MI_Diagram.png)
 **Fig. 2.** Multiple imputation: Overview of the steps. *This figure was adapted from Figure 1.6. in Buuren, S. (2012). Flexible imputation of missing data. Boca Raton, FL: CRC Press.*
 
-The function `imputeCensoRd::condl_mean_impute_bootstrap()` imputes censored covariates with their conditional mean given censored value and additional covariates (where supplied) using bootstrap resamples from the supplied dataset. This is conditional mean multiple imputation. We can use it to impute censored `x` in the simulated data and then fit the model for `y ~ x + z` to the imputed dataset. This function takes in the following parameters: 
+The function `imputeCensoRd::condl_mean_impute_bootstrap()` imputes censored covariates with their conditional mean given censored value and additional covariates (where supplied) using bootstrap resamples from the supplied dataset. This is conditional mean multiple imputation. We can use it to impute censored `x` in `M` bootstrap samples of the simulated data and then fit the model for `y ~ x + z` to the `M` completed datasets. This function takes in the following parameters: 
 
 - `obs`: String column name for the censored covariate.
 - `event`: String column name for the censoring indicator of the covariate.
@@ -124,7 +124,7 @@ The function `imputeCensoRd::condl_mean_impute_bootstrap()` imputes censored cov
 sim_dat_imp <- imputeCensoRd::condl_mean_impute_bootstrap(obs = "t", event = "delta", addl_covar = "z", data = sim_dat, approx_beyond = "expo", M = 5)
 ```
 
-In this case, `sim_dat_imp` is actually a list of length `M` containing the imputed datasets from each imputation. Consider the following slices as examples:
+In this case, `sim_dat_imp` is actually a list of length `M` containing the imputed datasets from each imputation. Individual datasets can be accessed as follows: 
 
 ```{r}
 head(sim_dat_imp[[1]])
@@ -150,6 +150,26 @@ head(sim_dat_imp[[5]])
 452 0.0002868707 -0.6203306 0.0002868707 0     1 5 1.000000 0.9974745 0.0002868707
 789 0.0005663319  1.6539132           NA 1     0 5 0.163021 0.9962121 0.5956039464
 418 0.0005863644  1.6800965 0.0005863644 0     1 5 1.000000 0.9949496 0.0005863644
+```
+
+## Pooling the Results
+
+We can now fit a linear model to each dataframe in sim_dat_imp, the list of `M` imputed dataframe. 
+
+The function `fit_lm_to_imputed_list()` fits the function `lm()` using a user-specified formula to each element in a list of imputed dataframes. The function then pools the results of parameter estimation for each linear model. This functions takes the following two arguments:
+
+- `imputed_list`: A list with dataframe elements that have been completed via conditional mean imputation, such as by `condl_mean_impute_bootstrap()` 
+- `formula`: A formula object used to fit a linear model to element of `imputed_list`
+
+The function returns a list with the following three vectors each of length `p` (the number of regression parameters in `formula`):
+
+- `Coef`: The average coefficient estimates obtained from fitting `formula` to each dataframe in `imputed_list`
+- `Var`: The average variance estimates obtained from fitting `formula` to each dataframe in `imputed_list`
+- `Pooled_Var`: The pooled variance estimates, calculated using Rubin's rules
+
+```{r}
+# Pooling Analysis Results
+pooled_lm_res <- imputeCensoRd::fit_lm_to_imputed_list(imputed_list = sim_dat_imp, formula = as.formula(y ~ imp + z))
 ```
 
 # References
