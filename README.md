@@ -92,7 +92,8 @@ While they might offer bias corrections, single imputation approaches like this 
 
 Instead of imputing censored variables just once, multiple imputation approaches iteratively repeat the (1) imputation and (2) analysis steps many times, and ultimately pool these analyses into one set of parameters which are expected to be unbiased and with appropriate variability estimates. This process is briefly illustrated in the following diagram. 
 
-![Multiple imputation: Overview of the steps. This figure was adapted from Figure 1.6. in Buuren, S. (2012). Flexible imputation of missing data. Boca Raton, FL: CRC Press.](MI_Diagram.png)
+![Multiple imputation: Overview of the steps.](MI_Diagram.png)
+*This figure was adapted from Figure 1.6. in Buuren, S. (2012). Flexible imputation of missing data. Boca Raton, FL: CRC Press.*
 
 # References
 
