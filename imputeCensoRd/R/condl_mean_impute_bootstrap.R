@@ -12,8 +12,6 @@
 #'
 #' @return A list of \code{M} dataframes, each of which is sampled with replacement from \code{data} and then augmented with a column of imputed covariate values called \code{imp}.
 #'
-#' @importFrom dplyr filter
-#' 
 #' @export
 condl_mean_impute_bootstrap <- function(fit, obs, event, addl_covar = NULL, data, approx_beyond = "expo", M) {
   # test for bad input
@@ -32,22 +30,21 @@ condl_mean_impute_bootstrap <- function(fit, obs, event, addl_covar = NULL, data
   #### Still deciding whether the following conditions should produce errors (stop()) or warnings
   if (any(data[, obs] < 0)) { warning(paste("elements of column", obs, "must be positive")) }
   if (!all(data[, event] %in% c(0, 1))) { warning(paste("elements of column", event, "must be either 0 or 1")) }
-  
+
   # list of imputed datasets to be returned
   imputed.datasets = list()
   n = nrow(data)
-  
+
   # create M bootstrap samples of size n
-  bs.data = data[sample(x = 1:n, size = M*n, replace = T), ]
+  bs.data = data[sample(x = 1:n, size = M * n, replace = T), ]
   bs.data$m = rep(1:M, each = n)
-  
+
   # perform conditional mean imputation on each bootstrap sample
   for (i in 1:M) {
-    imputed.datasets[[i]] <- dplyr::filter(bs.data, m == i) %>%
-      condl_mean_impute(fit = fit, obs = obs, event = event, addl_covar = addl_covar,
-                        data = ., approx_beyond = approx_beyond)
+    imputed.datasets[[i]] <- condl_mean_impute(fit = fit, obs = obs, event = event, addl_covar = addl_covar,
+                                               data = subset(bs.data, m == i), approx_beyond = approx_beyond)
   }
-  
+
   # return list of imputed datasets
   return(imputed.datasets)
 }
