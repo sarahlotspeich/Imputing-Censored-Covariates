@@ -21,4 +21,4 @@ Samples of `n=1000` subjects were created, beginning with fully-observed binary 
 
 # References
 
-Bender, R., Augustin, T., and Blettner, M. (2005). Generating survival times to simulate cox proportional hazardsmodels. *Statistics in Medicine*, 24:1713–1723.
+Bender, R., Augustin, T., and Blettner, M. (2005). Generating survival times to simulate Cox proportional hazards models. *Statistics in Medicine*, 24:1713–1723.
