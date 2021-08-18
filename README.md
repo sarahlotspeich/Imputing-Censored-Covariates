@@ -66,7 +66,7 @@ sim_dat_imp <- imputeCensoRd::condl_mean_impute(fit = imp_mod, obs = "t", event 
 
 The single imputation values are illustrated below, where the x-axis is the observed value `t` and the y-axis is the imputed value. Note: for uncensored subjects, there is no need for imputation so observed and imputed are the same. 
 
-![Illustration of conditional mean single imputation values for a censored covariate.](Observed-Imputed-SI.png)
+![Illustration of conditional mean single imputation values for a censored covariate.](Imputed-Observed-SI.png)
 
 With the imputed dataset, `sim_dat_imp`, we can now fit the desired analysis model. Since outcome `y` is continuous, we fit a normal linear regression model with covariates `imp` (in place of `x`) and `z`. 
 
