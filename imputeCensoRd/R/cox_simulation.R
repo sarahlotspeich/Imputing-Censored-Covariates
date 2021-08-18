@@ -24,7 +24,6 @@ cox_simulation = function(n, logHR, A, dist = "Exponential",
   if (!(dist %in% c("Exponential", "Weibull", "Gompertz"))) stop("argument dist must be one of: Exponential, Weibull, or Gompertz")
   if (lambda <= 0) stop("lambda must be positive")
   if (nu <= 0) stop("nu must be positive")
-  if (alpha <= 0) stop("alpha must be positive")
   
   # Generate n iid unif(0, 1) random variable
   U = runif(n = n, min = 0, max = 1)
