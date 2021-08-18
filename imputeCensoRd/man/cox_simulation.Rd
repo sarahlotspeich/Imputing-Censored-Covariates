@@ -23,9 +23,9 @@ cox_simulation(
 
 \item{dist}{desired outcome distribution; choices include "Exponential," (default) "Weibull," or "Gompertz"}
 
-\item{lambda}{scale parameter for Exponential, Weibull, and Gompertz distributions. Default is \code{1}}
+\item{lambda}{scale parameter for Exponential, Weibull, and Gompertz distributions. Must be positive. Default is \code{1}}
 
-\item{nu}{shape parameter for Weibull distributions. Default is \code{NULL}}
+\item{nu}{shape parameter for Weibull distributions. Must be positive. Default is \code{NULL}}
 
 \item{alpha}{shape parameter for Gompertz distribution. Default is \code{NULL}}
 }
