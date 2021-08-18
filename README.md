@@ -95,6 +95,15 @@ Instead of imputing censored variables just once, multiple imputation approaches
 ![Multiple imputation: Overview of the steps.](MI_Diagram.png)
 *This figure was adapted from Figure 1.6. in Buuren, S. (2012). Flexible imputation of missing data. Boca Raton, FL: CRC Press.*
 
+The function `imputeCensoRd::condl_mean_impute_bootstrap()` imputes censored covariates with their conditional mean given censored value and additional covariates (where supplied) using bootstrap resamples from the supplied dataset. This is conditional mean multiple imputation. We can use it to impute censored `x` in the simulated data and then fit the model for `y ~ x + z` to the imputed dataset. This function takes in the following parameters: 
+
+- `obs`: String column name for the censored covariate.
+- `event`: String column name for the censoring indicator of the covariate.
+- `addl_covar`: (Optional) string or vector of strings for the additional fully-observed covariates. Default is `NULL`.
+- `data`: Datafrane containing columns `obs`, `event`, and (if provided) `addl_covar`.
+- `approx_beyond`: Choice of approximation used to extrapolate the survival function beyond the last observed event time. Default is `"expo"` for the exponential approximation from Brown, Hollander, and Kowar (1974). Other choices include `"zero"`, which immediately goes to zero (Efron, 1967), or `"carryforward"`, which carries forward the survival at last event time (Gill, 1980).
+- `M`: an integer number of bootstrap samples to be taken from `data`.
+
 # References
 
 Bender, R., Augustin, T., and Blettner, M. (2005). Generating survival times to simulate Cox proportional hazards models. *Statistics in Medicine*, 24:1713–1723.
