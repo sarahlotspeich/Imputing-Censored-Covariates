@@ -51,7 +51,7 @@ test_that("test for proper output", {
   # calculate breslow estimator
   sample.breslow <- breslow_estimator(time = "t", event = "event", hr = "hr", data = sample.data)
   # times element from breslow_estimator should match the sorted, unique event times in sample.data
-  expect_true(all(sample.breslow$times == sort(unique(filter(sample.data, event == 1)$t))))
+  expect_true(all(sample.breslow$times == sort(unique(subset(sample.data, event == 1)$t))))
   # baseline survival estimates should all be inclusively between 0 and 1
   expect_true(all(sample.breslow$basesurv <= 1 & sample.breslow$basesurv >= 0))
 })

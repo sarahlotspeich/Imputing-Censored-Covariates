@@ -17,9 +17,7 @@ test_that("simple errors for bad input", {
   surv.data <- with(sample.breslow, data.frame(t = times, base.surv = basesurv))
   sample.data <- sample.data %>%
     dplyr::left_join(surv.data, by = "t")
-  at_time <- sample.data %>%
-    filter(event == 1) %>%
-    .[1, "t"]
+  at_time <- subset(sample.data, event == 1)[1, "t"]
 
   # time, event, or surv not characters
   expect_error(impute_censored_surv(at_time = at_time, time = 2, event = "event", surv = "base.surv", data = sample.data), "time must be a character")

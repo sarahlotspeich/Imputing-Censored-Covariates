@@ -7,9 +7,8 @@ library(usethis)
 test_that("simple errors for bad input", {
   # generate sample data and KM fit for test
   sample.data <- generate_data(n = 10, n.sims = 1, beta0 = 0, betaX = 1)
-  sample.fit <- with(sample.data, survival::survfit(formula = survival::Surv(x, event) ~ 1))
   # perform conditional mean imputation with bootstrap
-  imp.sample.data <- condl_mean_impute_bootstrap(fit = sample.fit, obs = "t", event = "event",
+  imp.sample.data <- condl_mean_impute_bootstrap(obs = "t", event = "event",
                                                  data = sample.data, M = 20)
   
   # list contains elements that is neither a dataframe nor a matrix
@@ -33,7 +32,7 @@ test_that("test for proper output", {
   sample.data <- generate_data(n = 10, n.sims = 1, beta0 = 0, betaX = 1)
   sample.fit <- with(sample.data, survival::survfit(formula = survival::Surv(x, event) ~ 1))
   # perform conditional mean imputation
-  imp.sample.data <- condl_mean_impute_bootstrap(fit = sample.fit, obs = "t", event = "event",
+  imp.sample.data <- condl_mean_impute_bootstrap(obs = "t", event = "event",
                                                  data = sample.data, M = 20)
   est.summary <- fit_lm_to_imputed_list(imputed_list = imp.sample.data, formula = as.formula(y ~ imp))
   
