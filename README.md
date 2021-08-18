@@ -134,12 +134,6 @@ head(sim_dat_imp[[1]])
 324 0.0005863644  1.6800965 0.0005863644 0     1 1 1.0000000 0.9934624 0.0005863644
 ```
 
-The multiple imputation values are illustrated below, where the x-axis is the observed value `t` and the y-axis is the imputed value. Each row corresponds to the imputations from a single iteration. Note: for uncensored subjects, there is no need for imputation so observed and imputed are the same. 
-
-![](images/Imputed-Observed-MI.png)
-
-**Fig. 3.** Illustration of conditional mean multiple imputation values for a censored covariate.
-
 ### Pooling the Results
 
 We can now fit a linear model to each imputed dataset in `sim_dat_imp`. The function `fit_lm_to_imputed_list()` fits the `base R` function `lm()` using a user-specified formula to each element in a list of imputed dataframes. The function then pools the results of parameter estimation for each linear model using Rubin's rules. This functions takes the following two arguments:
