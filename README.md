@@ -146,10 +146,9 @@ We can now fit a linear model to each imputed dataset in `sim_dat_imp`. The func
 pooled_lm_res <- imputeCensoRd::fit_lm_to_imputed_list(imputed_list = sim_dat_imp, formula = y ~ imp + z)
 ```
 
-The function returns a list with the following three vectors each of length `p` (the number of regression parameters in `formula`):
+The function returns a list with the following two vectors each of length `p` (the number of regression parameters in `formula`):
 
 - `Coef`: The average coefficient estimates obtained from fitting `formula` to each dataframe in `imputed_list`
-- `Var`: The average variance estimates obtained from fitting `formula` to each dataframe in `imputed_list`
 - `Pooled_Var`: The pooled variance estimates, calculated using Rubin's rules
 
 In our simulation, this looks like
@@ -158,10 +157,6 @@ In our simulation, this looks like
 $Coef
 (Intercept)         imp           z 
   0.8348876   1.8622895   0.6744820 
-
-$Var
-(Intercept)         imp           z 
-0.004266492 0.047960054 0.019882889 
 
 $Pooled_Var
 (Intercept)         imp           z 
