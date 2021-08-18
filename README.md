@@ -17,7 +17,7 @@ The complete R package `imputeCensoRd` and code for the simulations included in 
 
 ## Setup 
 
-[](Sim-Setup.png)
+![](Sim-Setup.png)
 
 # References
 
