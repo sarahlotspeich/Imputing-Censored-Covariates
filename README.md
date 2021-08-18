@@ -86,19 +86,14 @@ The single imputation values are illustrated below, where the x-axis is the obse
 With the imputed dataset, `sim_dat_imp`, we can now fit the desired analysis model. Since outcome `y` is continuous, we fit a normal linear regression model with covariates `imp` (in place of `x`) and `z`. 
 
 ```{r}
-mod <- glm(formula = y ~ imp + z, data = sim_dat_imp, family = "gaussian")
-```
+lm(formula = y ~ imp + z, data = sim_dat_imp)
 
-```{r}
-Call:  glm(formula = y ~ imp + z, family = "gaussian", data = sim_dat_imp)
+Call:
+lm(formula = y ~ imp + z, data = sim_dat_imp)
 
 Coefficients:
 (Intercept)          imp            z  
      0.8448       1.7176       0.5007  
-
-Degrees of Freedom: 999 Total (i.e. Null);  997 Residual
-Null Deviance:	    2211 
-Residual Deviance: 1624 	AIC: 3331
 ```
 
 While they might offer bias corrections, single imputation approaches like this are known to underestimate the variability due to the imputed values (since they are treated with the same certainty as the actual observed `x` values). This means that statistical inference based on single imputation will be invalid, so we instead turn to the following multiple imputation approach to correct for this. 
