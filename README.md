@@ -48,8 +48,10 @@ There is a built-in function, `imputeCensoRd::cox_simulation()` which generates 
 - `nu`: For `"Weibull"`, `nu` is the shape parameter. Must be positive. Default is `NULL`.
 - `alpha`: For `"Gompertz"`, `alpha` is the shape parameter. Default is `NULL`.
 
-- `Exponential`: <img src="https://render.githubusercontent.com/render/math?math=f_0(x) = \lambda \exp(\lambda x)">
-- `Weibull`: <img src="https://render.githubusercontent.com/render/math?math=f_0(x) = \lambda \nu \x^{\nu - 1} \exp(\lambda x^{\nu})">
+The baseline density functions for the three `dist` options are shown below.
+
+- `Exponential`: <img src="https://render.githubusercontent.com/render/math?math=f_0(x) = \lambda \exp(-\lambda x)">
+- `Weibull`: <img src="https://render.githubusercontent.com/render/math?math=f_0(x) = \lambda \nu \x^{\nu - 1} \exp(-\lambda x^{\nu})">
 - `Gompertz`: <img src="https://render.githubusercontent.com/render/math?math=f_0(x) = \lambda \exp(\alpha x) \exp(\frac{\lambda}{\alpha}(1 - \exp(\alpha x)))">
 
 ```{r}
