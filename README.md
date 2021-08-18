@@ -119,6 +119,39 @@ The function `imputeCensoRd::condl_mean_impute_bootstrap()` imputes censored cov
 - `approx_beyond`: Choice of approximation used to extrapolate the survival function beyond the last observed event time. Default is `"expo"` for the exponential approximation from Brown, Hollander, and Kowar (1974). Other choices include `"zero"`, which immediately goes to zero (Efron, 1967), or `"carryforward"`, which carries forward the survival at last event time (Gill, 1980).
 - `M`: an integer number of bootstrap samples to be taken from `data`.
 
+```{r}
+# Multiple imputation
+sim_dat_imp <- imputeCensoRd::condl_mean_impute_bootstrap(obs = "t", event = "delta", addl_covar = "z", data = sim_dat, approx_beyond = "expo", M = 5)
+```
+
+In this case, `sim_dat_imp` is actually a list of length `M` containing the imputed datasets from each imputation. Consider the following slices as examples:
+
+```{r}
+head(sim_dat_imp[[1]])
+```
+```{r}
+               t          y            x z delta m        hr      surv          imp
+421 0.0000681393  0.3608872 0.0000681393 0     1 1 1.0000000 0.9986917 0.0000681393
+999 0.0001519918  3.4185226           NA 1     0 1 0.1565266 0.9967313 0.7831441289
+21  0.0002868707 -0.6203306 0.0002868707 0     1 1 1.0000000 0.9947710 0.0002868707
+22  0.0002868707 -0.6203306 0.0002868707 0     1 1 1.0000000 0.9947710 0.0002868707
+23  0.0002868707 -0.6203306 0.0002868707 0     1 1 1.0000000 0.9947710 0.0002868707
+324 0.0005863644  1.6800965 0.0005863644 0     1 1 1.0000000 0.9934624 0.0005863644
+```
+
+```{r}
+head(sim_dat_imp[[5]])
+```
+```{r}
+               t          y            x z delta m       hr      surv          imp
+469 0.0000681393  0.3608872 0.0000681393 0     1 5 1.000000 0.9987375 0.0000681393
+598 0.0001519918  3.4185226           NA 1     0 5 0.163021 0.9981060 0.5954196657
+620 0.0001519918  3.4185226           NA 1     0 5 0.163021 0.9981060 0.5954196657
+452 0.0002868707 -0.6203306 0.0002868707 0     1 5 1.000000 0.9974745 0.0002868707
+789 0.0005663319  1.6539132           NA 1     0 5 0.163021 0.9962121 0.5956039464
+418 0.0005863644  1.6800965 0.0005863644 0     1 5 1.000000 0.9949496 0.0005863644
+```
+
 # References
 
 Bender, R., Augustin, T., and Blettner, M. (2005). Generating survival times to simulate Cox proportional hazards models. *Statistics in Medicine*, 24:1713–1723.
