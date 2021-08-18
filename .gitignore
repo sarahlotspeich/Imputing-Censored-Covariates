@@ -2,3 +2,11 @@
 .RHistory
 slurm*out
 .Rproj.user
+
+imputeCensoRd/man/hello.Rd
+
+imputeCensoRd/R/hello.R
+
+imputeCensoRd/imputeCensoRd.Rproj
+
+imputeCensoRd/.Rbuildignore

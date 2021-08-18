@@ -5,7 +5,6 @@
 \title{Conditional mean imputation with bootstrap}
 \usage{
 condl_mean_impute_bootstrap(
-  fit,
   obs,
   event,
   addl_covar = NULL,
@@ -15,8 +14,6 @@ condl_mean_impute_bootstrap(
 )
 }
 \arguments{
-\item{fit}{A \code{coxph} or \code{survfit} imputation model object.}
-
 \item{obs}{String column name for the censored covariate.}
 
 \item{event}{String column name for the censoring indicator of the covariate.}

@@ -2,7 +2,6 @@
 #'
 #' Imputes censored covariates with their conditional mean given censored value and additional covariates (where supplied).
 #'
-#' @param fit A \code{coxph} or \code{survfit} imputation model object.
 #' @param obs String column name for the censored covariate.
 #' @param event String column name for the censoring indicator of the covariate.
 #' @param addl_covar (Optional) string or vector of strings for the additional fully-observed covariates. Default is \code{NULL}.
@@ -13,7 +12,7 @@
 #' @return A list of \code{M} dataframes, each of which is sampled with replacement from \code{data} and then augmented with a column of imputed covariate values called \code{imp}.
 #'
 #' @export
-condl_mean_impute_bootstrap <- function(fit, obs, event, addl_covar = NULL, data, approx_beyond = "expo", M) {
+condl_mean_impute_bootstrap <- function(obs, event, addl_covar = NULL, data, approx_beyond = "expo", M) {
   # test for bad input
   if (!is.character(obs)) { stop("argument obs must be a character") }
   if (!is.character(event)) { stop("argument event must be a character") }
@@ -41,8 +40,19 @@ condl_mean_impute_bootstrap <- function(fit, obs, event, addl_covar = NULL, data
 
   # perform conditional mean imputation on each bootstrap sample
   for (i in 1:M) {
-    imputed.datasets[[i]] <- condl_mean_impute(fit = fit, obs = obs, event = event, addl_covar = addl_covar,
-                                               data = subset(bs.data, m == i), approx_beyond = approx_beyond)
+    # subset to the ith bootstrap sample
+    data.i <- subset(bs.data, m == i)
+    # fit imputation model
+    if (!is.null(addl_covar)) {
+      fit.i <- survival::coxph(formula = as.formula(paste0("survival::Surv(time = ", obs, ", event = ", event, ") ~", paste0(addl_covar, collapse = "+"))),
+                               data = data.i)
+    } else {
+      fit.i <- survival::survfit(formula = as.formula(paste0("survival::Surv(time = ", obs, ", event = ", event, ") ~ 1")),
+                                 data = data.i)
+    }
+    # call single imputation function
+    imputed.datasets[[i]] <- condl_mean_impute(fit = fit.i, obs = obs, event = event, addl_covar = addl_covar,
+                                               data = data.i, approx_beyond = approx_beyond)
   }
 
   # return list of imputed datasets
