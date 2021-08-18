@@ -105,12 +105,12 @@ While they might offer bias corrections, single imputation approaches like this 
 
 ## Multiple Imputation 
 
-Instead of imputing censored variables just once, multiple imputation approaches iteratively repeat the (1) imputation and (2) analysis steps many times, and ultimately pool these analyses into one set of parameters which are expected to be unbiased and with appropriate variability estimates. This process is briefly illustrated in the following diagram. 
+The single imputation procedure can be broken down into two steps: (1) conditional mean imputation using a semi- or non-parametric survival function and (2) analysis wherein parameter estimatse are obtained with standard complete data procedures. With multiple imputation, we use bootstrap resampling to draw new data in each iteration and then we apply these same two steps to each of the `M` datasets. We then pool these analyses into one set of parameters which are expected to be unbiased and with appropriate variability estimates. This process is briefly illustrated in the following diagram. 
 
 ![](MI_Diagram.png)
 **Fig. 2.** Multiple imputation: Overview of the steps. *This figure was adapted from Figure 1.6. in Buuren, S. (2012). Flexible imputation of missing data. Boca Raton, FL: CRC Press.*
 
-The function `imputeCensoRd::condl_mean_impute_bootstrap()` imputes censored covariates with their conditional mean given censored value and additional covariates (where supplied) using bootstrap resamples from the supplied dataset. This is conditional mean multiple imputation. We can use it to impute censored `x` in the simulated data and then fit the model for `y ~ x + z` to the imputed dataset. This function takes in the following parameters: 
+The function `imputeCensoRd::condl_mean_impute_bootstrap()` imputes censored covariates with their conditional mean given censored value and additional covariates (where supplied) using bootstrap resamples from the supplied dataset. This is conditional mean multiple imputation. We can use it to impute censored `x` in `M` bootstrap samples of the simulated data and then fit the model for `y ~ x + z` to the `M` completed datasets. This function takes in the following parameters: 
 
 - `obs`: String column name for the censored covariate.
 - `event`: String column name for the censoring indicator of the covariate.
@@ -151,8 +151,6 @@ head(sim_dat_imp[[5]])
 789 0.0005663319  1.6539132           NA 1     0 5 0.163021 0.9962121 0.5956039464
 418 0.0005863644  1.6800965 0.0005863644 0     1 5 1.000000 0.9949496 0.0005863644
 ```
-
-
 
 # References
 
