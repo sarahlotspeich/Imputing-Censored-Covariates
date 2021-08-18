@@ -80,7 +80,8 @@ sim_dat_imp <- imputeCensoRd::condl_mean_impute(fit = imp_mod, obs = "t", event 
 The single imputation values are illustrated below, where the x-axis is the observed value `t` and the y-axis is the imputed value. Note: for uncensored subjects, there is no need for imputation so observed and imputed are the same. 
 
 ![](Imputed-Observed-SI.png)
-*Illustration of conditional mean single imputation values for a censored covariate.*
+
+**Fig. 1.** Illustration of conditional mean single imputation values for a censored covariate.
 
 With the imputed dataset, `sim_dat_imp`, we can now fit the desired analysis model. Since outcome `y` is continuous, we fit a normal linear regression model with covariates `imp` (in place of `x`) and `z`. 
 
@@ -106,8 +107,8 @@ While they might offer bias corrections, single imputation approaches like this 
 
 Instead of imputing censored variables just once, multiple imputation approaches iteratively repeat the (1) imputation and (2) analysis steps many times, and ultimately pool these analyses into one set of parameters which are expected to be unbiased and with appropriate variability estimates. This process is briefly illustrated in the following diagram. 
 
-![Multiple imputation: Overview of the steps.](MI_Diagram.png)
-*This figure was adapted from Figure 1.6. in Buuren, S. (2012). Flexible imputation of missing data. Boca Raton, FL: CRC Press.*
+![](MI_Diagram.png)
+**Fig. 2.** Multiple imputation: Overview of the steps. *This figure was adapted from Figure 1.6. in Buuren, S. (2012). Flexible imputation of missing data. Boca Raton, FL: CRC Press.*
 
 The function `imputeCensoRd::condl_mean_impute_bootstrap()` imputes censored covariates with their conditional mean given censored value and additional covariates (where supplied) using bootstrap resamples from the supplied dataset. This is conditional mean multiple imputation. We can use it to impute censored `x` in the simulated data and then fit the model for `y ~ x + z` to the imputed dataset. This function takes in the following parameters: 
 
