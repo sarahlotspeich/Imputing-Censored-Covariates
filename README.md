@@ -44,9 +44,9 @@ There is a built-in function, `imputeCensoRd::cox_simulation()` which generates 
 - `logHR`: log hazard ratio coefficients for linear predictor of Cox model 
 - `A`: matrix of auxiliary covariates for linear predictor of Cox model
 - `dist`: desired distribution, with choices `"Exponential"`, `"Weibull"`, or `"Gompertz"`. Default is `"Exponential"`.
-- `lambda`: <img src="https://render.githubusercontent.com/render/math?math=\lambda"> For `"Exponential"`, `"Weibull"`, and `"Gompertz"`, `lambda` is the scale parameter. Must be positive. Default is `1`.
-- `nu`: <img src="https://render.githubusercontent.com/render/math?math=\nu"> For `"Weibull"`, `nu` is the shape parameter. Must be positive. Default is `NULL`.
-- `alpha` <img src="https://render.githubusercontent.com/render/math?math=\alpha">: For `"Gompertz"`, `alpha` is the shape parameter. Default is `NULL`.
+- `lambda`: (<img src="https://render.githubusercontent.com/render/math?math=\lambda">) For `"Exponential"`, `"Weibull"`, and `"Gompertz"`, `lambda` is the scale parameter. Must be positive. Default is `1`.
+- `nu`: (<img src="https://render.githubusercontent.com/render/math?math=\nu">) For `"Weibull"`, `nu` is the shape parameter. Must be positive. Default is `NULL`.
+- `alpha`: (<img src="https://render.githubusercontent.com/render/math?math=\alpha">) For `"Gompertz"`, `alpha` is the shape parameter. Default is `NULL`.
 
 The baseline density functions for the three `dist` options are shown below.
 
