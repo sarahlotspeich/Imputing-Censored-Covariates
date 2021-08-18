@@ -48,6 +48,8 @@ There is a built-in function, `imputeCensoRd::cox_simulation()` which generates 
 - `nu`: For `"Weibull"`, `nu` is the shape parameter. Must be positive. Default is `NULL`.
 - `alpha`: For `"Gompertz"`, `alpha` is the shape parameter. Default is `NULL`.
 
+- `Exponential`: <img src="https://render.githubusercontent.com/render/math?math=e^{i \pi} = -1">
+
 ```{r}
 x <- imputeCensoRd::cox_simulation(n = N, logHR = lambda, covariate = matrix(z, ncol = 1), dist = "Exponential", lambda = 5)
 e <- rnorm(n = N, mean = 0, sd = 1)
