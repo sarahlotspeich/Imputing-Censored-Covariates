@@ -1,5 +1,5 @@
 # Correcting conditional mean imputation for censored covariates and improving usability
-## Lotspeich, Grosser & Garcia 
+## Lotspeich, Grosser & Garcia (2021+)
 ### Statistical methods to impute censored covariates. 
 
 # Installation 
@@ -7,7 +7,8 @@
 The `R` package `imputeCensoRd` which implements statistical methods to impute censored covariates can be installed using the `devtools` package in `R` as follows. 
 
 ```{r}
-devtools::install_github(repo = "kylefred/Imputing-Censored-Covariates", subdir = "imputeCensoRd")
+# Run once: install.packages("devtools")
+devtools::install_github(repo = "Tanya-Garcia-Lab/Imputing-Censored-Covariates", subdir = "imputeCensoRd")
 library(imputeCensoRd)
 ```
 
