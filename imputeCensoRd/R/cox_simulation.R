@@ -27,7 +27,7 @@ cox_simulation = function(n, logHR, A, dist = "Exponential",
   # Generate n iid unif(0, 1) random variable
   U = runif(n = n, min = 0, max = 1)
   # Calculate H_0(T) according to Bender (2005)
-  H_0.T = -log(U)*exp(-covariate %*% logHR)
+  H_0.T = -log(U)*exp(-A %*% logHR)
   
   # Return simulated response based on distribution character provided
   if (dist == "Exponential") { return(H_0.T/lambda) }
