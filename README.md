@@ -47,7 +47,7 @@ The baseline density functions for the three `dist` options are shown below.
 - `Gompertz`: <img src="https://render.githubusercontent.com/render/math?math=f_0(x) = \lambda \exp(\alpha x) \exp(\frac{\lambda}{\alpha}(1 - \exp(\alpha x)))">
 
 ```{r}
-x <- imputeCensoRd::cox_simulation(n = N, logHR = lambda, covariate = matrix(z, ncol = 1), dist = "Exponential", lambda = 5)
+x <- imputeCensoRd::cox_simulation(n = N, logHR = lambda, A = matrix(z, ncol = 1), dist = "Exponential", lambda = 5)
 e <- rnorm(n = N, mean = 0, sd = 1)
 y <- beta0 + beta1 * x + beta2 * z + e
 c <- rexp(n = N, rate = 4)
