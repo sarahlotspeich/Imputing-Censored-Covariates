@@ -19,6 +19,6 @@ test_that("simple errors for bad input", {
   expect_error(cox_simulation(n = n, logHR = logHR, A = A, dist = "nope"), "Exponential, Weibull, or Gompertz")
   
   # number of observed covariates does not match number of corresponding parameters
-  lorHR = c(1, 1.5)
-  expect_error(cox_simulation(n = n, logHR = lorHR, A = A), "length")
+  logHR = c(1, 1.5)
+  expect_error(cox_simulation(n = n, logHR = logHR, A = A), "length")
 })
