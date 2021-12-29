@@ -52,9 +52,9 @@ e <- rnorm(n = N, mean = 0, sd = 1)
 y <- beta0 + beta1 * x + beta2 * z + e
 c <- rexp(n = N, rate = 4)
 delta <- as.numeric(x <= c)
-t <- pmin(x, c)
+w <- pmin(x, c)
 x[delta == 0] <- NA
-sim_dat <- data.frame(y, x, t, z, delta)
+sim_dat <- data.frame(y, x, w, z, delta)
 ```
 
 ## Single Imputation
@@ -70,9 +70,9 @@ The function `imputeCensoRd::condl_mean_impute()` imputes censored covariates wi
 
 ```{r}
 # Fit the imputation model for x ~ z 
-imp_mod <- survival::coxph(formula = survival::Surv(time = t, event = delta) ~ z, data = sim_dat)
+imp_mod <- survival::coxph(formula = survival::Surv(time = w, event = delta) ~ z, data = sim_dat)
 # Impute censored x in sim_dat
-sim_dat_imp <- imputeCensoRd::condl_mean_impute(fit = imp_mod, obs = "t", event = "delta", addl_covar = "z", data = sim_dat, approx_beyond = "expo")
+sim_dat_imp <- imputeCensoRd::condl_mean_impute(fit = imp_mod, obs = "w", event = "delta", addl_covar = "z", data = sim_dat, approx_beyond = "expo")
 ```
 
 The single imputation values are illustrated below, where the x-axis is the observed value `t` and the y-axis is the imputed value. Note: for uncensored subjects, there is no need for imputation so observed and imputed are the same. 
@@ -116,7 +116,7 @@ The function `imputeCensoRd::condl_mean_impute_bootstrap()` imputes censored cov
 
 ```{r}
 # Multiple imputation
-sim_dat_imp <- imputeCensoRd::condl_mean_impute_bootstrap(obs = "t", event = "delta", addl_covar = "z", 
+sim_dat_imp <- imputeCensoRd::condl_mean_impute_bootstrap(obs = "w", event = "delta", addl_covar = "z", 
 							  data = sim_dat, approx_beyond = "expo", M = 5)
 ```
 
@@ -126,7 +126,7 @@ In this case, `sim_dat_imp` is actually a list of length `M` containing the impu
 head(sim_dat_imp[[1]])
 ```
 ```{r}
-               t          y            x z delta m        hr      surv          imp
+               w          y            x z delta m        hr      surv          imp
 421 0.0000681393  0.3608872 0.0000681393 0     1 1 1.0000000 0.9986917 0.0000681393
 999 0.0001519918  3.4185226           NA 1     0 1 0.1565266 0.9967313 0.7831441289
 21  0.0002868707 -0.6203306 0.0002868707 0     1 1 1.0000000 0.9947710 0.0002868707
