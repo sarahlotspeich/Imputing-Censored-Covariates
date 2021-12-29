@@ -33,8 +33,10 @@ condl_mean_impute <- function(fit, obs, event, addl_covar = NULL, data, approx_b
     # Estimate baseline survival from Kaplan-Meier estimator
     surv_df <- with(fit, data.frame(t = time, surv = surv))
   } else {
-    # Estimate baseline survival from Cox model fit
-    data$hr <- exp(fit$coefficients * data[, addl_covar])
+    # Calculate linear predictor \lambda %*% addl_covar for Cox model
+    lp <- data.matrix(data[, addl_covar]) %*% matrix(data = fit$coefficients, ncol = 1)
+    data$hr <- exp(lp)
+    # Estimate baseline survival from Cox model fit using Breslow estimator
     cox_surv <- breslow_estimator(time = obs, event = event, hr = "hr", data = data)
     surv_df <- with(cox_surv, data.frame(t = times, surv = basesurv))
   }
