@@ -55,6 +55,12 @@ condl_mean_impute <- function(fit, obs, event, addl_covar = NULL, data, approx_b
     )
   }
 
+  # Assume survival = 1 before first observed covariate value
+  if (any(data[, obs] < min(data[uncens, obs]))) {
+    cens_before <- which(data[, obs] < min(data[uncens, obs]))
+    data[cens_before, "surv"] <- 1
+  }
+  
   # Extrapolate survival beyond last observed covariate
   if (any(data[, obs] > max(data[uncens, obs]))) {
     cens_after <- which(data[, obs] > max(data[uncens, obs]))
