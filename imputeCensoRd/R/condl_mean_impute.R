@@ -94,10 +94,11 @@ condl_mean_impute <- function(fit, obs, event, addl_covar = NULL, data, approx_b
     # Follow formula assuming Cox model with additional covariates Z
     for (x in which(!uncens)) {
       Zj <- data[x, addl_covar]
+      lp <- as.numeric(data.matrix(Zj) %*% matrix(data = fit$coefficients, ncol = 1))
       Cj <- data[x, obs]
-      Sj <- data_dist[-1, "surv"] ^ (exp(fit$coefficients * Zj)) + data_dist[-nrow(data_dist), "surv"] ^ (exp(fit$coefficients * Zj))
-      num <- sum((data_dist[-nrow(data_dist), obs] >= Cj) * Sj * t_diff) 
-      denom <- data[x, "surv"] ^ (exp(fit$coefficients * Zj))
+      Sj <- data_dist[-1, "surv"] ^ (exp(lp)) + data_dist[-nrow(data_dist), "surv"] ^ (exp(lp))
+      num <- sum((data_dist[-nrow(data_dist), obs] >= Cj) * Sj * t_diff)
+      denom <- data[x, "surv"] ^ (exp(lp))
       data$imp[x] <- (1 / 2) * (num / denom) + Cj
     }
   }
