@@ -2,14 +2,14 @@
 % Please edit documentation in R/at_risk.R
 \name{at_risk}
 \alias{at_risk}
-\title{Calculate size of risk set at time x based on a vector of times t}
+\title{Calculate size of risk set at \code{t} based on a vector of times \code{W}}
 \usage{
 at_risk(t, W, HR = NULL)
 }
 \arguments{
 \item{t}{Value at which the size of the risk set is to be calculated.}
 
-\item{W}{Numeric vector of observed covariate values (including censored opens).}
+\item{W}{Numeric vector of observed predictor values (including censored opens).}
 
 \item{HR}{(Optional) Numeric vector of hazard ratios (HR) corresponding to values in \code{W}.}
 }
