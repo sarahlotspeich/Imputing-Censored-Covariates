@@ -8,10 +8,7 @@
 #' @param data Dataframe or named matrix containing columns \code{W}, \code{Delta}, and \code{Z}.
 #' @param fit A \code{coxph} imputation model object modeling \code{W} on \code{Z}. If \code{fit = NULL} (default), the Cox model with only main effects for \code{Z} is fit internally and used.
 #'
-#' @return If \code{t} is not \code{NULL}, then a scalar value for the baseline survival function at value \code{t}. Otherwise, a list with the following three elements is returned:
-#' \item{W}{a vector of the unique observed failure times}
-#' \item{basesurv}{baseline survival estimates}
-#' \item{basehaz}{baseline cumulative hazard estimates}
+#' @return A copy of \code{data} with added column \code{imp} containing the imputed values.
 #'
 #' @export
 #' @importFrom survival coxph Surv
