@@ -8,7 +8,7 @@
 #' @param HR Numeric vector of hazard ratios (HR) corresponding to values in \code{W}. 
 #'
 #' @return If \code{t} is not \code{NULL}, then a scalar value for the baseline survival function at value \code{t}. Otherwise, a list with the following three elements is returned:
-#' \item{times}{a vector of the unique observed failure times}
+#' \item{W}{a vector of the unique observed failure times}
 #' \item{basesurv}{baseline survival estimates}
 #' \item{basehaz}{baseline cumulative hazard estimates}
 #'
@@ -39,6 +39,6 @@ breslow_estimator <- function(t, W, Delta, HR) {
   if (!is.null(t)) {
     return(surv0[length(surv0)])
   } else {
-    return(list(times = tauj, basesurv = surv0, basecumhaz = cumhaz0))
+    return(list(W = tauj, basesurv = surv0, basecumhaz = cumhaz0))
   }
 }
