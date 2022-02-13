@@ -2,53 +2,42 @@
 #'
 #' Estimates the baseline survival function from a Cox proportional hazards model following Breslow's estimator.
 #'
-#' @param time String column name for the observed times.
-#' @param event String column name for the censoring indicator of the covariate.
-#' @param hr String column name for the hazard ratios calculated from a \code{coxph} model fit.
-#' @param data Dataframe containing columns \code{time}, \code{event}, and \code{hr}.
+#' @param W Numeric vector of observed covariate values (including censored opens). 
+#' @param Delta Numeric vector of censoring indicators to accompany \code{W}. Note that \code{Delta = 0} is interpreted as a censored observation. 
+#' @param HR Numeric vector of hazard ratios (HR) corresponding to values in \code{W}. 
 #'
-#' @return A list with the following three elements:
+#' @return If \code{x} is not \code{NULL}, then a scalar value for the baseline survival function at value \code{x}. Otherwise, a list with the following three elements is returned:
 #' \item{times}{a vector of the unique observed failure times}
 #' \item{basesurv}{baseline survival estimates}
 #' \item{basehaz}{baseline cumulative hazard estimates}
 #'
 #' @export
+#' @importFrom dplyr group_by summarize
 
-breslow_estimator <- function(time, event, hr, data) {
-  # test for bad input
-  if (!is.character(time)) { stop("argument time must be a character") }
-  if (!is.character(event)) { stop("argument event must be a character") }
-  if (!is.character(hr)) { stop("argument hr must be a character") }
-  if (!is.data.frame(data) & !is.matrix(data)) { stop("argument data must be a data frame or a matrix") }
-  # test that data contains columns with specified names
-  if (!(time %in% colnames(data))) { stop(paste("data does not have column with name", time)) }
-  if (!(event %in% colnames(data))) { stop(paste("data does not have column with name", event)) }
-  if (!(hr %in% colnames(data))) { stop(paste("data does not have column with name", hr)) }
-  # test for improper entries in columns of data
-  #### Still deciding whether the following conditions should produce errors (stop()) or warnings
-  if (any(data[, time] < 0)) { warning(paste("elements of column", time, "must be positive")) }
-  if (!all(data[, event] %in% c(0, 1))) { warning(paste("elements of column", event, "must be either 0 or 1")) }
-  if (any(data[, hr] < 0)) { warning(paste("elements of column", hr, "must be inclusively between 0 and 1"))}
+breslow_estimator <- function(W, Delta, HR) {
+  data <- data.frame(W, Delta, HR)
+  wj <- W # all times (censored or event)
+  dj <- group_by(data, W)
+  dj <- summarize(dj, d = sum(Delta))
+  dj <- data.frame(dj)
+  dj <- dj[dj$d > 0, ] # filter to event times
   
-  tj <- data[, time] # save vector of observed times 
-  dj <- aggregate(formula = as.formula(paste(event, "~", time)), FUN = sum, data = data) # tabulate number of deaths per tj 
-  dj <- dj[dj[, event] > 0, ] # subset to times with at least one death (i.e., dj > 0)
-  tauj <- dj[, time] # observed failure times
-  # create a dataframe for the riskset containing number of people still alive at or just before each tauj 
-  riskset <- data.frame(tauj = rep(tauj, times = length(tj)),
-                        tj = rep(tj, each = length(tauj)),
-                        hr = rep(data[, hr], each = length(tauj)))
-  riskset$atrisk <- with(riskset, tauj <= tj)
-  riskset$atrisk_hr <- with(riskset, atrisk * hr)
-  # denominator for baseline hazard estimate
-  haz0_denom <- aggregate(formula = atrisk_hr ~ tauj, FUN = sum, data = riskset)
-  
-  # baseline hazard estimate
-  haz0 <- dj[, event] / haz0_denom$atrisk_hr
-  # baseline cumulative hazard estimate
+  if (!is.null(x)) {
+    # For times prior to first event, survival = 1
+    if ((min(dj$W) - x) > 1E-10) {
+      return(1)
+    } else {
+      dj <- dj[(dj$W - x) <= 1E-10, ] # filter to event times up to at_x
+    }
+  }
+  tauj <- dj$W # event times
+  atrisk_hr <- sapply(X = tauj, FUN = at_risk, W = W, HR = HR)
+  haz0 <- dj$d/atrisk_hr
   cumhaz0 <- cumsum(haz0)
-  # baseline survival estimate
   surv0 <- exp(- cumhaz0)
-  
-  return(list(times = tauj, basesurv = surv0, basecumhaz = cumhaz0))
+  if (!is.null(x)) {
+    return(surv0[length(surv0)])
+  } else {
+    return(list(times = tauj, basesurv = surv0, basecumhaz = cumhaz0))
+  }
 }

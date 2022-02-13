@@ -4,19 +4,17 @@
 \alias{breslow_estimator}
 \title{Breslow estimator of baseline survival}
 \usage{
-breslow_estimator(time, event, hr, data)
+breslow_estimator(W, Delta, HR)
 }
 \arguments{
-\item{time}{String column name for the observed times.}
+\item{W}{Numeric vector of observed covariate values (including censored opens).}
 
-\item{event}{String column name for the censoring indicator of the covariate.}
+\item{Delta}{Numeric vector of censoring indicators to accompany \code{W}. Note that \code{Delta = 0} is interpreted as a censored observation.}
 
-\item{hr}{String column name for the hazard ratios calculated from a \code{coxph} model fit.}
-
-\item{data}{Dataframe containing columns \code{time}, \code{event}, and \code{hr}.}
+\item{HR}{Numeric vector of hazard ratios (HR) corresponding to values in \code{W}.}
 }
 \value{
-A list with the following three elements:
+If \code{x} is not \code{NULL}, then a scalar value for the baseline survival function at value \code{x}. Otherwise, a list with the following three elements is returned:
 \item{times}{a vector of the unique observed failure times}
 \item{basesurv}{baseline survival estimates}
 \item{basehaz}{baseline cumulative hazard estimates}
