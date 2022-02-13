@@ -4,9 +4,11 @@
 \alias{breslow_estimator}
 \title{Breslow estimator of baseline survival}
 \usage{
-breslow_estimator(W, Delta, HR)
+breslow_estimator(t, W, Delta, HR)
 }
 \arguments{
+\item{t}{(Optional) Value at which the baseline survival function is to be calculated. If \code{t = NULL} (the default), values at all unique event times is returned.}
+
 \item{W}{Numeric vector of observed covariate values (including censored opens).}
 
 \item{Delta}{Numeric vector of censoring indicators to accompany \code{W}. Note that \code{Delta = 0} is interpreted as a censored observation.}
@@ -14,7 +16,7 @@ breslow_estimator(W, Delta, HR)
 \item{HR}{Numeric vector of hazard ratios (HR) corresponding to values in \code{W}.}
 }
 \value{
-If \code{x} is not \code{NULL}, then a scalar value for the baseline survival function at value \code{x}. Otherwise, a list with the following three elements is returned:
+If \code{t} is not \code{NULL}, then a scalar value for the baseline survival function at value \code{t}. Otherwise, a list with the following three elements is returned:
 \item{times}{a vector of the unique observed failure times}
 \item{basesurv}{baseline survival estimates}
 \item{basehaz}{baseline cumulative hazard estimates}
