@@ -17,7 +17,7 @@ breslow_estimator(t, W, Delta, HR)
 }
 \value{
 If \code{t} is not \code{NULL}, then a scalar value for the baseline survival function at value \code{t}. Otherwise, a list with the following three elements is returned:
-\item{times}{a vector of the unique observed failure times}
+\item{W}{a vector of the unique observed failure times}
 \item{basesurv}{baseline survival estimates}
 \item{basehaz}{baseline cumulative hazard estimates}
 }
