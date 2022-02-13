@@ -2,6 +2,8 @@
 
 export(at_risk)
 export(breslow_estimator)
+export(cmi_fp)
+export(cmi_np)
 export(cmi_sp)
 export(condl_mean_impute)
 export(condl_mean_impute_bootstrap)
@@ -15,3 +17,4 @@ importFrom(dplyr,group_by)
 importFrom(dplyr,summarize)
 importFrom(survival,Surv)
 importFrom(survival,coxph)
+importFrom(survival,survreg)
