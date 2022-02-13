@@ -4,20 +4,22 @@
 \alias{breslow_estimator}
 \title{Breslow estimator of baseline survival}
 \usage{
-breslow_estimator(t, W, Delta, HR)
+breslow_estimator(x = NULL, time, event, hr, data)
 }
 \arguments{
-\item{t}{(Optional) Value at which the baseline survival function is to be calculated. If \code{t = NULL} (the default), values at all unique event times is returned.}
+\item{x}{(Optional) Value at which the baseline survival function is to be calculated. If \code{x = NULL} (the default), values at all unique event times is returned.}
 
-\item{W}{Numeric vector of observed covariate values (including censored opens).}
+\item{time}{Column name of observed predictor values (including censored opens).}
 
-\item{Delta}{Numeric vector of censoring indicators to accompany \code{W}. Note that \code{Delta = 0} is interpreted as a censored observation.}
+\item{event}{Column name of censoring indicators. Note that \code{Delta = 0} is interpreted as a censored observation.}
 
-\item{HR}{Numeric vector of hazard ratios (HR) corresponding to values in \code{W}.}
+\item{hr}{Column name of hazard ratios (HR) from a Cox proportional hazards model.}
+
+\item{data}{Dataframe or named matrix containing columns \code{W}, \code{Delta}, and \code{HR}.}
 }
 \value{
-If \code{t} is not \code{NULL}, then a scalar value for the baseline survival function at value \code{t}. Otherwise, a list with the following three elements is returned:
-\item{W}{a vector of the unique observed failure times}
+If \code{x} is not \code{NULL}, then a scalar value for the baseline survival function at value \code{x}. Otherwise, a list with the following three elements is returned:
+\item{times}{a vector of the unique observed failure times}
 \item{basesurv}{baseline survival estimates}
 \item{basehaz}{baseline cumulative hazard estimates}
 }

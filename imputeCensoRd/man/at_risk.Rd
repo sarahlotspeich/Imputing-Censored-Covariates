@@ -2,20 +2,20 @@
 % Please edit documentation in R/at_risk.R
 \name{at_risk}
 \alias{at_risk}
-\title{Calculate size of risk set at \code{t} based on a vector of times \code{W}}
+\title{Calculate size of risk set at \code{x} based on a vector of times \code{t}}
 \usage{
-at_risk(t, W, HR = NULL)
+at_risk(x, t, hr = NULL)
 }
 \arguments{
-\item{t}{Value at which the size of the risk set is to be calculated.}
+\item{x}{Value at which the size of the risk set is to be calculated.}
 
-\item{W}{Numeric vector of observed predictor values (including censored opens).}
+\item{t}{Numeric vector of observed predictor values (including censored opens).}
 
-\item{HR}{(Optional) Numeric vector of hazard ratios (HR) corresponding to values in \code{W}.}
+\item{hr}{(Optional) Numeric vector of hazard ratios (HR) corresponding to values in \code{t}.}
 }
 \value{
 A scalar
 }
 \description{
-Calculates the size of the risk set at specified times. Alternatively, if \code{HR} is not \code{NULL} then it sums up HR of at-risk people (for use with \code{breslow_estimator()}).
+Calculates the size of the risk set at specified times. Alternatively, if \code{hr} is not \code{NULL} then it sums up HR of at-risk people (for use with \code{breslow_estimator()}).
 }
