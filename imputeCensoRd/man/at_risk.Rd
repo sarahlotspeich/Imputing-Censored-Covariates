@@ -7,7 +7,7 @@
 at_risk(t, W, HR = NULL)
 }
 \arguments{
-\item{t}{Time at which the size of the risk set is to be calculated.}
+\item{t}{Value at which the size of the risk set is to be calculated.}
 
 \item{W}{Numeric vector of observed covariate values (including censored opens).}
 
