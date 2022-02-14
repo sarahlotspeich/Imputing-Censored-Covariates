@@ -1,8 +1,8 @@
-Package: imputeCensoRd
+Package: imputeCensRd
 Type: Package
-Title: Conditional mean imputation for censored covariates
+Title: Conditional mean imputation for censored predictors
 Version: 0.1.0
-Author: Sarah Lotspeich and Kyle Grosser
+Author: Sarah C. Lotspeich and Kyle F. Grosser
 Maintainer: Sarah Lotspeich <slotspeich@unc.edu>
 Description: More about what it does (maybe more than one line)
     Use four spaces when indenting paragraphs within the Description.
