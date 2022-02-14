@@ -9,7 +9,9 @@
 #' @param fit A \code{survreg} imputation model object modeling \code{W} on \code{Z}. If \code{fit = NULL} (default), the AFT model with only main effects for \code{Z} and assuming a Weibull distribution is fit internally and used.
 #' @param dist (Optional) Assumed distribution for \code{W} in the AFT model, passed to \code{survival::survreg()}. Default is \code{"weibull"}.
 #'
-#' @return A copy of \code{data} with added column \code{imp} containing the imputed values.
+#' @return 
+#' \item{imputed_data} A copy of \code{data} with added column \code{imp} containing the imputed values.
+#' \item{code} Indicator of algorithm status (\code{TRUE} or \code{FALSE}). 
 #'
 #' @export
 #' @importFrom survival survreg Surv
@@ -19,6 +21,11 @@ cmi_fp <- function(W, Delta, Z, data, fit = NULL, dist = "weibull") {
   if (is.null(fit)) {
     fit_formula <- as.formula(paste0("Surv(time = ", W, ", event = ", Delta, ") ~ ", paste0(Z, collapse = " + ")))
     fit <- survreg(formula = Surv(time = t, event = d) ~ z, data = data, dist = dist)
+  }
+  
+  # If the imputation model does not converge, we cannot impute 
+  if (any(is.na(fit$coefficients))) {
+    return(list(imputed_data = data, code = FALSE))
   }
   
   # Transform model coefficients 
@@ -48,5 +55,5 @@ cmi_fp <- function(W, Delta, Z, data, fit = NULL, dist = "weibull") {
   data$imp <- sapply(X = 1:nrow(data), FUN = function(i) integrate(f = weibull_surv, lower = data[i, W], upper = Inf, lambda = lambda[i], p = p)$value) / data[, "surv"] + data[, W]
   
   # Return input dataset with appended column imp containing imputed values 
-  return(data)
+  return(list(imputed_data = data, code = TRUE))
 }

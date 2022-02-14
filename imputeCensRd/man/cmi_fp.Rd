@@ -20,7 +20,8 @@ cmi_fp(W, Delta, Z, data, fit = NULL, dist = "weibull")
 \item{dist}{(Optional) Assumed distribution for \code{W} in the AFT model, passed to \code{survival::survreg()}. Default is \code{"weibull"}.}
 }
 \value{
-A copy of \code{data} with added column \code{imp} containing the imputed values.
+\item{imputed_data} A copy of \code{data} with added column \code{imp} containing the imputed values.
+\item{code} Indicator of algorithm status (\code{TRUE} or \code{FALSE}).
 }
 \description{
 Fully parametric conditional mean imputation (CMI) for a censored predictor using an accelerated failure-time (AFT) model to estimate conditional survival.
