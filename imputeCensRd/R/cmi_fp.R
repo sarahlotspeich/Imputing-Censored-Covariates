@@ -52,8 +52,16 @@ cmi_fp <- function(W, Delta, Z, data, fit = NULL, dist = "weibull") {
   uncens <- data[, Delta] == 1
   
   # Calculate E(X|X>C,Z) using integrate() 
-  data$imp <- sapply(X = 1:nrow(data), FUN = function(i) integrate(f = weibull_surv, lower = data[i, W], upper = Inf, lambda = lambda[i], p = p)$value) / data[, "surv"] + data[, W]
+  data$imp <- sapply(X = 1:nrow(data), 
+                     FUN = function(i) { 
+                       tryCatch(expr = integrate(f = weibull_surv, lower = data[i, W], upper = Inf, lambda = lambda[i], p = p)$value / data[i, "surv"] + data[i, W], 
+                                error = function(e) return(NA))
+                     })
   
   # Return input dataset with appended column imp containing imputed values 
-  return(list(imputed_data = data, code = TRUE))
+  if (any(is.na(data$imp))) {
+    return(list(imputed_data = data, code = FALSE))  
+  } else {
+    return(list(imputed_data = data, code = TRUE))
+  }
 }
