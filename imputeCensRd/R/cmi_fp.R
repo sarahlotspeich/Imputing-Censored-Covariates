@@ -10,8 +10,8 @@
 #' @param dist (Optional) Assumed distribution for \code{W} in the AFT model, passed to \code{survival::survreg()}. Default is \code{"weibull"}.
 #'
 #' @return 
-#' \item{imputed_data} A copy of \code{data} with added column \code{imp} containing the imputed values.
-#' \item{code} Indicator of algorithm status (\code{TRUE} or \code{FALSE}). 
+#' \item{imputed_data}{A copy of \code{data} with added column \code{imp} containing the imputed values.}
+#' \item{code}{Indicator of algorithm status (\code{TRUE} or \code{FALSE}).}
 #'
 #' @export
 #' @importFrom survival survreg Surv
