@@ -45,13 +45,18 @@ cmi_fp <- function(W, Delta, Z, data, fit = NULL, dist = "weibull") {
   # Create an indicator variable for being uncensored
   uncens <- data[, Delta] == 1
   
-  # Calculate E(X|X>C,Z) using integrate() 
+  # Calculate imputed values 
   data$imp <- data[, W]
-  data$imp[which(!uncens)] <- sapply(X = which(!uncens), 
-                               FUN = function(i) { 
-                                 tryCatch(expr = integrate(f = function(t) 1 - psurvreg(q = t, mean = lp[i], scale = fit$scale, distribution = dist), lower = data[i, W], upper = Inf)$value,
-                                          error = function(e) return(NA))
-                               })
+  ## Use integrate() to approximate integral from W to \infty of S(t|Z)
+  int_surv <- sapply(
+    X = which(!uncens), 
+    FUN = function(i) { 
+      tryCatch(expr = integrate(f = function(t) 1 - psurvreg(q = t, mean = lp[i], scale = fit$scale, distribution = dist), lower = data[i, W], upper = Inf)$value,
+               error = function(e) return(NA))
+    }
+  )
+  ## Calculate E(X|X>W,Z) = int_surv / surv(W|Z) + W
+  data$imp[which(!uncens)] <- data[which(!uncens), W] + int_surv / data[which(!uncens), "surv"]
   
   # Return input dataset with appended column imp containing imputed values 
   if (any(is.na(data$imp))) {
