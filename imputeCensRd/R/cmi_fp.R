@@ -20,7 +20,7 @@ cmi_fp <- function(W, Delta, Z, data, fit = NULL, dist = "weibull") {
   # If no imputation model was supplied, fit an AFT model using main effects
   if (is.null(fit)) {
     fit_formula <- as.formula(paste0("Surv(time = ", W, ", event = ", Delta, ") ~ ", paste0(Z, collapse = " + ")))
-    fit <- survreg(formula = Surv(time = t, event = d) ~ z, data = data, dist = dist)
+    fit <- survreg(formula = fit_formula, data = data, dist = dist)
   }
   
   # If the imputation model does not converge, we cannot impute 
