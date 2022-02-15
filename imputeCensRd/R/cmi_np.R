@@ -6,12 +6,13 @@
 #' @param Delta Column name of censoring indicators. Note that \code{Delta = 0} is interpreted as a censored observation. 
 #' @param Z Column name of additional fully observed covariates.
 #' @param data Dataframe or named matrix containing columns \code{W}, \code{Delta}, and \code{Z}.
+#' @param approx_beyond Choice of approximation used to extrapolate the survival function beyond the last observed covariate value. Default is \code{"expo"} for the exponential approximation. Other choices include \code{"zero"} or \code{"carryforward"}.
 #'
 #' @return A copy of \code{data} with added column \code{imp} containing the imputed values.
 #'
 #' @export
 
-cmi_np <- function(W, Delta, Z, data) {
+cmi_np <- function(W, Delta, Z, data, approx_beyond = "expo") {
   # Estimate survival from kernel-smoothed Nelson-Aalen estimator (STRIDE)
   ## Create artificial subgroup/categorical covariates 
   data$subgroup <- data$cat <- 1
