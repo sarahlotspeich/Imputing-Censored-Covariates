@@ -14,7 +14,7 @@
 #' \item{code}{Indicator of algorithm status (\code{TRUE} or \code{FALSE}).}
 #'
 #' @export
-#' @importFrom survival survreg Surv
+#' @importFrom survival survreg Surv psurvreg
 
 cmi_fp <- function(W, Delta, Z, data, fit = NULL, dist = "weibull") {
   # If no imputation model was supplied, fit an AFT model using main effects
@@ -28,18 +28,12 @@ cmi_fp <- function(W, Delta, Z, data, fit = NULL, dist = "weibull") {
     return(list(imputed_data = data, code = FALSE))
   }
   
-  # Transform model coefficients 
-  if (fit$dist %in% c("exponential", "weibull")) {
-    # Calculate linear predictor \lambda %*% Z for Cox model
-    lp <- fit$coefficients[1] + 
-      data.matrix(data[, Z]) %*% matrix(data = fit$coefficients[-1], ncol = 1)
-    p <- 1 / fit$scale
-    lambda <- exp(lp) ^ (- p)
-  }
-  
-  # Calculate survival with transformed model coefficients
-  surv_df <- data.frame(t = data[, W], 
-                        surv = sapply(X = 1:nrow(data), FUN = function(i) weibull_surv (x = data[i, W], lambda = lambda[i], p = p)))
+  # Calculate linear predictor \lambda %*% Z for AFT model
+  lp <- fit$coefficients[1] + 
+    data.matrix(data[, Z]) %*% matrix(data = fit$coefficients[-1], ncol = 1)
+ 
+  # Calculate survival with original model coefficients using built-in function
+  surv_df <- 1 - psurvreg(q = data[, W], mean = lp, scale = fit$scale, distribution = dist)
   colnames(surv_df)[1] <- W
   
   # Merge survival estimates into data
@@ -52,11 +46,12 @@ cmi_fp <- function(W, Delta, Z, data, fit = NULL, dist = "weibull") {
   uncens <- data[, Delta] == 1
   
   # Calculate E(X|X>C,Z) using integrate() 
-  data$imp <- sapply(X = 1:nrow(data), 
-                     FUN = function(i) { 
-                       tryCatch(expr = integrate(f = weibull_surv, lower = data[i, W], upper = Inf, lambda = lambda[i], p = p)$value / data[i, "surv"] + data[i, W], 
-                                error = function(e) return(NA))
-                     })
+  data$imp <- data[, W]
+  data$imp[which(!uncens)] <- sapply(X = which(!uncens), 
+                               FUN = function(i) { 
+                                 tryCatch(expr = integrate(f = function(t) 1 - psurvreg(q = t, mean = lp[i], scale = fit$scale, distribution = dist), lower = data[i, W], upper = Inf)$value,
+                                          error = function(e) return(NA))
+                               })
   
   # Return input dataset with appended column imp containing imputed values 
   if (any(is.na(data$imp))) {
