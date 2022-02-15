@@ -56,17 +56,8 @@ cmi_sp <- function(W, Delta, Z, data, fit = NULL) {
     cens_after <- which(data[, W] > max(data[uncens, W]))
     t_cens_after <- data[cens_after, W]
     last_event_surv <- data[max(which(uncens)), "surv"]
-    # Efron (1967) immediately goes to zero
-    if (approx_beyond == "zero") { data[cens_after, "surv"] <- 0 }
     # Gill (1980) carry forward survival at last event
-    if (approx_beyond == "carryforward") { data[cens_after, "surv"] <- last_event_surv }
-    # Brown, Hollander, and Kowar (1974) exponential approx
-    if (approx_beyond == "expo") {
-      max_event <- max(which(data[, event] == 1))
-      t_max_event <- data[max_event, W]
-      surv_max_event <- data[max_event, "surv"]
-      data[cens_after, "surv"] <- exp(t_cens_after * log(surv_max_event) / t_max_event)
-    }
+    data[cens_after, "surv"] <- last_event_surv
   }
   
   # Distinct rows (in case of non-unique obs values)
