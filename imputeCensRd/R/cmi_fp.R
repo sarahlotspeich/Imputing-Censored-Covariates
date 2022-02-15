@@ -33,7 +33,7 @@ cmi_fp <- function(W, Delta, Z, data, fit = NULL, dist = "weibull") {
     data.matrix(data[, Z]) %*% matrix(data = fit$coefficients[-1], ncol = 1)
  
   # Calculate survival with original model coefficients using built-in function
-  surv_df <- 1 - psurvreg(q = data[, W], mean = lp, scale = fit$scale, distribution = dist)
+  surv_df <- data.frame(t = data[, W], surv = 1 - psurvreg(q = data[, W], mean = lp, scale = fit$scale, distribution = dist))
   colnames(surv_df)[1] <- W
   
   # Merge survival estimates into data
