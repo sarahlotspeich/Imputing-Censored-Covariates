@@ -4,12 +4,16 @@
 \alias{generate_data}
 \title{Generate data with a censored predictor}
 \usage{
-generate_data(sample_size, setting)
+generate_data(sample_size, setting, cens_type = "right", cens_lod = NULL)
 }
 \arguments{
 \item{sample_size}{Number of independent observations to generate.}
 
-\item{setting}{Choose from four simulation settings in the manuscript: \code{"PH_Light"}, \code{"PH_Heavy"}, \code{"NPH_Light"}, or \code{"NPH_Heavy"}.}
+\item{setting}{Choose from six simulation settings in the manuscript: \code{"PH_Light"}, \code{"PH_Heavy"}, \code{"NPH_Light"}, \code{"NPH_Heavy"}, \code{"Light"}, or \code{"Heavy"}.}
+
+\item{cens_type}{Type of censoring (\code{"right"} or \code{"left"}). Default is \code{"right"}.}
+
+\item{cens_lod}{(Optional) Limit of detection. Default is \code{cens_lod = NULL}, which corresponds to random censoring.}
 }
 \value{
 A dataframe with \code{sample_size} rows, each containing one simulated observation comprised of the following columns:
