@@ -4,18 +4,20 @@
 \alias{cmi_sp}
 \title{Semiparametric conditional mean imputation (CMI) for a censored predictor}
 \usage{
-cmi_sp(W, Delta, Z, data, fit = NULL)
+cmi_sp(W, Delta, Z, data, fit = NULL, extrapolate = "none")
 }
 \arguments{
 \item{W}{Column name of observed predictor values (including censored opens).}
 
-\item{Delta}{Column name of censoring indicators. Note that \code{Delta = 0} is interpreted as a censored observation.}
+\item{Delta}{Column name of censoring indicators. Note that \code{data[, Delta] = 0} is interpreted as a censored observation.}
 
 \item{Z}{Column name of additional fully observed covariates.}
 
 \item{data}{Dataframe or named matrix containing columns \code{W}, \code{Delta}, and \code{Z}.}
 
 \item{fit}{A \code{coxph} imputation model object modeling \code{W} on \code{Z}. If \code{fit = NULL} (default), the Cox model with only main effects for \code{Z} is fit internally and used.}
+
+\item{extrapolate}{A string for the method to be used to extrpolate the survival curve beyond the last observed event. Options include \code{"none"} (default), \code{"efron"}, or \code{"brown-hollander-kowar"}.}
 }
 \value{
 A copy of \code{data} with added column \code{imp} containing the imputed values.
