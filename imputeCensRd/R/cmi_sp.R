@@ -86,42 +86,29 @@ cmi_sp <- function(W, Delta, Z, data, fit = NULL, extrapolate = "none") {
     }
   } else if (extrapolate == "efron") {
     # Extend survival curve using Efron's extrapolation 
-    extrap_surv <- function(t) {
-      sapply(X = t, FUN = function(x) {
+    extrap_surv <- function(t, hr) {
+      sapply(X = t, FUN = function(x, hr) {
         if (x < min(surv_df[, W])) {
           1
         } else if (x > max(surv_df[, W])) {
           0
         } else {
           t_before <- which(surv_df[, W] <= x)
-          surv_df[max(t_before), "surv"]
+          surv_df[max(t_before), "surv"] ^ hr
         }
-      })
+      }, hr = hr)
     }
+    
     ## Use integrate() to approximate integral from W to \infty of S(t|Z)
     int_surv <- sapply(
       X = which(!uncens), 
       FUN = function(i) { 
-        tryCatch(expr = integrate(f = extrap_surv, lower = data[i, W], upper = Inf, subdivisions = 2000)$value,
+        tryCatch(expr = integrate(f = extrap_surv, lower = data[i, W], upper = Inf, subdivisions = 2000, hr = data[i, "HR"])$value,
                  error = function(e) return(NA))
       }
     )
-  } else if (extrapolate == "gill") {
-    # Extend survival curve using Gill's extrapolation 
-    extrap_surv <- function(t) {
-      sapply(X = t, FUN = function(x) {
-        if (x < min(surv_df[, W])) {
-          1
-        } else if (x > max(surv_df[, W])) {
-          surv_df[nrow(surv_df), "surv"]
-        } else {
-          t_before <- which(surv_df[, W] <= x)
-          surv_df[max(t_before), "surv"]
-        }
-      })
-    }
   } else if (extrapolate == "brown-hollander-kowar") {
-    # Extend survival curve using Gill's extrapolation 
+    # Extend survival curve using Brown, Hollander and Kowar's extrapolation 
     extrap_surv <- function(t, hr) {
       sapply(X = t, FUN = function(x, hr) {
         if (x < min(surv_df[, W])) {
@@ -145,6 +132,13 @@ cmi_sp <- function(W, Delta, Z, data, fit = NULL, extrapolate = "none") {
   }
   
   if (extrapolate %in% c("efron", "gill", "brown-hollander-kowar")) {
+    data[which(!uncens), "surv"] <- sapply(
+      X = which(!uncens), 
+      FUN = function(i) {
+        extrap_surv(t = data[i, W], hr = data[i, "HR"])
+      }
+    )
+      
     ## Calculate E(X|X>W,Z) = int_surv / surv(W|Z) + W
     data$imp[which(!uncens)] <- data[which(!uncens), W] + int_surv / data[which(!uncens), "surv"]
   }
