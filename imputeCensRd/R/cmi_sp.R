@@ -12,7 +12,7 @@
 #' @return A copy of \code{data} with added column \code{imp} containing the imputed values.
 #'
 #' @export
-#' @importFrom survival coxph Surv
+#' @importFrom survival coxph Surv survreg psurvreg
 
 cmi_sp <- function(W, Delta, Z, data, fit = NULL, extrapolate = "none") {
   # If no imputation model was supplied, fit a Cox PH using main effects
@@ -27,11 +27,14 @@ cmi_sp <- function(W, Delta, Z, data, fit = NULL, extrapolate = "none") {
   
   # Estimate baseline survival from Cox model fit using Breslow estimator
   be <- breslow_estimator(x = NULL, time = W, event = Delta, hr = "HR", data = data)
-  surv_df <- with(be, data.frame(t = times, surv = basesurv))
+  surv_df <- with(be, data.frame(t = times, surv0 = basesurv))
   colnames(surv_df)[1] <- W
   
-  # Merge survival estimates into data
+  # Merge baseline survival estimates into data
   data <- merge(x = data, y = surv_df, all.x = TRUE, sort = FALSE)
+  
+  # Calculate conditional survival
+  data$surv <- with(data, surv0 ^ HR)
   
   # Order data by W
   data <- data[order(data[, W]), ]
@@ -94,7 +97,7 @@ cmi_sp <- function(W, Delta, Z, data, fit = NULL, extrapolate = "none") {
           0
         } else {
           t_before <- which(surv_df[, W] <= x)
-          surv_df[max(t_before), "surv"] ^ hr
+          surv_df[max(t_before), "surv0"] ^ hr
         }
       }, hr = hr)
     }
@@ -114,10 +117,10 @@ cmi_sp <- function(W, Delta, Z, data, fit = NULL, extrapolate = "none") {
         if (x < min(surv_df[, W])) {
           1
         } else if (x > max(surv_df[, W])) {
-          exp(x * log(surv_df[nrow(surv_df), "surv"] ^ hr) / surv_df[nrow(surv_df), W])
+          exp(x * log(surv_df[nrow(surv_df), "surv0"] ^ hr) / surv_df[nrow(surv_df), W])
         } else {
           t_before <- which(surv_df[, W] <= x)
-          surv_df[max(t_before), "surv"] ^ hr
+          surv_df[max(t_before), "surv0"] ^ hr
         }
       }, hr = hr)
     }
@@ -132,6 +135,7 @@ cmi_sp <- function(W, Delta, Z, data, fit = NULL, extrapolate = "none") {
   }
   
   if (extrapolate %in% c("efron", "gill", "brown-hollander-kowar")) {
+    # Extrapolate S(W) for censored W
     data[which(!uncens), "surv"] <- sapply(
       X = which(!uncens), 
       FUN = function(i) {
