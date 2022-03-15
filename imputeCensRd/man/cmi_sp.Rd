@@ -11,6 +11,7 @@ cmi_sp(
   data,
   fit = NULL,
   extrapolate = "none",
+  interpolate_between = "carry-forward",
   forceLastEvent = FALSE
 )
 }

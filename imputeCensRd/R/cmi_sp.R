@@ -14,7 +14,7 @@
 #' @export
 #' @importFrom survival coxph Surv survreg psurvreg
 
-cmi_sp <- function(W, Delta, Z, data, fit = NULL, extrapolate = "none", forceLastEvent = FALSE) {
+cmi_sp <- function(W, Delta, Z, data, fit = NULL, extrapolate = "none", interpolate_between = "carry-forward", forceLastEvent = FALSE) {
   # Assume last observed value is an event regardless
   if (forceLastEvent) {
     data[which.max(data[, W]), Delta] <- 1
@@ -137,8 +137,42 @@ cmi_sp <- function(W, Delta, Z, data, fit = NULL, extrapolate = "none", forceLas
             } else if (x > max(surv_df[, W])) {
               calc_weibull_surv_k(t = x, k = k, Xmax = Xmax, SURVmax = SURVmax)
             } else {
-              t_before <- which(surv_df[, W] <= x)
-              surv_df[max(t_before), "surv0"]
+              if (interpolate_between == "carry-forward") {
+                # Indices of event times before x
+                before <- which(surv_df[, W] < x)
+                ## corresponding survival estimate
+                surv_df[max(before), "surv0"]
+              } else if ("linear") {
+                # Indices of event times before x
+                before <- which(surv_df[, W] < x)
+                ## Greatest event time before x
+                t_before <- surv_df[max(before), W]
+                ## corresponding survival estimate
+                surv_before <- surv_df[max(before), "surv0"]
+                
+                # Indices of event times after x
+                after <- which(surv_df[, W] > x)
+                # Smallest event time after x
+                t_after <- surv_df[min(after), W]
+                ## corresponding survival estimate
+                surv_after <- surv_df[min(after), "surv0"]
+
+                # Linear interpolation of survival estimates before and after
+                surv_before + (surv_after - surv_before) / (t_after - t_before) * (x - t_before)
+              } else if ("mean") {
+                # Indices of event times before x
+                before <- which(surv_df[, W] < x)
+                ## corresponding survival estimate
+                surv_before <- surv_df[max(before), "surv0"]
+                
+                # Indices of event times after x
+                after <- which(surv_df[, W] > x)
+                ## corresponding survival estimate
+                surv_after <- surv_df[min(after), "surv0"]
+                
+                # Mean of survival estimates before and after
+                (surv_after + surv_before) / 2
+              }
             }
           })
         }
