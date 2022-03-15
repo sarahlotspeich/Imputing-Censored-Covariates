@@ -87,19 +87,61 @@ cmi_sp <- function(W, Delta, Z, data, fit = NULL, extrapolate = "none") {
       denom <- data[x, "surv"] ^ (exp(lp))
       data$imp[x] <- (1 / 2) * (num / denom) + Cj
     }
-  } else if (extrapolate == "efron") {
-    # Extend survival curve using Efron's extrapolation 
-    extrap_surv <- function(t, hr) {
-      sapply(X = t, FUN = function(x, hr) {
-        if (x < min(surv_df[, W])) {
-          1
-        } else if (x > max(surv_df[, W])) {
-          0
-        } else {
-          t_before <- which(surv_df[, W] <= x)
-          surv_df[max(t_before), "surv0"] ^ hr
+  } else {
+    if (extrapolate == "efron") {
+      # Extend baseline survival curve using Efron's extrapolation 
+      extrap_surv0 <- function(t) {
+        sapply(X = t, FUN = function(x) {
+          if (x < min(surv_df[, W])) {
+            1
+          } else if (x > max(surv_df[, W])) {
+            0
+          } else {
+            t_before <- which(surv_df[, W] <= x)
+            surv_df[max(t_before), "surv0"]
+          }
+        })
+      }
+    } else if (extrapolate == "exponential") {
+      # Extend baseline survival curve using Brown, Hollander and Kowar's exponential extrapolation 
+      extrap_surv0 <- function(t) {
+        sapply(X = t, FUN = function(x) {
+          if (x < min(surv_df[, W])) {
+            1
+          } else if (x > max(surv_df[, W])) {
+            exp(x * log(surv_df[nrow(surv_df), "surv0"]) / surv_df[nrow(surv_df), W])
+          } else {
+            t_before <- which(surv_df[, W] <= x)
+            surv_df[max(t_before), "surv0"]
+          }
+        })
+      }
+    } else if (extrapolate == "weibull") {
+      # Estimate Weibull parameters using MLE
+      scale_shape <- get_weib_params(W = W, Delta = Delta, data = data)
+      
+      if (!any(is.na(scale_shape))) {
+        # Extend baseline survival curve using Moeschberger & Klein's Weibull extrapolation 
+        extrap_surv0 <- function(t) {
+          sapply(X = t, FUN = function(x) {
+            if (x < min(surv_df[, W])) {
+              1
+            } else if (x > max(surv_df[, W])) {
+              calc_weibull_surv(t = x, scale = scale_shape[1], shape = scale_shape[2])
+            } else {
+              t_before <- which(surv_df[, W] <= x)
+              surv_df[max(t_before), "surv0"]
+            }
+          })
         }
-      }, hr = hr)
+      } else {
+        return(list(imputed_data = data, code = FALSE))   
+      }
+    }  
+    
+    # Builds on the extrap_surv0 function above by raising S_0(t) ^ HR = S(t|Z)
+    extrap_surv <- function(t, hr) {
+      sapply(X = t, FUN = extrap_surv0) ^ as.numeric(hr)
     }
     
     ## Use integrate() to approximate integral from W to \infty of S(t|Z)
@@ -110,43 +152,28 @@ cmi_sp <- function(W, Delta, Z, data, fit = NULL, extrapolate = "none") {
                  error = function(e) return(NA))
       }
     )
-  } else if (extrapolate == "brown-hollander-kowar") {
-    # Extend survival curve using Brown, Hollander and Kowar's extrapolation 
-    extrap_surv <- function(t, hr) {
-      sapply(X = t, FUN = function(x, hr) {
-        if (x < min(surv_df[, W])) {
-          1
-        } else if (x > max(surv_df[, W])) {
-          exp(x * log(surv_df[nrow(surv_df), "surv0"] ^ hr) / surv_df[nrow(surv_df), W])
-        } else {
-          t_before <- which(surv_df[, W] <= x)
-          surv_df[max(t_before), "surv0"] ^ hr
-        }
-      }, hr = hr)
-    }
-    ## Use integrate() to approximate integral from W to \infty of S(t|Z)
-    int_surv <- sapply(
-      X = which(!uncens), 
-      FUN = function(i) { 
-        tryCatch(expr = integrate(f = extrap_surv, lower = data[i, W], upper = Inf, subdivisions = 2000, hr = data[i, "HR"])$value,
-                 error = function(e) return(NA))
-      }
-    )
-  }
-  
-  if (extrapolate %in% c("efron", "gill", "brown-hollander-kowar")) {
-    # Extrapolate S(W) for censored W
-    data[which(!uncens), "surv"] <- sapply(
+    
+    # Extrapolate baseline survival S_0(W) for censored W
+    ## For \min(X) < W < \max(X), S_0(W) is carried forward from last event 
+    ## For W > \max(X), it's extrapolated based on the parameter inputs
+    data[which(!uncens), "surv0"] <- sapply(
       X = which(!uncens), 
       FUN = function(i) {
-        extrap_surv(t = data[i, W], hr = data[i, "HR"])
+        extrap_surv0(t = data[i, W])
       }
     )
-      
-    ## Calculate E(X|X>W,Z) = int_surv / surv(W|Z) + W
+    
+    ## And calculate S(t|Z) for censored W 
+    data[which(!uncens), "surv"] <- data[which(!uncens), "surv0"] ^ data[which(!uncens), "HR"]
+    
+    ## Calculate E(X|X>W,Z) = W + int_surv / surv(W|Z)
     data$imp[which(!uncens)] <- data[which(!uncens), W] + int_surv / data[which(!uncens), "surv"]
   }
   
   # Return input dataset with appended column imp containing imputed values 
-  return(data)
+  if (any(is.na(data$imp))) {
+    return(list(imputed_data = data, code = FALSE))  
+  } else {
+    return(list(imputed_data = data, code = TRUE))
+  }
 }
