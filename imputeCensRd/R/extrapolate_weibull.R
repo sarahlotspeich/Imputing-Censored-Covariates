@@ -75,11 +75,6 @@ get_weib_params <- function(W, Delta, data) {
   )
   
   if (fit$code <= 2) {
-    fit_shape <- fit$estimate
-    n1 <- sum(data[, Delta])
-    fit_scale <- solve_for_scale(shape = fit_shape,
-                                 Xmax = uncens_data[nrow(uncens_data), W], 
-                                 SURVmax = uncens_data[nrow(uncens_data), "surv0"])
-    return(c(fit_scale, fit_shape))  
-  }
+    return(fit$estimate)  
+  }  
 }
