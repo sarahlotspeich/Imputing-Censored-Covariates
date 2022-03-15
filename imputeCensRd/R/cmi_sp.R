@@ -7,7 +7,9 @@
 #' @param Z Column name of additional fully observed covariates.
 #' @param data Dataframe or named matrix containing columns \code{W}, \code{Delta}, and \code{Z}.
 #' @param fit A \code{coxph} imputation model object modeling \code{W} on \code{Z}. If \code{fit = NULL} (default), the Cox model with only main effects for \code{Z} is fit internally and used.
-#' @param extrapolate A string for the method to be used to extrpolate the survival curve beyond the last observed event. Options include \code{"none"} (default), \code{"efron"}, or \code{"brown-hollander-kowar"}.
+#' @param extrapolate A string for the method to be used to extrpolate the survival curve beyond the last observed event. Options include \code{"none"} (default), \code{"exponential"}, or \code{"weibull"}.
+#' @param interpolate_between A string for the method to be used to interpolate for censored values between events. Options include \code{"carry-forward"} (default), \code{"linear"}, or \code{"mean"}.
+#' @param forceLastEvent A logical input to force the last observed value for \code{W} to be treated as an event. Default is \code{FALSE}.
 #'
 #' @return A copy of \code{data} with added column \code{imp} containing the imputed values.
 #'

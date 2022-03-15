@@ -26,7 +26,11 @@ cmi_sp(
 
 \item{fit}{A \code{coxph} imputation model object modeling \code{W} on \code{Z}. If \code{fit = NULL} (default), the Cox model with only main effects for \code{Z} is fit internally and used.}
 
-\item{extrapolate}{A string for the method to be used to extrpolate the survival curve beyond the last observed event. Options include \code{"none"} (default), \code{"efron"}, or \code{"brown-hollander-kowar"}.}
+\item{extrapolate}{A string for the method to be used to extrpolate the survival curve beyond the last observed event. Options include \code{"none"} (default), \code{"exponential"}, or \code{"weibull"}.}
+
+\item{interpolate_between}{A string for the method to be used to interpolate for censored values between events. Options include \code{"carry-forward"} (default), \code{"linear"}, or \code{"mean"}.}
+
+\item{forceLastEvent}{A logical input to force the last observed value for \code{W} to be treated as an event. Default is \code{FALSE}.}
 }
 \value{
 A copy of \code{data} with added column \code{imp} containing the imputed values.
