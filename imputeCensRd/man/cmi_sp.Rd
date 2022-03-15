@@ -4,7 +4,15 @@
 \alias{cmi_sp}
 \title{Semiparametric conditional mean imputation (CMI) for a censored predictor}
 \usage{
-cmi_sp(W, Delta, Z, data, fit = NULL, extrapolate = "none")
+cmi_sp(
+  W,
+  Delta,
+  Z,
+  data,
+  fit = NULL,
+  extrapolate = "none",
+  forceLastEvent = FALSE
+)
 }
 \arguments{
 \item{W}{Column name of observed predictor values (including censored opens).}
