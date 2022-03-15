@@ -14,7 +14,12 @@
 #' @export
 #' @importFrom survival coxph Surv survreg psurvreg
 
-cmi_sp <- function(W, Delta, Z, data, fit = NULL, extrapolate = "none") {
+cmi_sp <- function(W, Delta, Z, data, fit = NULL, extrapolate = "none", forceLastEvent = FALSE) {
+  # Assume last observed value is an event regardless
+  if (forceLastEvent) {
+    data[which.max(data[, W]), Delta] <- 1
+  }
+  
   # If no imputation model was supplied, fit a Cox PH using main effects
   if (is.null(fit)) {
     fit_formula <- as.formula(paste0("Surv(time = ", W, ", event = ", Delta, ") ~ ", paste0(Z, collapse = " + ")))
