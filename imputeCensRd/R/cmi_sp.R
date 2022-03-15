@@ -123,16 +123,19 @@ cmi_sp <- function(W, Delta, Z, data, fit = NULL, extrapolate = "none", forceLas
       }
     } else if (extrapolate == "weibull") {
       # Estimate Weibull parameters using MLE
-      scale_shape <- get_weib_params(W = W, Delta = Delta, data = data)
+      k <- get_weib_params(W = W, Delta = Delta, data = data)
       
-      if (!any(is.na(scale_shape))) {
+      SURVmax <- data[max(which(uncens)), "surv0"]
+      Xmax <- data[max(which(uncens)), W] 
+      
+      if (!is.null(k)) {
         # Extend baseline survival curve using Moeschberger & Klein's Weibull extrapolation 
         extrap_surv0 <- function(t) {
           sapply(X = t, FUN = function(x) {
             if (x < min(surv_df[, W])) {
               1
             } else if (x > max(surv_df[, W])) {
-              calc_weibull_surv(t = x, scale = scale_shape[1], shape = scale_shape[2])
+              calc_weibull_surv_k(t = x, k = k, Xmax = Xmax, SURVmax = SURVmax)
             } else {
               t_before <- which(surv_df[, W] <= x)
               surv_df[max(t_before), "surv0"]
