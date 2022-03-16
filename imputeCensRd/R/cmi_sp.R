@@ -144,7 +144,7 @@ cmi_sp <- function(W, Delta, Z, data, fit = NULL, extrapolate = "none", interpol
                 before <- which(surv_df[, W] < x)
                 ## corresponding survival estimate
                 surv_df[max(before), "surv0"]
-              } else if ("linear") {
+              } else if (interpolate_between == "linear") {
                 # Indices of event times before x
                 before <- which(surv_df[, W] < x)
                 ## Greatest event time before x
@@ -161,7 +161,7 @@ cmi_sp <- function(W, Delta, Z, data, fit = NULL, extrapolate = "none", interpol
 
                 # Linear interpolation of survival estimates before and after
                 surv_before + (surv_after - surv_before) / (t_after - t_before) * (x - t_before)
-              } else if ("mean") {
+              } else if (interpolate_between == "mean") {
                 # Indices of event times before x
                 before <- which(surv_df[, W] < x)
                 ## corresponding survival estimate
