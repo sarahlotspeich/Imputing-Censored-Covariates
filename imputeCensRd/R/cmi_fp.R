@@ -34,11 +34,12 @@ cmi_fp <- function(W, Delta, Z, data, fit = NULL, dist = "weibull", trapezoidal_
     data.matrix(data[, Z]) %*% matrix(data = fit$coefficients[- 1], ncol = 1)
  
   # Calculate survival with original model coefficients using built-in function
-  surv_df <- data.frame(t = data[, W], z = data[, Z], surv = 1 - psurvreg(q = data[, W], mean = lp, scale = fit$scale, distribution = dist))
-  colnames(surv_df)[1:2] <- c(W, Z)
+  data <- data.frame(data, surv = 1 - psurvreg(q = data[, W], mean = lp, scale = fit$scale, distribution = dist))
+  #surv_df <- data.frame(t = data[, W], z = data[, Z], surv = 1 - psurvreg(q = data[, W], mean = lp, scale = fit$scale, distribution = dist))
+  #colnames(surv_df)[1:2] <- c(W, Z)
   
   # Merge survival estimates into data
-  data <- merge(x = data, y = surv_df, all.x = TRUE, sort = FALSE)
+  # data <- merge(x = data, y = surv_df, all.x = TRUE, sort = FALSE)
   
   # Order data by W
   data <- data[order(data[, W]), ]
