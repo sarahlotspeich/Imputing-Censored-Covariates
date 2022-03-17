@@ -22,6 +22,9 @@ bootstrap_cmi_fp <- function(analysis_model, W, Delta, Z, data, fit = NULL, dist
   # Create matrix to hold results from boostrap replicates 
   re_res <- matrix(data = NA, nrow = B, ncol = (length(Z) + 2))
   
+  # Size of resample
+  n <- nrow(data)
+  
   # Loop through replicates 
   for (b in 1:B) {
     # Sample with replacement from the original data ------------------
