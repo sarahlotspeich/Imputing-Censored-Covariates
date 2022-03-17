@@ -4,7 +4,15 @@
 \alias{cmi_fp}
 \title{Fully parametric conditional mean imputation (CMI) for a censored predictor}
 \usage{
-cmi_fp(W, Delta, Z, data, fit = NULL, dist = "weibull")
+cmi_fp(
+  W,
+  Delta,
+  Z,
+  data,
+  fit = NULL,
+  dist = "weibull",
+  trapezoidal_rule = FALSE
+)
 }
 \arguments{
 \item{W}{Column name of observed predictor values (including censored opens).}
@@ -18,6 +26,8 @@ cmi_fp(W, Delta, Z, data, fit = NULL, dist = "weibull")
 \item{fit}{A \code{survreg} imputation model object modeling \code{W} on \code{Z}. If \code{fit = NULL} (default), the AFT model with only main effects for \code{Z} and assuming a Weibull distribution is fit internally and used.}
 
 \item{dist}{(Optional) Assumed distribution for \code{W} in the AFT model, passed to \code{survival::survreg()}. Default is \code{"weibull"}.}
+
+\item{trapezoidal_rule}{A logical input for whether the trapezoidal rule should be used to approximate the integral in the imputed values. Default is \code{FALSE}.}
 }
 \value{
 \item{imputed_data}{A copy of \code{data} with added column \code{imp} containing the imputed values.}

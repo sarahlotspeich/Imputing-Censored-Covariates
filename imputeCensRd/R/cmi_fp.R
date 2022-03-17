@@ -8,6 +8,7 @@
 #' @param data Dataframe or named matrix containing columns \code{W}, \code{Delta}, and \code{Z}.
 #' @param fit A \code{survreg} imputation model object modeling \code{W} on \code{Z}. If \code{fit = NULL} (default), the AFT model with only main effects for \code{Z} and assuming a Weibull distribution is fit internally and used.
 #' @param dist (Optional) Assumed distribution for \code{W} in the AFT model, passed to \code{survival::survreg()}. Default is \code{"weibull"}.
+#' @param trapezoidal_rule A logical input for whether the trapezoidal rule should be used to approximate the integral in the imputed values. Default is \code{FALSE}.
 #'
 #' @return 
 #' \item{imputed_data}{A copy of \code{data} with added column \code{imp} containing the imputed values.}
@@ -16,7 +17,7 @@
 #' @export
 #' @importFrom survival survreg Surv psurvreg
 
-cmi_fp <- function(W, Delta, Z, data, fit = NULL, dist = "weibull") {
+cmi_fp <- function(W, Delta, Z, data, fit = NULL, dist = "weibull", trapezoidal_rule = FALSE) {
   # If no imputation model was supplied, fit an AFT model using main effects
   if (is.null(fit)) {
     fit_formula <- as.formula(paste0("Surv(time = ", W, ", event = ", Delta, ") ~ ", paste0(Z, collapse = " + ")))
@@ -47,16 +48,36 @@ cmi_fp <- function(W, Delta, Z, data, fit = NULL, dist = "weibull") {
   
   # Calculate imputed values 
   data$imp <- data[, W]
-  ## Use integrate() to approximate integral from W to \infty of S(t|Z)
-  int_surv <- sapply(
-    X = which(!uncens), 
-    FUN = function(i) { 
-      tryCatch(expr = integrate(f = function(t) 1 - psurvreg(q = t, mean = lp[i], scale = fit$scale, distribution = dist), lower = data[i, W], upper = Inf)$value,
-               error = function(e) return(NA))
+  if (trapezoidal_rule) {
+    # Distinct rows (in case of non-unique obs values)
+    data_dist <- unique(data[, c(W, Delta, Z, "surv")])
+    
+    # [T_{(i+1)} - T_{(i)}]
+    t_diff <- data_dist[- 1, W] - data_dist[- nrow(data_dist), W]
+    
+    # Censored subject values (to impute)
+    t_cens <- data[data[, Delta] == 0, W]
+    
+    # Follow formula assuming AFT model for S(X|Z)
+    for (x in which(!uncens)) {
+      Cj <- data[x, W]
+      Sj <- data_dist[-1, "surv"] + data_dist[- nrow(data_dist), "surv"]
+      num <- sum((data_dist[-nrow(data_dist), W] >= Cj) * Sj * t_diff)
+      denom <- data[x, "surv"]
+      data$imp[x] <- (1 / 2) * (num / denom) + Cj
     }
-  )
-  ## Calculate E(X|X>W,Z) = int_surv / surv(W|Z) + W
-  data$imp[which(!uncens)] <- data[which(!uncens), W] + int_surv / data[which(!uncens), "surv"]
+  } else {
+    ## Use integrate() to approximate integral from W to \infty of S(t|Z)
+    int_surv <- sapply(
+      X = which(!uncens), 
+      FUN = function(i) { 
+        tryCatch(expr = integrate(f = function(t) 1 - psurvreg(q = t, mean = lp[i], scale = fit$scale, distribution = dist), lower = data[i, W], upper = Inf)$value,
+                 error = function(e) return(NA))
+      }
+    )
+    ## Calculate E(X|X>W,Z) = int_surv / surv(W|Z) + W
+    data$imp[which(!uncens)] <- data[which(!uncens), W] + int_surv / data[which(!uncens), "surv"]
+  }
   
   # Return input dataset with appended column imp containing imputed values 
   if (any(is.na(data$imp))) {
