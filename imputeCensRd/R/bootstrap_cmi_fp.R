@@ -29,7 +29,8 @@ bootstrap_cmi_fp <- function(analysis_model, W, Delta, Z, data, fit = NULL, dist
     re_data <- data[re_rows, ]
     
     # Use imputeCensRd::cmi_fp() to impute censored x in re_data ------
-    re_data_imp <- cmi_fp(W = W, Delta = Delta, Z = Z, data = re_data, fit = fit, dist = dist, trapezoidal_rule = trapezoidal_rule)
+    re_data_imp <- cmi_fp(W = W, Delta = Delta, Z = Z, data = re_data, 
+                          fit = fit, dist = dist, trapezoidal_rule = trapezoidal_rule)
     
     # If imputation was successful, fit the analysis model ------------
     if (re_data_imp$code) {

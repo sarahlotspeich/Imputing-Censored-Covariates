@@ -31,7 +31,7 @@ cmi_fp <- function(W, Delta, Z, data, fit = NULL, dist = "weibull", trapezoidal_
   
   # Calculate linear predictor \lambda %*% Z for AFT model
   lp <- fit$coefficients[1] + 
-    data.matrix(data[, Z]) %*% matrix(data = fit$coefficients[-1], ncol = 1)
+    data.matrix(data[, Z]) %*% matrix(data = fit$coefficients[- 1], ncol = 1)
  
   # Calculate survival with original model coefficients using built-in function
   surv_df <- data.frame(t = data[, W], z = data[, Z], surv = 1 - psurvreg(q = data[, W], mean = lp, scale = fit$scale, distribution = dist))
