@@ -144,6 +144,12 @@ cmi_sp <- function(W, Delta, Z, data, fit = NULL, trapezoidal_rule = FALSE, surv
     
     ## Calculate E(X|X>W,Z) = W + int_surv / surv(W|Z)
     data$imp[which(!uncens)] <- data[which(!uncens), W] + int_surv / data[which(!uncens), "surv"]
+    
+    ## Check for divide by 0 error 
+    div0 <- which(!uncens & data[, "surv"] == 0)
+    if (length(div0)) {
+      data$imp[div0] <- data[div0, W] + int_surv  
+    }
   }
   
   # Return input dataset with appended column imp containing imputed values 
