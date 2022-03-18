@@ -31,13 +31,21 @@ bootstrap_cmi_fp <- function(analysis_model, W, Delta, Z, data, fit = NULL, dist
     re_rows <- ceiling(runif(n = n, min = 0, max = 1) * nrow(data))
     re_data <- data[re_rows, ]
     
-    # Use imputeCensRd::cmi_fp() to impute censored x in re_data ------
-    re_data_imp <- cmi_fp(W = W, Delta = Delta, Z = Z, data = re_data, 
-                          fit = fit, dist = dist, trapezoidal_rule = trapezoidal_rule)
-    
-    # If imputation was successful, fit the analysis model ------------
-    if (re_data_imp$code) {
-      re_fit <- lm(formula = analysis_model, data = re_data_imp$imputed_data) 
+    if (sum(re_data[, Delta]) < n) {
+      # Use imputeCensRd::cmi_fp() to impute censored x in re_data ------
+      re_data_imp <- cmi_fp(W = W, Delta = Delta, Z = Z, data = re_data, 
+                            fit = fit, dist = dist, trapezoidal_rule = trapezoidal_rule)
+      
+      # If imputation was successful, fit the analysis model ------------
+      if (re_data_imp$code) {
+        re_fit <- lm(formula = analysis_model, data = re_data_imp$imputed_data) 
+        ## Save coefficients to results matrix
+        re_res[b, ] <- re_fit$coefficients
+      }
+    } else {
+      # If no censored, just fit the usual model
+      re_data$imp <- re_data[, W]
+      re_fit <- lm(formula = analysis_model, data = re_data) 
       ## Save coefficients to results matrix
       re_res[b, ] <- re_fit$coefficients
     }
