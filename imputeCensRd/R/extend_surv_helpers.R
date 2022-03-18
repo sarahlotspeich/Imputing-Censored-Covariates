@@ -96,11 +96,14 @@ extrap_surv_beyond <- function(x, t, surv, surv_beyond, weibull_params = NULL) {
 
 extend_surv <- function(x, t, surv, surv_between, surv_beyond, weibull_params = NULL) {
   Xtilde <- max(t)
-  # if x <= Xtilde, use interpolate functions
-  ## if x > Xtilde, use extrapolate functions
-  if (x <= Xtilde) {
+  if (x < min(t)) {
+    ## if x <= min(t), 100% survival
+    1
+  } else if (x <= Xtilde) {
+    ## if x <= Xtilde, use interpolate functions
     interp_surv_between(x = x, t = t, surv = surv, surv_between = surv_between)
   } else {
+    ## if x > Xtilde, use extrapolate functions
     extrap_surv_beyond(x = x, t = t, surv = surv, surv_beyond = beyond, weibull_params = weibull_params)
   }
 }
