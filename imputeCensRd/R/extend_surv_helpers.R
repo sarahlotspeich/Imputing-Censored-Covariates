@@ -93,3 +93,14 @@ extrap_surv_beyond <- function(x, t, surv, surv_beyond, weibull_params = NULL) {
     exp(- lambda_hat * x ^ alpha_hat)
   }
 }
+
+extend_surv <- function(x, t, surv, surv_between, surv_beyond, weibull_params = NULL) {
+  Xtilde <- max(t)
+  # if x <= Xtilde, use interpolate functions
+  ## if x > Xtilde, use extrapolate functions
+  if (x <= Xtilde) {
+    interp_surv_between(x = x, t = t, surv = surv, surv_between = surv_between)
+  } else {
+    extrap_surv_beyond(x = x, t = t, surv = surv, surv_beyond = beyond, weibull_params = weibull_params)
+  }
+}
