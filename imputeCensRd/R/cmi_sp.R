@@ -68,7 +68,7 @@ cmi_sp <- function(W, Delta, Z, data, fit = NULL, trapezoidal_rule = FALSE, surv
                                         surv_between = surv_between)
   
   # Extrapolate baseline survival at censored W > \widetilde{X}
-  if (extrap_beyond == "weibull") {
+  if (surv_beyond == "weibull") {
     # Estimate Weibull parameters using constrained MLE
     SURVmax <- data[max(which(uncens)), "surv0"]
     weibull_params <- constr_weibull_mle(t = data[, W], I_event = data[, Delta], Xtilde = Xtilde, rho = SURVmax, alpha0 = 0.1)
@@ -112,7 +112,7 @@ cmi_sp <- function(W, Delta, Z, data, fit = NULL, trapezoidal_rule = FALSE, surv
     
     # Use trapezoidal approximation for integral
     for (i in which(!uncens)) {
-      sum_surv_i <- sum((data_dist[-nrow(data_dist), W] >= data[i, "surv"]) * surv_sum * t_diff)
+      sum_surv_i <- sum((data_dist[-nrow(data_dist), W] >= as.numeric(data[i, "surv"])) * surv_sum * t_diff)
       data$imp[i] <- data$imp[i] + (1 / 2) * (sum_surv_i /  data[i, "surv"])
     }
   } else {
