@@ -127,7 +127,7 @@ cmi_sp <- function(W, Delta, Z, data, fit = NULL, extrapolate = "none", interpol
       # Estimate Weibull parameters using constrained MLE
       SURVmax <- data[max(which(uncens)), "surv0"]
       Xmax <- data[max(which(uncens)), W] 
-      weibull_params <- constr_weibull_mle(t = W, I_event = D, Xtilde = Xmax, rho = SURVmax, alpha0 = 0.1)
+      weibull_params <- constr_weibull_mle(t = data[, W], I_event = data[, Delta], Xtilde = Xmax, rho = SURVmax, alpha0 = 0.1)
       
       # Check that the parameters converged 
       if (!any(is.na(weibull_params))) {
