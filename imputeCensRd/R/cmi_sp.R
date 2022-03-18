@@ -14,7 +14,7 @@
 #' @return A copy of \code{data} with added column \code{imp} containing the imputed values.
 #'
 #' @export
-#' @importFrom survival coxph Surv survreg psurvreg
+#' @importFrom survival coxph Surv
 
 cmi_sp <- function(W, Delta, Z, data, fit = NULL, extrapolate = "none", interpolate_between = "carry-forward", forceLastEvent = FALSE) {
   # Assume last observed value is an event regardless
