@@ -124,20 +124,22 @@ cmi_sp <- function(W, Delta, Z, data, fit = NULL, extrapolate = "none", interpol
         })
       }
     } else if (extrapolate == "weibull") {
-      # Estimate Weibull parameters using MLE
-      k <- get_weib_params(W = W, Delta = Delta, data = data)
-      
+      # Estimate Weibull parameters using constrained MLE
       SURVmax <- data[max(which(uncens)), "surv0"]
       Xmax <- data[max(which(uncens)), W] 
+      weibull_params <- constr_weibull_mle(t = W, I_event = D, Xtilde = Xmax, rho = SURVmax, alpha0 = 0.1)
       
-      if (!is.null(k)) {
+      # Check that the parameters converged 
+      if (!any(is.na(weibull_params))) {
+        alpha_hat <- weibull_params[1]
+        lambda_hat <- weibull_params[2]
         # Extend baseline survival curve using Moeschberger & Klein's Weibull extrapolation 
         extrap_surv0 <- function(t) {
           sapply(X = t, FUN = function(x) {
             if (x < min(surv_df[, W])) {
               1
             } else if (x > max(surv_df[, W])) {
-              calc_weibull_surv_k(t = x, k = k, Xmax = Xmax, SURVmax = SURVmax)
+              exp(- lambda_hat * x ^ alpha_hat)
             } else {
               if (interpolate_between == "carry-forward") {
                 # Indices of event times before x
