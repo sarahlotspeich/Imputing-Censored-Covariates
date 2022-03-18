@@ -7,18 +7,21 @@
 #' @param Z Column name of additional fully observed covariates.
 #' @param data Dataframe or named matrix containing columns \code{W}, \code{Delta}, and \code{Z}.
 #' @param fit A \code{coxph} imputation model object modeling \code{W} on \code{Z}. If \code{fit = NULL} (default), the Cox model with only main effects for \code{Z} is fit internally and used.
-#' @param extrapolate A string for the method to be used to extrpolate the survival curve beyond the last observed event. Options include \code{"none"} (default), \code{"exponential"}, or \code{"weibull"}.
-#' @param interpolate_between A string for the method to be used to interpolate for censored values between events. Options include \code{"carry-forward"} (default), \code{"linear"}, or \code{"mean"}.
-#' @param forceLastEvent A logical input to force the last observed value for \code{W} to be treated as an event. Default is \code{FALSE}.
+#' @param trapezoidal_rule A logical input for whether the trapezoidal rule should be used to approximate the integral in the imputed values. Default is \code{FALSE}.
+#' @param surv_between A string for the method to be used to interpolate for censored values between events. Options include \code{"carry-forward"} (default), \code{"linear"}, or \code{"mean"}.
+#' @param surv_beyond A string for the method to be used to extrapolate the survival curve beyond the last observed event. Options include \code{"carry-forward"} (default), \code{"drop-off"}, \code{"exponential"}, or \code{"weibull"}.
+#' @param force_last_event A logical input to force the last observed value for \code{W} to be treated as an event. Default is \code{FALSE}.
 #'
-#' @return A copy of \code{data} with added column \code{imp} containing the imputed values.
+#' @return 
+#' \item{imputed_data}{A copy of \code{data} with added column \code{imp} containing the imputed values.}
+#' \item{code}{Indicator of algorithm status (\code{TRUE} or \code{FALSE}).}
 #'
 #' @export
 #' @importFrom survival coxph Surv
 
-cmi_sp <- function(W, Delta, Z, data, fit = NULL, extrapolate = "none", interpolate_between = "carry-forward", forceLastEvent = FALSE) {
+cmi_sp <- function(W, Delta, Z, data, fit = NULL, trapezoidal_rule = FALSE, surv_between = "carry-forward", surv_beyond = "carry-forward", force_last_event = FALSE) {
   # Assume last observed value is an event regardless
-  if (forceLastEvent) {
+  if (force_last_event) {
     data[which.max(data[, W]), Delta] <- 1
   }
   
@@ -30,18 +33,16 @@ cmi_sp <- function(W, Delta, Z, data, fit = NULL, extrapolate = "none", interpol
   
   # Calculate linear predictor \lambda %*% Z for Cox model
   lp <- data.matrix(data[, Z]) %*% matrix(data = fit$coefficients, ncol = 1)
+  
+  ## Calculate hazard ratio for Cox model
   data$HR <- exp(lp)
   
-  # Estimate baseline survival from Cox model fit using Breslow estimator
+  # Estimate baseline survival from Cox model fit using Breslow's estimator
   be <- breslow_estimator(x = NULL, time = W, event = Delta, hr = "HR", data = data)
   surv_df <- with(be, data.frame(t = times, surv0 = basesurv))
   colnames(surv_df)[1] <- W
-  
-  # Merge baseline survival estimates into data
+  ## Merge baseline survival estimates into data
   data <- merge(x = data, y = surv_df, all.x = TRUE, sort = FALSE)
-  
-  # Calculate conditional survival
-  data$surv <- with(data, surv0 ^ HR)
   
   # Order data by W
   data <- data[order(data[, W]), ]
@@ -52,50 +53,52 @@ cmi_sp <- function(W, Delta, Z, data, fit = NULL, extrapolate = "none", interpol
   # For people with events, obs = X
   data$imp <- data[, W]
   
-  if (extrapolate == "none") {
-    if (any(is.na(data[, "surv"]))) {
-      # For censored subjects, survival is average of times right before/after
-      suppressWarnings(
-        data[is.na(data[, "surv"]), "surv"] <- sapply(X = data[is.na(data[, "surv"]), W], FUN = impute_censored_surv, time = W, event = Delta, surv = "surv", data = data)
-      )
-    }
-    
-    # Assume survival = 1 before first observed covariate value
-    if (any(data[, W] < min(data[uncens, W]))) {
-      cens_before <- which(data[, W] < min(data[uncens, W]))
-      data[cens_before, "surv"] <- 1
-    }
-    
-    # Extrapolate survival beyond last observed covariate
-    if (any(data[, W] > max(data[uncens, W]))) {
-      cens_after <- which(data[, W] > max(data[uncens, W]))
-      t_cens_after <- data[cens_after, W]
-      last_event_surv <- data[max(which(uncens)), "surv"]
-      # Gill (1980) carry forward survival at last event
-      data[cens_after, "surv"] <- last_event_surv
-    }
-    
+  # Interpolate baseline survival at censored W < \widetilde{X}
+  Xtilde <- data[max(which(uncens)), W] 
+  needs_interp <- !uncens & data[, W] < Xtilde
+  data[needs_interp, "surv0"] <- sapply(X = data[needs_interp, W], FUN = interp_surv_between, 
+                                   t = surv_df[, W], surv = surv_df[, "surv0"], surv_between = surv_between)
+  
+  # Extrapolate baseline survival at censored W > \widetilde{X}
+  if (extrap_beyond == "weibull") {
+    # Estimate Weibull parameters using constrained MLE
+    SURVmax <- data[max(which(uncens)), "surv0"]
+    weibull_params <- constr_weibull_mle(t = data[, W], I_event = data[, Delta], Xtilde = Xtilde, rho = SURVmax, alpha0 = 0.1)
+    needs_extrap <- !uncens & data[, W] > Xtilde
+    data[needs_extrap, "surv0"] <- sapply(X = data[needs_extrap, W], FUN = extrap_surv_beyond, 
+                                          t = surv_df[, W], surv = surv_df[, "surv0"], surv_beyond = surv_beyond, weibull_params = weibull_params)
+  } else {
+    needs_extrap <- !uncens & data[, W] > Xtilde
+    data[needs_extrap, "surv0"] <- sapply(X = data[needs_extrap, W], FUN = extrap_surv_beyond, 
+                                          t = surv_df[, W], surv = surv_df[, "surv0"], surv_beyond = surv_beyond)
+  }
+
+  # Calculate conditional survival W | Z for all 
+  data$surv <- data[, "surv0"] ^ data[, "HR"]
+  
+  # Calculate imputed values 
+  if (trapezoidal_rule) {
     # Distinct rows (in case of non-unique obs values)
     data_dist <- unique(data[, c(W, Delta, Z, "surv")])
     
     # [T_{(i+1)} - T_{(i)}]
     t_diff <- data_dist[- 1, W] - data_dist[- nrow(data_dist), W]
     
-    # Censored subject values (to impute)
-    t_cens <- data[data[, Delta] == 0, W]
-
-    # Follow formula assuming Cox model with additional covariates Z
-    for (x in which(!uncens)) {
-      Zj <- data[x, Z]
-      lp <- as.numeric(data.matrix(Zj) %*% matrix(data = fit$coefficients, ncol = 1))
-      Cj <- data[x, W]
-      Sj <- data_dist[-1, "surv"] ^ (exp(lp)) + data_dist[- nrow(data_dist), "surv"] ^ (exp(lp))
-      num <- sum((data_dist[-nrow(data_dist), W] >= Cj) * Sj * t_diff)
-      denom <- data[x, "surv"] ^ (exp(lp))
-      data$imp[x] <- (1 / 2) * (num / denom) + Cj
+    # Censored subject values W (to be imputed)
+    t_cens <- data[!uncens, W]
+    
+    # Use trapzezoidal approximation for integral
+    for (i in which(!uncens)) {
+      Si <- data_dist[-1, "surv"] + data_dist[- nrow(data_dist), "surv"]
+      sum_surv <- sum((data_dist[-nrow(data_dist), W] >= data[i, "surv"]) * Si * t_diff)
+      data$imp[i] <- data$imp[i] + (1 / 2) * (sum_surv /  data[i, "surv"])
     }
   } else {
-    if (extrapolate == "efron") {
+    
+  }
+  
+  else {
+    if (surv_beyond == "drop-off") {
       # Extend baseline survival curve using Efron's extrapolation 
       extrap_surv0 <- function(t) {
         sapply(X = t, FUN = function(x) {
@@ -109,7 +112,7 @@ cmi_sp <- function(W, Delta, Z, data, fit = NULL, extrapolate = "none", interpol
           }
         })
       }
-    } else if (extrapolate == "exponential") {
+    } else if (surv_beyond == "exponential") {
       # Extend baseline survival curve using Brown, Hollander and Kowar's exponential extrapolation 
       extrap_surv0 <- function(t) {
         sapply(X = t, FUN = function(x) {
@@ -123,7 +126,7 @@ cmi_sp <- function(W, Delta, Z, data, fit = NULL, extrapolate = "none", interpol
           }
         })
       }
-    } else if (extrapolate == "weibull") {
+    } else if (surv_beyond == "weibull") {
       # Estimate Weibull parameters using constrained MLE
       SURVmax <- data[max(which(uncens)), "surv0"]
       Xmax <- data[max(which(uncens)), W] 
@@ -141,29 +144,27 @@ cmi_sp <- function(W, Delta, Z, data, fit = NULL, extrapolate = "none", interpol
             } else if (x > max(surv_df[, W])) {
               exp(- lambda_hat * x ^ alpha_hat)
             } else {
-              if (interpolate_between == "carry-forward") {
+              if (surv_between == "carry-forward") {
                 # Indices of event times before x
                 before <- which(surv_df[, W] < x)
                 ## corresponding survival estimate
                 surv_df[max(before), "surv0"]
-              } else if (interpolate_between == "linear") {
+              } else if (surv_between == "linear") {
                 # Indices of event times before x
                 before <- which(surv_df[, W] < x)
                 ## Greatest event time before x
                 t_before <- surv_df[max(before), W]
                 ## corresponding survival estimate
                 surv_before <- surv_df[max(before), "surv0"]
-                
                 # Indices of event times after x
                 after <- which(surv_df[, W] > x)
                 # Smallest event time after x
                 t_after <- surv_df[min(after), W]
                 ## corresponding survival estimate
                 surv_after <- surv_df[min(after), "surv0"]
-
                 # Linear interpolation of survival estimates before and after
                 surv_before + (surv_after - surv_before) / (t_after - t_before) * (x - t_before)
-              } else if (interpolate_between == "mean") {
+              } else if (surv_between == "mean") {
                 # Indices of event times before x
                 before <- which(surv_df[, W] < x)
                 ## corresponding survival estimate
@@ -199,9 +200,9 @@ cmi_sp <- function(W, Delta, Z, data, fit = NULL, extrapolate = "none", interpol
       }
     )
     
-    # Extrapolate baseline survival S_0(W) for censored W
+    # surv_beyond baseline survival S_0(W) for censored W
     ## For \min(X) < W < \max(X), S_0(W) is carried forward from last event 
-    ## For W > \max(X), it's extrapolated based on the parameter inputs
+    ## For W > \max(X), it's surv_beyondd based on the parameter inputs
     data[which(!uncens), "surv0"] <- sapply(
       X = which(!uncens), 
       FUN = function(i) {
