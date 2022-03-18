@@ -144,11 +144,11 @@ cmi_sp <- function(W, Delta, Z, data, fit = NULL, trapezoidal_rule = FALSE, surv
     
     ## Calculate E(X|X>W,Z) = W + int_surv / surv(W|Z)
     data$imp[which(!uncens)] <- data[which(!uncens), W] + int_surv / data[which(!uncens), "surv"]
-    
-    ## Check for infinite imputed values 
-    if (any(data$imp  == Inf)) {
-      data$imp[which(data$imp == Inf)] <- data[which(data$imp == Inf), W]
-    }
+  }
+  
+  ## Check for infinite imputed values 
+  if (any(data$imp  == Inf)) {
+    data$imp[which(data$imp == Inf)] <- data[which(data$imp == Inf), W]
   }
   
   # Return input dataset with appended column imp containing imputed values 
