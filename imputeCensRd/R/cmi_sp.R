@@ -148,7 +148,7 @@ cmi_sp <- function(W, Delta, Z, data, fit = NULL, trapezoidal_rule = FALSE, surv
     ## Check for divide by 0 error 
     div0 <- which(!uncens & data[, "surv"] == 0)
     if (length(div0)) {
-      data$imp[div0] <- data[div0, W] + int_surv  
+      data$imp[div0] <- data[div0, W] + int_surv[div0]  
     }
   }
   
