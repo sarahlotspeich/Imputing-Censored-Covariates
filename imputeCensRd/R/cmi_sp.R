@@ -58,9 +58,13 @@ cmi_sp <- function(W, Delta, Z, data, fit = NULL, trapezoidal_rule = FALSE, surv
   # For people with events, obs = X
   data$imp <- data[, W]
   
+  # Assume survival at censored W < min(X) = 1
+  minX <- data[min(which(uncens)), W] 
+  data[which(data[, W] < minX), "surv0"] <- 1
+  
   # Interpolate baseline survival at censored W < \widetilde{X}
   Xtilde <- data[max(which(uncens)), W] 
-  needs_interp <- which(!uncens & data[, W] < Xtilde)
+  needs_interp <- which(is.na(data[, "surv0"]) & data[, W] < Xtilde)
   data[needs_interp, "surv0"] <- sapply(X = data[needs_interp, W], 
                                         FUN = interp_surv_between, 
                                         t = surv_df[, W], 
