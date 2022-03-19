@@ -112,6 +112,6 @@ extend_surv <- function(x, t, surv, surv_between, surv_beyond, weibull_params = 
     interp_surv_between(x = x, t = t, surv = surv, surv_between = surv_between)
   } else {
     ## if x > Xtilde, use extrapolate functions
-    extrap_surv_beyond(x = x, t = t, surv = surv, surv_beyond = beyond, weibull_params = weibull_params)
+    extrap_surv_beyond(x = x, t = t, surv = surv, surv_beyond = surv_beyond, weibull_params = weibull_params)
   }
 }
