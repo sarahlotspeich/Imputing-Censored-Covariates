@@ -120,7 +120,6 @@ cmi_sp <- function(W, Delta, Z, data, fit = NULL, trapezoidal_rule = FALSE, surv
       data$imp[i] <- data$imp[i] + (1 / 2) * (sum_surv_i /  data[i, "surv"])
     }
   } else {
-    
     # Builds on the extend_surv function by raising S_0(t) ^ HR = S(t|Z)
     to_integrate <- function(x, hr) {
       basesurv <- sapply(X = t, 
