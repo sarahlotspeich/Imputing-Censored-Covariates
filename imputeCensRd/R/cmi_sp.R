@@ -149,8 +149,10 @@ cmi_sp <- function(W, Delta, Z, data, fit = NULL, trapezoidal_rule = FALSE, surv
     data$imp[which(!uncens)] <- data[which(!uncens), W] + int_surv / data[which(!uncens), "surv"]
   }
   
-  ## Check for infinite imputed values 
-  if (any(data$imp  == Inf)) {
+  ## Check for infinite/NA imputed values 
+  if (any(is.na(data$imp))) {
+    data$imp[which(is.na(data$imp))] <- data[which(is.na(data$imp)), W]
+  } else if (any(data$imp  == Inf)) {
     data$imp[which(data$imp == Inf)] <- data[which(data$imp == Inf), W]
   }
   
