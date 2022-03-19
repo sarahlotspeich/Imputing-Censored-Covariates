@@ -33,6 +33,15 @@ interp_surv_between <- function(x, t, surv, surv_between) {
   }
 }
 
+weibull_loglik <- function(alpha, lambda, t, I_event) {
+  n1 <- sum(I_event)
+  ll <- - lambda * sum(t ^ alpha)
+  ll <- ll + (alpha - 1) * sum(I_event * log(t)) 
+  ll <- ll + n1 * log(lambda)
+  ll <- ll + n1 * log(alpha)
+  return(- ll)
+}
+
 constr_weibull_loglik <- function(alpha, t, I_event, Xtilde, rho) {
   lambda <- - log(rho) / (Xtilde ^ exp(alpha))
   n1 <- sum(I_event)
@@ -59,20 +68,19 @@ constr_weibull_hessian <- function(t, I_event, Xtilde, rho, alpha) {
 }
 
 constr_weibull_mle <- function(t, I_event, Xtilde, rho, alpha0, tol = 1E-4, max_iter = 1E3) {
-  it <- 1
-  conv <- FALSE
-  while (it < max_iter & !conv) {
-    g <- constr_weibull_gradient(t = t, I_event = I_event, Xtilde = Xtilde, rho = rho, alpha = alpha0)
-    H <- constr_weibull_hessian(t = t, I_event = I_event, Xtilde = Xtilde, rho = rho, alpha = alpha0)
-    alpha1 <- alpha0 - g / H
-    if (!any(abs(alpha0 - alpha1) > tol)) {
-      conv <- TRUE
-    }
-    it <- it + 1
-    alpha0 <- alpha1
-  }
-  lambda1 <- - log(rho) / (Xtilde ^ alpha1)
+  suppressWarnings(
+    nlm_res <- nlm(f = constr_weibull_loglik, 
+                   p = alpha0, 
+                   t = t, 
+                   I_event = I_event, 
+                   Xtilde = Xtilde, 
+                   rho = rho)
+  )
+  conv <- nlm_res$code <= 2
+  
   if (conv) {
+    alpha1 <- nlm_res$estimate
+    lambda1 <- - log(rho) / (Xtilde ^ alpha1)
     return(c(alpha1, lambda1))  
   } else {
     return(c(NA, NA))
