@@ -15,7 +15,9 @@
 #' \item{code}{Indicator of algorithm status (\code{TRUE} or \code{FALSE}).}
 #'
 #' @export
-#' @importFrom survival survreg Surv psurvreg
+#' @importFrom survival survreg 
+#' @importFrom survival Surv 
+#' @importFrom survival psurvreg
 
 cmi_fp <- function(W, Delta, Z, data, fit = NULL, dist = "weibull", trapezoidal_rule = FALSE) {
   # If no imputation model was supplied, fit an AFT model using main effects

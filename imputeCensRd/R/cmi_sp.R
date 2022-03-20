@@ -17,7 +17,8 @@
 #' \item{code}{Indicator of algorithm status (\code{TRUE} or \code{FALSE}).}
 #'
 #' @export
-#' @importFrom survival coxph Surv
+#' @importFrom survival coxph 
+#' @importFrom survival Surv
 
 cmi_sp <- function(W, Delta, Z, data, fit = NULL, trapezoidal_rule = FALSE, surv_between = "carry-forward", surv_beyond = "carry-forward", force_last_event = FALSE) {
   # Assume last observed value is an event regardless
