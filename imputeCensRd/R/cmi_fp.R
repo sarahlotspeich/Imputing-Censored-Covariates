@@ -80,8 +80,10 @@ cmi_fp <- function(W, Delta, Z, data, fit = NULL, dist = "weibull", trapezoidal_
     data$imp[which(!uncens)] <- data[which(!uncens), W] + int_surv / data[which(!uncens), "surv"]
   }
   
-  ## Check for infinite imputed values 
-  if (any(data$imp  == Inf)) {
+  ## Check for infinite/NA imputed values 
+  if (any(is.na(data$imp))) {
+    data$imp[which(is.na(data$imp))] <- data[which(is.na(data$imp)), W]
+  } else if (any(data$imp  == Inf)) {
     data$imp[which(data$imp == Inf)] <- data[which(data$imp == Inf), W]
   }
   
