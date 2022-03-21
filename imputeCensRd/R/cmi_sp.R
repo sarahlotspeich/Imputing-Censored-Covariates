@@ -86,8 +86,12 @@ cmi_sp <- function(W, Delta, Z, data, fit = NULL, trapezoidal_rule = FALSE, surv
     
     # If they do, extrapolate with them 
     needs_extrap <- which(!uncens & data[, W] > Xtilde)
-    data[needs_extrap, "surv0"] <- sapply(X = data[needs_extrap, W], FUN = extrap_surv_beyond, 
-                                          t = surv_df[, W], surv = surv_df[, "surv0"], surv_beyond = surv_beyond, weibull_params = weibull_params)
+    data[needs_extrap, "surv0"] <- sapply(X = data[needs_extrap, W], 
+                                          FUN = extrap_surv_beyond, 
+                                          t = surv_df[, W], 
+                                          surv = surv_df[, "surv0"], 
+                                          surv_beyond = surv_beyond, 
+                                          weibull_params = weibull_params)
   } else {
     needs_extrap <- which(!uncens & data[, W] > Xtilde)
     data[needs_extrap, "surv0"] <- sapply(X = data[needs_extrap, W], 
@@ -112,12 +116,9 @@ cmi_sp <- function(W, Delta, Z, data, fit = NULL, trapezoidal_rule = FALSE, surv
     # S(t+1|Z) + S(t|Z)
     surv_sum <- data_dist[-1, "surv"] + data_dist[- nrow(data_dist), "surv"]
     
-    # Censored subject values W (to be imputed)
-    t_cens <- data[which(!uncens), W]
-    
     # Use trapezoidal approximation for integral
     for (i in which(!uncens)) {
-      sum_surv_i <- sum((data_dist[-nrow(data_dist), W] >= as.numeric(data[i, "surv"])) * surv_sum * t_diff)
+      sum_surv_i <- sum((data_dist[-nrow(data_dist), W] >= as.numeric(data[i, W])) * surv_sum * t_diff)
       data$imp[i] <- data$imp[i] + (1 / 2) * (sum_surv_i /  data[i, "surv"])
     }
   } else {
