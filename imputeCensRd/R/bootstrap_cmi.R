@@ -37,11 +37,11 @@ bootstrap_cmi <- function(analysis_model, W, Delta, Z, data, est_surv, dist = "w
       if (est_surv == "FP") {
         # Use imputeCensRd::cmi_fp() to impute censored x in re_data ------
         re_data_imp <- cmi_fp(W = W, Delta = Delta, Z = Z, data = re_data, 
-                              fit = fit, dist = dist, trapezoidal_rule = trapezoidal_rule)
+                              fit = NULL, dist = dist, trapezoidal_rule = trapezoidal_rule)
       } else if (est_surv == "SP") {
         # Use imputeCensRd::cmi_sp() to impute censored x in re_data ------
         re_data_imp <- cmi_sp(W = W, Delta = Delta, Z = Z, data = re_data, 
-                              fit = fit, trapezoidal_rule = trapezoidal_rule)
+                              fit = NULL, trapezoidal_rule = trapezoidal_rule)
       } else if (est_surv == "NP") {
         # Use imputeCensRd::cmi_np() to impute censored x in re_data ------
         # re_data_imp <- cmi_np(W = W, Delta = Delta, Z = Z, data = re_data, 
