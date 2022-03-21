@@ -29,7 +29,7 @@ cmi_fp <- function(W, Delta, Z, data, fit = NULL, dist = "weibull", trapezoidal_
   }
   
   # If the imputation model does not converge, we cannot impute 
-  if (any(is.na(fit$coef))) {
+  if (any(is.na(fit))) {
     return(list(imputed_data = data, code = FALSE))
   }
   
