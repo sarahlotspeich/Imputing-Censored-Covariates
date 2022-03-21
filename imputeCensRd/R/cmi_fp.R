@@ -9,6 +9,7 @@
 #' @param fit A \code{survreg} imputation model object modeling \code{W} on \code{Z}. If \code{fit = NULL} (default), the AFT model with only main effects for \code{Z} and assuming a Weibull distribution is fit internally and used.
 #' @param dist (Optional) Assumed distribution for \code{W} in the AFT model, passed to \code{survival::survreg()}. Default is \code{"weibull"}.
 #' @param trapezoidal_rule A logical input for whether the trapezoidal rule should be used to approximate the integral in the imputed values. Default is \code{FALSE}.
+#' @param max_iter Maximum iterations allowed in call to \code{survival::survreg()}. Default is \code{100}.
 #'
 #' @return 
 #' \item{imputed_data}{A copy of \code{data} with added column \code{imp} containing the imputed values.}
@@ -19,11 +20,12 @@
 #' @importFrom survival Surv 
 #' @importFrom survival psurvreg
 
-cmi_fp <- function(W, Delta, Z, data, fit = NULL, dist = "weibull", trapezoidal_rule = FALSE) {
+cmi_fp <- function(W, Delta, Z, data, fit = NULL, dist = "weibull", trapezoidal_rule = FALSE, maxiter = 100) {
   # If no imputation model was supplied, fit an AFT model using main effects
   if (is.null(fit)) {
     fit_formula <- as.formula(paste0("Surv(time = ", W, ", event = ", Delta, ") ~ ", paste0(Z, collapse = " + ")))
-    fit <- survreg(formula = fit_formula, data = data, dist = dist)
+    fit <- tryCatch(expr = survreg(formula = fit_formula, data = data, dist = dist, control = list(maxiter = maxiter)),
+                    warning = function(w) return(NA))
   }
   
   # If the imputation model does not converge, we cannot impute 
@@ -85,7 +87,8 @@ cmi_fp <- function(W, Delta, Z, data, fit = NULL, dist = "weibull", trapezoidal_
   ## Check for infinite/NA imputed values 
   if (any(is.na(data$imp))) {
     data$imp[which(is.na(data$imp))] <- data[which(is.na(data$imp)), W]
-  } else if (any(data$imp  == Inf)) {
+  }
+  if (any(data$imp  == Inf)) {
     data$imp[which(data$imp == Inf)] <- data[which(data$imp == Inf), W]
   }
   
