@@ -153,7 +153,8 @@ cmi_sp <- function(W, Delta, Z, data, fit = NULL, trapezoidal_rule = FALSE, surv
   ## Check for infinite/NA imputed values 
   if (any(is.na(data$imp))) {
     data$imp[which(is.na(data$imp))] <- data[which(is.na(data$imp)), W]
-  } else if (any(data$imp  == Inf)) {
+  }
+  if (any(data$imp  == Inf)) {
     data$imp[which(data$imp == Inf)] <- data[which(data$imp == Inf), W]
   }
   
