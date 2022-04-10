@@ -6,11 +6,10 @@
 #' @param Delta Column name of censoring indicators. Note that \code{data[, Delta] = 0} is interpreted as a censored observation. 
 #' @param Z Column name of additional fully observed covariates.
 #' @param data Dataframe or named matrix containing columns \code{W}, \code{Delta}, and \code{Z}.
-#' @param fit A \code{coxph} imputation model object modeling \code{W} on \code{Z}. If \code{fit = NULL} (default), the Cox model with only main effects for \code{Z} is fit internally and used.
+#' @param fit (Optional) A \code{coxph} imputation model object modeling \code{W} on \code{Z}. If \code{fit = NULL} (default), the Cox model with only main effects for \code{Z} is used.
 #' @param trapezoidal_rule A logical input for whether the trapezoidal rule should be used to approximate the integral in the imputed values. Default is \code{FALSE}.
 #' @param surv_between A string for the method to be used to interpolate for censored values between events. Options include \code{"carry-forward"} (default), \code{"linear"}, or \code{"mean"}.
 #' @param surv_beyond A string for the method to be used to extrapolate the survival curve beyond the last observed event. Options include \code{"carry-forward"} (default), \code{"drop-off"}, \code{"exponential"}, or \code{"weibull"}.
-#' @param force_last_event A logical input to force the last observed value for \code{W} to be treated as an event. Default is \code{FALSE}.
 #'
 #' @return 
 #' \item{imputed_data}{A copy of \code{data} with added column \code{imp} containing the imputed values.}
@@ -20,12 +19,7 @@
 #' @importFrom survival coxph 
 #' @importFrom survival Surv
 
-cmi_sp <- function(W, Delta, Z, data, fit = NULL, trapezoidal_rule = FALSE, surv_between = "carry-forward", surv_beyond = "carry-forward", force_last_event = FALSE) {
-  # Assume last observed value is an event regardless
-  if (force_last_event) {
-    data[which.max(data[, W]), Delta] <- 1
-  }
-  
+cmi_sp <- function(W, Delta, Z, data, fit = NULL, trapezoidal_rule = FALSE, surv_between = "carry-forward", surv_beyond = "carry-forward") {
   # If no imputation model was supplied, fit a Cox PH using main effects
   if (is.null(fit)) {
     fit_formula <- as.formula(paste0("Surv(time = ", W, ", event = ", Delta, ") ~ ", paste0(Z, collapse = " + ")))
