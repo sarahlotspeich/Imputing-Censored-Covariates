@@ -3,6 +3,7 @@
 export(at_risk)
 export(bootstrap_cmi)
 export(breslow_estimator)
+export(cmi_custom)
 export(cmi_fp)
 export(cmi_np)
 export(cmi_sp)
