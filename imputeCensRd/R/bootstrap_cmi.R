@@ -10,6 +10,8 @@
 #' @param est_surv A string for which CMI approach to be used: fully-parametric (\code{"FP"}), semiparametric (\code{"SP"}), or nonparametric (\code{"NP"}).
 #' @param dist (Optional) If \code{est_surv = "FP"}, the assumed distribution for \code{W} in the AFT model, passed to \code{survival::survreg()}. Default is \code{"weibull"}.
 #' @param trapezoidal_rule A logical input for whether the trapezoidal rule should be used to approximate the integral in the imputed values. Default is \code{FALSE}.
+#' @param surv_between (If \code{est_surv = "SP"} or \code{"NP"}) A string for the method to be used to interpolate for censored values between events. Options include \code{"carry-forward"} (default), \code{"linear"}, or \code{"mean"}.
+#' @param surv_beyond (If \code{est_surv = "SP"} or \code{"NP"}) A string for the method to be used to extrapolate the survival curve beyond the last observed event. Options include \code{"drop-off"}, \code{"exponential"} (default), or \code{"weibull"}.
 #' @param B Number of bootstrap resampling replicates. Default is \code{B = 1000}.
 #'
 #' @return A dataframe containing the following information for the coefficients of \code{analysis_model}:
@@ -20,7 +22,7 @@
 #'
 #' @export
 
-bootstrap_cmi <- function(analysis_model, W, Delta, Z, data, est_surv, dist = "weibull", trapezoidal_rule = FALSE, B = 1000) {
+bootstrap_cmi <- function(analysis_model, W, Delta, Z, data, est_surv, dist = "weibull", trapezoidal_rule = FALSE, surv_between = "carry-forward", surv_beyond = "exponential", B = 1000) {
   # Create matrix to hold results from bootstrap replicates 
   re_res <- matrix(data = NA, nrow = B, ncol = (length(Z) + 2))
   
@@ -41,7 +43,8 @@ bootstrap_cmi <- function(analysis_model, W, Delta, Z, data, est_surv, dist = "w
       } else if (est_surv == "SP") {
         # Use imputeCensRd::cmi_sp() to impute censored x in re_data ------
         re_data_imp <- cmi_sp(W = W, Delta = Delta, Z = Z, data = re_data, 
-                              fit = NULL, trapezoidal_rule = trapezoidal_rule)
+                              fit = NULL, trapezoidal_rule = trapezoidal_rule,
+                              surv_between = surv_between, surv_beyond = surv_beyond)
       } else if (est_surv == "NP") {
         # Use imputeCensRd::cmi_np() to impute censored x in re_data ------
         # re_data_imp <- cmi_np(W = W, Delta = Delta, Z = Z, data = re_data, 
