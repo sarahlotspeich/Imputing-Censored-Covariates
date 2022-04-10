@@ -11,10 +11,11 @@ bootstrap_cmi(
   Z,
   data,
   est_surv,
-  dist = "weibull",
   trapezoidal_rule = FALSE,
+  dist = "weibull",
   surv_between = "carry-forward",
   surv_beyond = "exponential",
+  useSURV,
   B = 1000
 )
 }
@@ -31,13 +32,15 @@ bootstrap_cmi(
 
 \item{est_surv}{A string for which CMI approach to be used: fully-parametric (\code{"FP"}), semiparametric (\code{"SP"}), or nonparametric (\code{"NP"}).}
 
-\item{dist}{(Optional) If \code{est_surv = "FP"}, the assumed distribution for \code{W} in the AFT model, passed to \code{survival::survreg()}. Default is \code{"weibull"}.}
-
 \item{trapezoidal_rule}{A logical input for whether the trapezoidal rule should be used to approximate the integral in the imputed values. Default is \code{FALSE}.}
+
+\item{dist}{(If \code{est_surv = "FP"}) The assumed distribution for \code{W} in the AFT model, passed to \code{survival::survreg()}. Default is \code{"weibull"}.}
 
 \item{surv_between}{(If \code{est_surv = "SP"} or \code{"NP"}) A string for the method to be used to interpolate for censored values between events. Options include \code{"carry-forward"} (default), \code{"linear"}, or \code{"mean"}.}
 
 \item{surv_beyond}{(If \code{est_surv = "SP"} or \code{"NP"}) A string for the method to be used to extrapolate the survival curve beyond the last observed event. Options include \code{"drop-off"}, \code{"exponential"} (default), or \code{"weibull"}.}
+
+\item{useSURV}{(If \code{est_surv = "custom"}) Assumed survival function for \code{W} given \code{Z}. The only arguments to \code{useSURV} should be \code{W} and \code{Z}, in that order.}
 
 \item{B}{Number of bootstrap resampling replicates. Default is \code{B = 1000}.}
 }
