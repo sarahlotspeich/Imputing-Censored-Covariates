@@ -7,7 +7,7 @@
 #' @param Z Column name of additional fully observed covariates.
 #' @param data Dataframe or named matrix containing columns \code{W}, \code{Delta}, and \code{Z}.
 #' @param fit A \code{survreg} imputation model object modeling \code{W} on \code{Z}. If \code{fit = NULL} (default), the AFT model with only main effects for \code{Z} and assuming a Weibull distribution is fit internally and used.
-#' @param dist (Optional) Assumed distribution for \code{W} in the AFT model, passed to \code{survival::survreg()}. Default is \code{"weibull"}.
+#' @param dist Assumed distribution for \code{W} in the AFT model, passed to \code{survival::survreg()}. Default is \code{"weibull"}.
 #' @param trapezoidal_rule A logical input for whether the trapezoidal rule should be used to approximate the integral in the imputed values. Default is \code{FALSE}.
 #' @param max_iter Maximum iterations allowed in call to \code{survival::survreg()}. Default is \code{100}.
 #'
@@ -39,12 +39,7 @@ cmi_fp <- function(W, Delta, Z, data, fit = NULL, dist = "weibull", trapezoidal_
  
   # Calculate survival with original model coefficients using built-in function
   data <- data.frame(data, surv = 1 - psurvreg(q = data[, W], mean = lp, scale = fit$scale, distribution = dist))
-  #surv_df <- data.frame(t = data[, W], z = data[, Z], surv = 1 - psurvreg(q = data[, W], mean = lp, scale = fit$scale, distribution = dist))
-  #colnames(surv_df)[1:2] <- c(W, Z)
-  
-  # Merge survival estimates into data
-  # data <- merge(x = data, y = surv_df, all.x = TRUE, sort = FALSE)
-  
+
   # Order data by W
   data <- data[order(data[, W]), ]
   
