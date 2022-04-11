@@ -33,7 +33,9 @@ cmi_sp <- function(W, Delta, Z, data, fit = NULL, stratified = FALSE, trapezoida
   if (stratified) {
     # Find the smallest number of splits needed for PH to be upheld
     splits <- 1
-    while (print(cox.zph(fit = fit))[1, 3] < 0.05) {
+    testPH <- capture.output(print(cox.zph(fit = fit))[1, 3])
+    pval <- as.numeric(substr(x = testPH[4], start = 5, stop = nchar(testPH[4])))
+    while (pval < 0.05) {
       # Split data into percentile-based intervals
       splits <- splits + 1
       where_split <- seq(from = 0, to = 1, by = 1 / splits)
@@ -44,12 +46,13 @@ cmi_sp <- function(W, Delta, Z, data, fit = NULL, stratified = FALSE, trapezoida
       # Fit the Cox model to the split data
       split_fit_formula <- as.formula(paste0("Surv(time = tstart, time2 = ", W, ", event = ", Delta, ") ~ ", paste0(Z, collapse = " + "), ":strata(tgroup)"))
       fit <- coxph(formula = split_fit_formula, data = split_dat, control = coxph.control(timefix = FALSE))
+      testPH <- capture.output(print(cox.zph(fit = fit))[1, 3])
+      pval <- as.numeric(substr(x = testPH[4], start = 5, stop = nchar(testPH[4])))
     }
   }
   
   # Calculate linear predictor \lambda %*% Z for Cox model
-  #lp <- data.matrix(data[, Z]) %*% matrix(data = fit$coefficients, ncol = 1)
-  if (stratified) {
+  if (stratified & splits > 1) {
     suppressWarnings(
       split_lp <- predict(fit, reference="sample") + sum(coef(fit) * fit$means, na.rm = TRUE)
     )
