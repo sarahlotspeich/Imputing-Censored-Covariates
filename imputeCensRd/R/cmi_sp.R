@@ -7,6 +7,7 @@
 #' @param Z Column name of additional fully observed covariates.
 #' @param data Dataframe or named matrix containing columns \code{W}, \code{Delta}, and \code{Z}.
 #' @param fit (Optional) A \code{coxph} imputation model object modeling \code{W} on \code{Z}. If \code{fit = NULL} (default), the Cox model with only main effects for \code{Z} is used.
+#' @param stratified If \code{TRUE}, stratification in \code{W} is used to construct time-varying coefficients. Default is \code{FALSE}. 
 #' @param trapezoidal_rule A logical input for whether the trapezoidal rule should be used to approximate the integral in the imputed values. Default is \code{FALSE}.
 #' @param surv_between A string for the method to be used to interpolate for censored values between events. Options include \code{"carry-forward"} (default), \code{"linear"}, or \code{"mean"}.
 #' @param surv_beyond A string for the method to be used to extrapolate the survival curve beyond the last observed event. Options include \code{"carry-forward"} (default), \code{"drop-off"}, \code{"exponential"}, or \code{"weibull"}.
@@ -14,10 +15,12 @@
 #' @return 
 #' \item{imputed_data}{A copy of \code{data} with added column \code{imp} containing the imputed values.}
 #' \item{code}{Indicator of algorithm status (\code{TRUE} or \code{FALSE}).}
+#' \item{steps}{(If \code{stratified = TRUE}) The number of strata used.}
 #'
 #' @export
 #' @importFrom survival coxph 
 #' @importFrom survival Surv
+#' @importFrom survival survSplit
 
 cmi_sp <- function(W, Delta, Z, data, fit = NULL, trapezoidal_rule = FALSE, surv_between = "carry-forward", surv_beyond = "carry-forward") {
   # If no imputation model was supplied, fit a Cox PH using main effects
@@ -25,6 +28,23 @@ cmi_sp <- function(W, Delta, Z, data, fit = NULL, trapezoidal_rule = FALSE, surv
     fit_formula <- as.formula(paste0("Surv(time = ", W, ", event = ", Delta, ") ~ ", paste0(Z, collapse = " + ")))
     fit <- coxph(formula = fit_formula, 
                  data = data)
+  }
+  
+  if (stratified) {
+    # Find the smallest number of splits needed for PH to be upheld
+    splits <- 1
+    while (print(cox.zph(fit = fit))[1, 3] < 0.05) {
+      # Split data into percentile-based intervals
+      splits <- splits + 1
+      where_split <- seq(from = 0, to = 1, by = 1 / splits)
+      where_split <- where_split[-c(1, length(where_split))]
+      split_dat <- survSplit(formula = fit_formula, data = data,
+                             cut = quantile(data[, W], where_split),
+                             episode = "tgroup", id = "id")
+      # Fit the Cox model to the split data
+      split_fit_formula <- as.formula(paste0("Surv(time = tstart, time2 = ", W, ", event = ", Delta, ") ~ ", paste0(Z, collapse = " + "), ":strata(tgroup)"))
+      fit <- coxph(formula = split_fit_formula, data = split_dat, control = coxph.control(timefix = FALSE))
+    }
   }
   
   # Calculate linear predictor \lambda %*% Z for Cox model
@@ -155,8 +175,17 @@ cmi_sp <- function(W, Delta, Z, data, fit = NULL, trapezoidal_rule = FALSE, surv
   
   # Return input dataset with appended column imp containing imputed values 
   if (any(is.na(data$imp))) {
-    return(list(imputed_data = data, code = FALSE))  
+    if (stratified) {
+      return(list(imputed_data = data, code = FALSE, steps = steps))  
+    } else {
+      return(list(imputed_data = data, code = FALSE, steps = NA))    
+    }
   } else {
-    return(list(imputed_data = data, code = TRUE))
+    if (stratified) {
+      return(list(imputed_data = data, code = TRUE, steps = steps))  
+    } else {
+      return(list(imputed_data = data, code = TRUE, steps = NA))
+    }
+    
   }
 }
