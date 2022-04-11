@@ -13,6 +13,7 @@ bootstrap_cmi(
   est_surv,
   trapezoidal_rule = FALSE,
   dist = "weibull",
+  stratified = FALSE,
   surv_between = "carry-forward",
   surv_beyond = "exponential",
   useSURV,
@@ -35,6 +36,8 @@ bootstrap_cmi(
 \item{trapezoidal_rule}{A logical input for whether the trapezoidal rule should be used to approximate the integral in the imputed values. Default is \code{FALSE}.}
 
 \item{dist}{(If \code{est_surv = "FP"}) The assumed distribution for \code{W} in the AFT model, passed to \code{survival::survreg()}. Default is \code{"weibull"}.}
+
+\item{stratified}{(If \code{est_surv = "SP"}) If \code{TRUE}, stratification in \code{W} is used to construct time-varying coefficients in the Cox model. Default is \code{FALSE}.}
 
 \item{surv_between}{(If \code{est_surv = "SP"} or \code{"NP"}) A string for the method to be used to interpolate for censored values between events. Options include \code{"carry-forward"} (default), \code{"linear"}, or \code{"mean"}.}
 
