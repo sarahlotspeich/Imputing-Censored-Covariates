@@ -15,7 +15,7 @@
 #' @return 
 #' \item{imputed_data}{A copy of \code{data} with added column \code{imp} containing the imputed values.}
 #' \item{code}{Indicator of algorithm status (\code{TRUE} or \code{FALSE}).}
-#' \item{steps}{(If \code{stratified = TRUE}) The number of strata used.}
+#' \item{splits}{(If \code{stratified = TRUE}) The number of strata used.}
 #'
 #' @export
 #' @importFrom survival coxph 
@@ -185,15 +185,15 @@ cmi_sp <- function(W, Delta, Z, data, fit = NULL, stratified = FALSE, trapezoida
   # Return input dataset with appended column imp containing imputed values 
   if (any(is.na(data$imp))) {
     if (stratified) {
-      return(list(imputed_data = data, code = FALSE, steps = steps))  
+      return(list(imputed_data = data, code = FALSE, splits = splits))  
     } else {
-      return(list(imputed_data = data, code = FALSE, steps = NA))    
+      return(list(imputed_data = data, code = FALSE, splits = NA))    
     }
   } else {
     if (stratified) {
-      return(list(imputed_data = data, code = TRUE, steps = steps))  
+      return(list(imputed_data = data, code = TRUE, splits = splits))  
     } else {
-      return(list(imputed_data = data, code = TRUE, steps = NA))
+      return(list(imputed_data = data, code = TRUE, splits = NA))
     }
     
   }

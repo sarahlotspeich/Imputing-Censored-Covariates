@@ -38,7 +38,7 @@ cmi_sp(
 \value{
 \item{imputed_data}{A copy of \code{data} with added column \code{imp} containing the imputed values.}
 \item{code}{Indicator of algorithm status (\code{TRUE} or \code{FALSE}).}
-\item{steps}{(If \code{stratified = TRUE}) The number of strata used.}
+\item{splits}{(If \code{stratified = TRUE}) The number of strata used.}
 }
 \description{
 Semiparametric conditional mean imputation (CMI) for a censored predictor using a Cox proportional hazards model and the Breslow estimator to estimate conditional survival.
