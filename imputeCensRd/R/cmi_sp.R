@@ -52,12 +52,14 @@ cmi_sp <- function(W, Delta, Z, data, fit = NULL, stratified = FALSE, trapezoida
   }
   
   # Calculate linear predictor \lambda %*% Z for Cox model
-  if (stratified & splits > 1) {
-    suppressWarnings(
-      split_lp <- predict(fit, reference="sample") + sum(coef(fit) * fit$means, na.rm = TRUE)
-    )
-    agg_lp <- aggregate(formula = split_lp ~ split_dat$id, FUN = sum)
-    lp <- agg_lp[, 2]
+  if (stratified) {
+    if (splits > 1) {
+      suppressWarnings(
+        split_lp <- predict(fit, reference="sample") + sum(coef(fit) * fit$means, na.rm = TRUE)
+      )
+      agg_lp <- aggregate(formula = split_lp ~ split_dat$id, FUN = sum)
+      lp <- agg_lp[, 2]
+    }
   } else {
     lp <- predict(fit, reference="sample") + sum(coef(fit) * fit$means, na.rm = TRUE)
   }
