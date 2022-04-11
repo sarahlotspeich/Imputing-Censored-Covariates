@@ -10,6 +10,7 @@ cmi_sp(
   Z,
   data,
   fit = NULL,
+  stratified = FALSE,
   trapezoidal_rule = FALSE,
   surv_between = "carry-forward",
   surv_beyond = "carry-forward"
@@ -26,13 +27,13 @@ cmi_sp(
 
 \item{fit}{(Optional) A \code{coxph} imputation model object modeling \code{W} on \code{Z}. If \code{fit = NULL} (default), the Cox model with only main effects for \code{Z} is used.}
 
+\item{stratified}{If \code{TRUE}, stratification in \code{W} is used to construct time-varying coefficients. Default is \code{FALSE}.}
+
 \item{trapezoidal_rule}{A logical input for whether the trapezoidal rule should be used to approximate the integral in the imputed values. Default is \code{FALSE}.}
 
 \item{surv_between}{A string for the method to be used to interpolate for censored values between events. Options include \code{"carry-forward"} (default), \code{"linear"}, or \code{"mean"}.}
 
 \item{surv_beyond}{A string for the method to be used to extrapolate the survival curve beyond the last observed event. Options include \code{"carry-forward"} (default), \code{"drop-off"}, \code{"exponential"}, or \code{"weibull"}.}
-
-\item{stratified}{If \code{TRUE}, stratification in \code{W} is used to construct time-varying coefficients. Default is \code{FALSE}.}
 }
 \value{
 \item{imputed_data}{A copy of \code{data} with added column \code{imp} containing the imputed values.}

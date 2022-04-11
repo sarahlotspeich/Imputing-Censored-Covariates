@@ -22,7 +22,7 @@
 #' @importFrom survival Surv
 #' @importFrom survival survSplit
 
-cmi_sp <- function(W, Delta, Z, data, fit = NULL, trapezoidal_rule = FALSE, surv_between = "carry-forward", surv_beyond = "carry-forward") {
+cmi_sp <- function(W, Delta, Z, data, fit = NULL, stratified = FALSE, trapezoidal_rule = FALSE, surv_between = "carry-forward", surv_beyond = "carry-forward") {
   # If no imputation model was supplied, fit a Cox PH using main effects
   if (is.null(fit)) {
     fit_formula <- as.formula(paste0("Surv(time = ", W, ", event = ", Delta, ") ~ ", paste0(Z, collapse = " + ")))
