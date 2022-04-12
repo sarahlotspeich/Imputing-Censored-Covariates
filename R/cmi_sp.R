@@ -21,6 +21,7 @@
 #' @importFrom survival coxph 
 #' @importFrom survival Surv
 #' @importFrom survival survSplit
+#' @importFrom survival cox.zph
 
 cmi_sp <- function(W, Delta, Z, data, fit = NULL, stratified = FALSE, trapezoidal_rule = FALSE, surv_between = "carry-forward", surv_beyond = "carry-forward") {
   # If no imputation model was supplied, fit a Cox PH using main effects
