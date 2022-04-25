@@ -35,6 +35,9 @@ cmi_km <- function(W, Delta, data, trapezoidal_rule = FALSE, surv_between = "car
   # Make survival at censored W NA so that we can interpolate/extrapolate
   data[!uncens, "surv"] <- NA
   
+  # For people with events, obs = X
+  data$imp <- data[, W]
+  
   # Assume survival at censored W < min(X) = 1
   minX <- data[min(which(uncens)), W] 
   data[which(data[, W] < minX), "surv"] <- 1
