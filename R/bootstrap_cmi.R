@@ -7,14 +7,14 @@
 #' @param Delta Column name of censoring indicators. Note that \code{Delta = 0} is interpreted as a censored observation. 
 #' @param Z Column name of additional fully observed covariates.
 #' @param data Dataframe or named matrix containing columns \code{W}, \code{Delta}, and \code{Z}.
-#' @param est_surv A string for which CMI approach to be used: fully-parametric (\code{"FP"}), semiparametric (\code{"SP"}), or nonparametric (\code{"NP"}).
+#' @param est_surv A string for which CMI approach to be used: fully-parametric (\code{"FP"}), Kaplan-Meier (\code{"KM"}), semiparametric (\code{"SP"}), or nonparametric (\code{"NP"}).
 #' @param trapezoidal_rule A logical input for whether the trapezoidal rule should be used to approximate the integral in the imputed values. Default is \code{FALSE}.
 #' @param dist (If \code{est_surv = "FP"}) The assumed distribution for \code{W} in the AFT model, passed to \code{survival::survreg()}. Default is \code{"weibull"}.
 #' @param stratified (If \code{est_surv = "SP"}) If \code{TRUE}, stratification in \code{W} is used to construct time-varying coefficients in the Cox model. Default is \code{FALSE}. 
-#' @param surv_between (If \code{est_surv = "SP"} or \code{"NP"}) A string for the method to be used to interpolate for censored values between events. Options include \code{"carry-forward"} (default), \code{"linear"}, or \code{"mean"}.
-#' @param surv_beyond (If \code{est_surv = "SP"} or \code{"NP"}) A string for the method to be used to extrapolate the survival curve beyond the last observed event. Options include \code{"drop-off"}, \code{"exponential"} (default), or \code{"weibull"}.
+#' @param surv_between (If \code{est_surv = "KM"}, \code{"SP"}, or \code{"NP"}) A string for the method to be used to interpolate for censored values between events. Options include \code{"carry-forward"} (default), \code{"linear"}, or \code{"mean"}.
+#' @param surv_beyond (If \code{est_surv = "KM"}, \code{"SP"}, or \code{"NP"}) A string for the method to be used to extrapolate the survival curve beyond the last observed event. Options include \code{"drop-off"}, \code{"exponential"} (default), or \code{"weibull"}.
 #' @param useSURV (If \code{est_surv = "custom"}) Assumed survival function for \code{W} given \code{Z}. The only arguments to \code{useSURV} should be \code{W} and \code{Z}, in that order.
-#' @param B Number of bootstrap resampling replicates. Default is \code{B = 1000}.
+#' @param B Number of bootstrap resampling replicates. Default is \code{B = 100}.
 #'
 #' @return A dataframe containing the following information for the coefficients of \code{analysis_model}:
 #' \item{Coeff}{Variable name, corresponding to the user-specified model \code{analysis_model}.}
@@ -42,6 +42,11 @@ bootstrap_cmi <- function(analysis_model, W, Delta, Z, data, est_surv, trapezoid
         # Use imputeCensRd::cmi_fp() to impute censored x in re_data ------
         re_data_imp <- cmi_fp(W = W, Delta = Delta, Z = Z, data = re_data, 
                               fit = NULL, dist = dist, trapezoidal_rule = trapezoidal_rule)
+      } else if (est_surv == "KM") {
+        # Use imputeCensRd::cmi_km() to impute censored x in re_data ------
+        re_data_imp <- cmi_km(W = W, Delta = Delta, data = re_data, 
+                              trapezoidal_rule = trapezoidal_rule,
+                              surv_between = surv_between, surv_beyond = surv_beyond)
       } else if (est_surv == "SP") {
         # Use imputeCensRd::cmi_sp() to impute censored x in re_data ------
         re_data_imp <- cmi_sp(W = W, Delta = Delta, Z = Z, data = re_data, 

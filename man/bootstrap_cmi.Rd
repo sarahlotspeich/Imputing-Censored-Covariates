@@ -31,7 +31,7 @@ bootstrap_cmi(
 
 \item{data}{Dataframe or named matrix containing columns \code{W}, \code{Delta}, and \code{Z}.}
 
-\item{est_surv}{A string for which CMI approach to be used: fully-parametric (\code{"FP"}), semiparametric (\code{"SP"}), or nonparametric (\code{"NP"}).}
+\item{est_surv}{A string for which CMI approach to be used: fully-parametric (\code{"FP"}), Kaplan-Meier (\code{"KM"}), semiparametric (\code{"SP"}), or nonparametric (\code{"NP"}).}
 
 \item{trapezoidal_rule}{A logical input for whether the trapezoidal rule should be used to approximate the integral in the imputed values. Default is \code{FALSE}.}
 
@@ -39,13 +39,13 @@ bootstrap_cmi(
 
 \item{stratified}{(If \code{est_surv = "SP"}) If \code{TRUE}, stratification in \code{W} is used to construct time-varying coefficients in the Cox model. Default is \code{FALSE}.}
 
-\item{surv_between}{(If \code{est_surv = "SP"} or \code{"NP"}) A string for the method to be used to interpolate for censored values between events. Options include \code{"carry-forward"} (default), \code{"linear"}, or \code{"mean"}.}
+\item{surv_between}{(If \code{est_surv = "KM"}, \code{"SP"}, or \code{"NP"}) A string for the method to be used to interpolate for censored values between events. Options include \code{"carry-forward"} (default), \code{"linear"}, or \code{"mean"}.}
 
-\item{surv_beyond}{(If \code{est_surv = "SP"} or \code{"NP"}) A string for the method to be used to extrapolate the survival curve beyond the last observed event. Options include \code{"drop-off"}, \code{"exponential"} (default), or \code{"weibull"}.}
+\item{surv_beyond}{(If \code{est_surv = "KM"}, \code{"SP"}, or \code{"NP"}) A string for the method to be used to extrapolate the survival curve beyond the last observed event. Options include \code{"drop-off"}, \code{"exponential"} (default), or \code{"weibull"}.}
 
 \item{useSURV}{(If \code{est_surv = "custom"}) Assumed survival function for \code{W} given \code{Z}. The only arguments to \code{useSURV} should be \code{W} and \code{Z}, in that order.}
 
-\item{B}{Number of bootstrap resampling replicates. Default is \code{B = 1000}.}
+\item{B}{Number of bootstrap resampling replicates. Default is \code{B = 100}.}
 }
 \value{
 A dataframe containing the following information for the coefficients of \code{analysis_model}:
