@@ -7,6 +7,7 @@
 cmi_km(
   W,
   Delta,
+  Z = NULL,
   data,
   trapezoidal_rule = FALSE,
   surv_between = "carry-forward",
@@ -17,6 +18,8 @@ cmi_km(
 \item{W}{Column name of observed predictor values (including censored opens).}
 
 \item{Delta}{Column name of censoring indicators. Note that \code{Delta = 0} is interpreted as a censored observation.}
+
+\item{Z}{Column name of additional fully observed covariates.}
 
 \item{data}{Dataframe or named matrix containing columns \code{W}, \code{Delta}, and \code{Z}.}
 
