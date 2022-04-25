@@ -83,7 +83,7 @@ cmi_fp <- function(W, Delta, Z, data, fit = NULL, dist = "weibull", trapezoidal_
   if (any(is.na(data$imp))) {
     data$imp[which(is.na(data$imp))] <- data[which(is.na(data$imp)), W]
   }
-  if (any(data$imp  == Inf)) {
+  if (any(data$imp == Inf)) {
     data$imp[which(data$imp == Inf)] <- data[which(data$imp == Inf), W]
   }
   
