@@ -8,6 +8,7 @@ cmi_km(
   W,
   Delta,
   data,
+  trapezoidal_rule = FALSE,
   surv_between = "carry-forward",
   surv_beyond = "exponential"
 )
@@ -18,6 +19,8 @@ cmi_km(
 \item{Delta}{Column name of censoring indicators. Note that \code{Delta = 0} is interpreted as a censored observation.}
 
 \item{data}{Dataframe or named matrix containing columns \code{W}, \code{Delta}, and \code{Z}.}
+
+\item{trapezoidal_rule}{A logical input for whether the trapezoidal rule should be used to approximate the integral in the imputed values. Default is \code{FALSE}.}
 
 \item{surv_between}{A string for the method to be used to interpolate for censored values between events. Options include \code{"carry-forward"} (default), \code{"linear"}, or \code{"mean"}.}
 
