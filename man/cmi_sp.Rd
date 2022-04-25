@@ -13,7 +13,7 @@ cmi_sp(
   stratified = FALSE,
   trapezoidal_rule = FALSE,
   surv_between = "carry-forward",
-  surv_beyond = "carry-forward"
+  surv_beyond = "exponential"
 )
 }
 \arguments{
@@ -33,7 +33,7 @@ cmi_sp(
 
 \item{surv_between}{A string for the method to be used to interpolate for censored values between events. Options include \code{"carry-forward"} (default), \code{"linear"}, or \code{"mean"}.}
 
-\item{surv_beyond}{A string for the method to be used to extrapolate the survival curve beyond the last observed event. Options include \code{"carry-forward"} (default), \code{"drop-off"}, \code{"exponential"}, or \code{"weibull"}.}
+\item{surv_beyond}{A string for the method to be used to extrapolate the survival curve beyond the last observed event. Options include \code{"drop-off"}, \code{"exponential"} (default), or \code{"weibull"}.}
 }
 \value{
 \item{imputed_data}{A copy of \code{data} with added column \code{imp} containing the imputed values.}

@@ -10,7 +10,7 @@
 #' @param stratified If \code{TRUE}, stratification in \code{W} is used to construct time-varying coefficients. Default is \code{FALSE}. 
 #' @param trapezoidal_rule A logical input for whether the trapezoidal rule should be used to approximate the integral in the imputed values. Default is \code{FALSE}.
 #' @param surv_between A string for the method to be used to interpolate for censored values between events. Options include \code{"carry-forward"} (default), \code{"linear"}, or \code{"mean"}.
-#' @param surv_beyond A string for the method to be used to extrapolate the survival curve beyond the last observed event. Options include \code{"carry-forward"} (default), \code{"drop-off"}, \code{"exponential"}, or \code{"weibull"}.
+#' @param surv_beyond A string for the method to be used to extrapolate the survival curve beyond the last observed event. Options include \code{"drop-off"}, \code{"exponential"} (default), or \code{"weibull"}.
 #'
 #' @return 
 #' \item{imputed_data}{A copy of \code{data} with added column \code{imp} containing the imputed values.}
@@ -23,7 +23,7 @@
 #' @importFrom survival survSplit
 #' @importFrom survival cox.zph
 
-cmi_sp <- function(W, Delta, Z, data, fit = NULL, stratified = FALSE, trapezoidal_rule = FALSE, surv_between = "carry-forward", surv_beyond = "carry-forward") {
+cmi_sp <- function(W, Delta, Z, data, fit = NULL, stratified = FALSE, trapezoidal_rule = FALSE, surv_between = "carry-forward", surv_beyond = "exponential") {
   # If no imputation model was supplied, fit a Cox PH using main effects
   if (is.null(fit)) {
     fit_formula <- as.formula(paste0("Surv(time = ", W, ", event = ", Delta, ") ~ ", paste0(Z, collapse = " + ")))

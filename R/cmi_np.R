@@ -6,13 +6,14 @@
 #' @param Delta Column name of censoring indicators. Note that \code{Delta = 0} is interpreted as a censored observation. 
 #' @param Z Column name of additional fully observed covariates.
 #' @param data Dataframe or named matrix containing columns \code{W}, \code{Delta}, and \code{Z}.
-#' @param approx_beyond Choice of approximation used to extrapolate the survival function beyond the last observed covariate value. Default is \code{"expo"} for the exponential approximation. Other choices include \code{"zero"} or \code{"carryforward"}.
+#' @param surv_between A string for the method to be used to interpolate for censored values between events. Options include \code{"carry-forward"} (default), \code{"linear"}, or \code{"mean"}.
+#' @param surv_beyond A string for the method to be used to extrapolate the survival curve beyond the last observed event. Options include \code{"drop-off"}, \code{"exponential"} (default), or \code{"weibull"}.
 #'
 #' @return A copy of \code{data} with added column \code{imp} containing the imputed values.
 #'
 #' @export
 
-cmi_np <- function(W, Delta, Z, data, approx_beyond = "expo") {
+cmi_np <- function(W, Delta, Z, data, surv_between = "carry-forward", surv_beyond = "exponential") {
   # Estimate survival from kernel-smoothed Nelson-Aalen estimator (STRIDE)
   ## Create artificial subgroup/categorical covariates 
   data$subgroup <- data$cat <- 1

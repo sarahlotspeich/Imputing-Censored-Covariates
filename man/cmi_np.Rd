@@ -4,7 +4,14 @@
 \alias{cmi_np}
 \title{Nonparametric conditional mean imputation (CMI) for a censored predictor}
 \usage{
-cmi_np(W, Delta, Z, data, approx_beyond = "expo")
+cmi_np(
+  W,
+  Delta,
+  Z,
+  data,
+  surv_between = "carry-forward",
+  surv_beyond = "exponential"
+)
 }
 \arguments{
 \item{W}{Column name of observed predictor values (including censored opens).}
@@ -15,7 +22,9 @@ cmi_np(W, Delta, Z, data, approx_beyond = "expo")
 
 \item{data}{Dataframe or named matrix containing columns \code{W}, \code{Delta}, and \code{Z}.}
 
-\item{approx_beyond}{Choice of approximation used to extrapolate the survival function beyond the last observed covariate value. Default is \code{"expo"} for the exponential approximation. Other choices include \code{"zero"} or \code{"carryforward"}.}
+\item{surv_between}{A string for the method to be used to interpolate for censored values between events. Options include \code{"carry-forward"} (default), \code{"linear"}, or \code{"mean"}.}
+
+\item{surv_beyond}{A string for the method to be used to extrapolate the survival curve beyond the last observed event. Options include \code{"drop-off"}, \code{"exponential"} (default), or \code{"weibull"}.}
 }
 \value{
 A copy of \code{data} with added column \code{imp} containing the imputed values.
