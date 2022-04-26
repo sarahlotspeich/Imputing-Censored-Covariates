@@ -65,8 +65,8 @@ cmi_km <- function(W, Delta, Z = NULL, data, trapezoidal_rule = FALSE, surv_betw
       needs_interp <- which(is.na(data[, "surv"]) & data[, Z] == z & data[, W] < Xtilde)
       data[needs_interp, "surv"] <- sapply(X = data[needs_interp, W], 
                                            FUN = interp_surv_between, 
-                                           t = km_surv[which(data[, Z] == z), W], 
-                                           surv = km_surv[which(data[, Z] == z), "surv"], 
+                                           t = km_surv[which(km_surv[, Z] == z), W], 
+                                           surv = km_surv[which(km_surv[, Z] == z), "surv"], 
                                            surv_between = surv_between)
     }
   } else {
