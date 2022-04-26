@@ -161,48 +161,50 @@ cmi_km <- function(W, Delta, Z = NULL, data, trapezoidal_rule = FALSE, surv_betw
     for (z in levelsZ) {
       # Row IDs in need of imputation with Z = z
       needs_impute <- which(!uncens & data[, Z] == z)
-      if (trapezoidal_rule) {
-        # Distinct rows (in case of non-unique obs values)
-        data_dist <- unique(data[which(data[, Z] == z), c(W, Delta, Z, "surv")])
-        
-        # [T_{(i+1)} - T_{(i)}]
-        t_diff <- data_dist[- 1, W] - data_dist[- nrow(data_dist), W]
-        
-        # S(t+1) + S(t)
-        surv_sum <- data_dist[-1, "surv"] + data_dist[- nrow(data_dist), "surv"]
-        
-        # Use trapezoidal approximation for integral
-        for (i in needs_impute) {
-          sum_surv_i <- sum((data_dist[- nrow(data_dist), W] >= as.numeric(data[i, W])) * surv_sum * t_diff)
-          data$imp[i] <- data$imp[i] + (1 / 2) * (sum_surv_i /  data[i, "surv"])
-        }
-      } else {
-        # Builds on the extend_surv function by raising S(t)
-        to_integrate <- function(t) {
-          surv <- sapply(X = t, 
-                         FUN = extend_surv, 
-                         t = km_surv[which(km_surv[, Z] == z), W], 
-                         surv = km_surv[which(km_surv[, Z] == z), "surv"],
-                         surv_between = surv_between, 
-                         surv_beyond = surv_beyond, 
-                         weibull_params = weibull_params)  
-          surv
-        }
-        
-        ## Use integrate() to approximate integral from W to \infty of S(t)
-        int_surv <- sapply(
-          X = needs_impute, 
-          FUN = function(i) { 
-            tryCatch(expr = integrate(f = to_integrate, 
-                                      lower = data[i, W], 
-                                      upper = Inf, 
-                                      subdivisions = 2000)$value,
-                     error = function(e) return(NA))
+      if (length(needs_impute) > 0) {
+        if (trapezoidal_rule) {
+          # Distinct rows (in case of non-unique obs values)
+          data_dist <- unique(data[which(data[, Z] == z), c(W, Delta, Z, "surv")])
+          
+          # [T_{(i+1)} - T_{(i)}]
+          t_diff <- data_dist[- 1, W] - data_dist[- nrow(data_dist), W]
+          
+          # S(t+1) + S(t)
+          surv_sum <- data_dist[-1, "surv"] + data_dist[- nrow(data_dist), "surv"]
+          
+          # Use trapezoidal approximation for integral
+          for (i in needs_impute) {
+            sum_surv_i <- sum((data_dist[- nrow(data_dist), W] >= as.numeric(data[i, W])) * surv_sum * t_diff)
+            data$imp[i] <- data$imp[i] + (1 / 2) * (sum_surv_i /  data[i, "surv"])
           }
-        )
-        
-        ## Calculate E(X|X>W) = W + int_surv / surv(W)
-        data$imp[needs_impute] <- data[needs_impute, W] + int_surv / data[needs_impute, "surv"]
+        } else {
+          # Builds on the extend_surv function by raising S(t)
+          to_integrate <- function(t) {
+            surv <- sapply(X = t, 
+                           FUN = extend_surv, 
+                           t = km_surv[which(km_surv[, Z] == z), W], 
+                           surv = km_surv[which(km_surv[, Z] == z), "surv"],
+                           surv_between = surv_between, 
+                           surv_beyond = surv_beyond, 
+                           weibull_params = weibull_params)  
+            surv
+          }
+          
+          ## Use integrate() to approximate integral from W to \infty of S(t)
+          int_surv <- sapply(
+            X = needs_impute, 
+            FUN = function(i) { 
+              tryCatch(expr = integrate(f = to_integrate, 
+                                        lower = data[i, W], 
+                                        upper = Inf, 
+                                        subdivisions = 2000)$value,
+                       error = function(e) return(NA))
+            }
+          )
+          
+          ## Calculate E(X|X>W) = W + int_surv / surv(W)
+          data$imp[needs_impute] <- data[needs_impute, W] + int_surv / data[needs_impute, "surv"]
+        }  
       }
     }
   } else { # E(X|X>W)
