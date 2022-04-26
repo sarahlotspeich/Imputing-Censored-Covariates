@@ -15,6 +15,7 @@
 #' @export
 #' @importFrom survival Surv
 #' @importFrom survival survfit
+#' @importFrom survival strata
 
 cmi_km <- function(W, Delta, Z = NULL, data, trapezoidal_rule = FALSE, surv_between = "carry-forward", surv_beyond = "exponential") {
   # Fit the Kaplan-Meier estimator for S(W)
