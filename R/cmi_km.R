@@ -101,7 +101,7 @@ cmi_km <- function(W, Delta, Z = NULL, data, trapezoidal_rule = FALSE, surv_betw
         }
         
         # If they do, extrapolate with them 
-        needs_extrap <- which(!uncens & data[, W] > Xtilde & which(data[, Z] == z))
+        needs_extrap <- which(!uncens & data[, W] > Xtilde & data[, Z] == z)
         data[needs_extrap, "surv"] <- sapply(X = data[needs_extrap, W], 
                                              FUN = extrap_surv_beyond, 
                                              t = km_surv[which(km_surv[, Z] == z), W], 
@@ -109,7 +109,7 @@ cmi_km <- function(W, Delta, Z = NULL, data, trapezoidal_rule = FALSE, surv_betw
                                              surv_beyond = surv_beyond, 
                                              weibull_params = weibull_params)
       } else {
-        needs_extrap <- which(!uncens & data[, W] > Xtilde & which(data[, Z] == z))
+        needs_extrap <- which(!uncens & data[, W] > Xtilde & data[, Z] == z)
         data[needs_extrap, "surv"] <- sapply(X = data[needs_extrap, W], 
                                              FUN = extrap_surv_beyond, 
                                              t = km_surv[which(km_surv[, Z] == z), W], 
@@ -160,7 +160,7 @@ cmi_km <- function(W, Delta, Z = NULL, data, trapezoidal_rule = FALSE, surv_betw
     levelsZ <- unique(data[, Z])
     for (z in levelsZ) {
       # Row IDs in need of imputation with Z = z
-      needs_impute <- which(!uncens & which(data[, Z] == z))
+      needs_impute <- which(!uncens & data[, Z] == z)
       if (trapezoidal_rule) {
         # Distinct rows (in case of non-unique obs values)
         data_dist <- unique(data[which(data[, Z] == z), c(W, Delta, Z, "surv")])
