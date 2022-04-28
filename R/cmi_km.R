@@ -43,24 +43,15 @@ cmi_km <- function(W, Delta, Z = NULL, data, trapezoidal_rule = FALSE, surv_betw
   # For people with events, obs = X
   data$imp <- data[, W]
   
-  # Assume survival at censored W < min(X) = 1
-  ## If stratifying on Z, do this within strata
+  # If stratifying on Z, do the following within strata Z = 0 / Z = 1
   if (!is.null(Z)) {
     levelsZ <- unique(data[, Z])
     for (z in levelsZ) {
+      # Assume survival at censored W < min(X) = 1
       minX <- data[min(which(uncens & data[, Z] == z)), W] 
       data[which(data[, W] < minX & data[, Z] == z), "surv"] <- 1
-    }
-  } else {
-    minX <- data[min(which(uncens)), W] 
-    data[which(data[, W] < minX), "surv"] <- 1
-  }
-  
-  # Interpolate baseline survival at censored W < \widetilde{X}
-  ## If stratifying on Z, do this within strata
-  if (!is.null(Z)) {
-    levelsZ <- unique(data[, Z])
-    for (z in levelsZ) {
+      
+      # Interpolate baseline survival at censored W < \widetilde{X}
       Xtilde <- data[max(which(uncens & data[, Z] == z)), W] 
       needs_interp <- which(is.na(data[, "surv"]) & data[, Z] == z & data[, W] < Xtilde)
       data[needs_interp, "surv"] <- sapply(X = data[needs_interp, W], 
@@ -68,22 +59,8 @@ cmi_km <- function(W, Delta, Z = NULL, data, trapezoidal_rule = FALSE, surv_betw
                                            t = km_surv[which(km_surv[, Z] == z), W], 
                                            surv = km_surv[which(km_surv[, Z] == z), "surv"], 
                                            surv_between = surv_between)
-    }
-  } else {
-    Xtilde <- data[max(which(uncens)), W] 
-    needs_interp <- which(is.na(data[, "surv"]) & data[, W] < Xtilde)
-    data[needs_interp, "surv"] <- sapply(X = data[needs_interp, W], 
-                                         FUN = interp_surv_between, 
-                                         t = km_surv[, W], 
-                                         surv = km_surv[, "surv"], 
-                                         surv_between = surv_between)
-  }
-  
-  # Extrapolate baseline survival at censored W > \widetilde{X}
-  ## If stratifying on Z, do this within strata
-  if (!is.null(Z)) {
-    levelsZ <- unique(data[, Z])
-    for (z in levelsZ) {
+      
+      # Extrapolate baseline survival at censored W > \widetilde{X}
       if (surv_beyond == "weibull") {
         # Estimate Weibull parameters using constrained MLE
         Xtilde <- data[max(which(uncens & data[, Z] == z)), W] 
@@ -117,50 +94,9 @@ cmi_km <- function(W, Delta, Z = NULL, data, trapezoidal_rule = FALSE, surv_betw
                                              surv_beyond = surv_beyond)
         weibull_params <- NULL
       }
-    }
-  } else {
-    if (surv_beyond == "weibull") {
-      # Estimate Weibull parameters using constrained MLE
-      SURVmax <- data[max(which(uncens)), "surv"]
-      weibull_params <- constr_weibull_mle(t = data[, W], 
-                                           I_event = data[, Delta], 
-                                           Xtilde = Xtilde, 
-                                           rho = SURVmax, 
-                                           alpha0 = 1E-4)
       
-      # If weibull params don't converge, quit 
-      if (any(is.na(weibull_params))) {
-        data$imp <- NA
-        return(list(imputed_data = data, code = FALSE))   
-      }
-      
-      # If they do, extrapolate with them 
-      needs_extrap <- which(!uncens & data[, W] > Xtilde)
-      data[needs_extrap, "surv"] <- sapply(X = data[needs_extrap, W], 
-                                           FUN = extrap_surv_beyond, 
-                                           t = km_surv[, W], 
-                                           surv = km_surv[, "surv"], 
-                                           surv_beyond = surv_beyond, 
-                                           weibull_params = weibull_params)
-    } else {
-      needs_extrap <- which(!uncens & data[, W] > Xtilde)
-      data[needs_extrap, "surv"] <- sapply(X = data[needs_extrap, W], 
-                                           FUN = extrap_surv_beyond, 
-                                           t = km_surv[, W], 
-                                           surv = km_surv[, "surv"], 
-                                           surv_beyond = surv_beyond)
-      weibull_params <- NULL
-    }
-  }
-  
-  # Calculate imputed values 
-  ## If stratifying on Z, do this within strata
-  ## E(X|X>W,Z)
-  if (!is.null(Z)) {
-    levelsZ <- unique(data[, Z])
-    for (z in levelsZ) {
-      # Row IDs in need of imputation with Z = z
-      needs_impute <- which(!uncens & data[, Z] == z)
+      # Calculate imputed values E(X|X>W,Z)
+      needs_impute <- which(!uncens & data[, Z] == z) # Row IDs in need of imputation with Z = z
       if (length(needs_impute) > 0) {
         if (trapezoidal_rule) {
           # Distinct rows (in case of non-unique obs values)
@@ -207,7 +143,55 @@ cmi_km <- function(W, Delta, Z = NULL, data, trapezoidal_rule = FALSE, surv_betw
         }  
       }
     }
-  } else { # E(X|X>W)
+  } else {
+    # Assume survival at censored W < min(X) = 1
+    minX <- data[min(which(uncens)), W] 
+    data[which(data[, W] < minX), "surv"] <- 1
+    
+    # Interpolate baseline survival at censored W < \widetilde{X}
+    Xtilde <- data[max(which(uncens)), W] 
+    needs_interp <- which(is.na(data[, "surv"]) & data[, W] < Xtilde)
+    data[needs_interp, "surv"] <- sapply(X = data[needs_interp, W], 
+                                         FUN = interp_surv_between, 
+                                         t = km_surv[, W], 
+                                         surv = km_surv[, "surv"], 
+                                         surv_between = surv_between)
+    
+    # Extrapolate baseline survival at censored W > \widetilde{X}
+    if (surv_beyond == "weibull") {
+      # Estimate Weibull parameters using constrained MLE
+      SURVmax <- data[max(which(uncens)), "surv"]
+      weibull_params <- constr_weibull_mle(t = data[, W], 
+                                           I_event = data[, Delta], 
+                                           Xtilde = Xtilde, 
+                                           rho = SURVmax, 
+                                           alpha0 = 1E-4)
+      
+      # If weibull params don't converge, quit 
+      if (any(is.na(weibull_params))) {
+        data$imp <- NA
+        return(list(imputed_data = data, code = FALSE))   
+      }
+      
+      # If they do, extrapolate with them 
+      needs_extrap <- which(!uncens & data[, W] > Xtilde)
+      data[needs_extrap, "surv"] <- sapply(X = data[needs_extrap, W], 
+                                           FUN = extrap_surv_beyond, 
+                                           t = km_surv[, W], 
+                                           surv = km_surv[, "surv"], 
+                                           surv_beyond = surv_beyond, 
+                                           weibull_params = weibull_params)
+    } else {
+      needs_extrap <- which(!uncens & data[, W] > Xtilde)
+      data[needs_extrap, "surv"] <- sapply(X = data[needs_extrap, W], 
+                                           FUN = extrap_surv_beyond, 
+                                           t = km_surv[, W], 
+                                           surv = km_surv[, "surv"], 
+                                           surv_beyond = surv_beyond)
+      weibull_params <- NULL
+    }
+    
+    # Calculate imputed values E(X|X>W)
     if (trapezoidal_rule) {
       # Distinct rows (in case of non-unique obs values)
       data_dist <- unique(data[, c(W, Delta, Z, "surv")])
