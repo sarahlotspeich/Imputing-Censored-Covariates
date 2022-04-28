@@ -6,7 +6,7 @@
 #' @param Delta Column name of censoring indicators. Note that \code{Delta = 0} is interpreted as a censored observation. 
 #' @param Z Column name of additional fully observed binary covariate. If provided and \code{stratified = TRUE}, the Kaplan-Meier estimator will be stratified on \code{Z}.
 #' @param data Dataframe or named matrix containing columns \code{W}, \code{Delta}, and \code{Z}.
-#' @param stratified A logical input for whether the Kaplan-Meier estimator should be stratified on \code{Z}.
+#' @param stratified A logical input for whether the Kaplan-Meier estimator should be stratified on \code{Z}. Default is \code{TRUE}.
 #' @param trapezoidal_rule A logical input for whether the trapezoidal rule should be used to approximate the integral in the imputed values. Default is \code{FALSE}.
 #' @param surv_between A string for the method to be used to interpolate for censored values between events. Options include \code{"carry-forward"} (default), \code{"linear"}, or \code{"mean"}.
 #' @param surv_beyond A string for the method to be used to extrapolate the survival curve beyond the last observed event. Options include \code{"drop-off"}, \code{"exponential"} (default), or \code{"weibull"}.
@@ -18,7 +18,7 @@
 #' @importFrom survival survfit
 #' @importFrom survival strata
 
-cmi_km <- function(W, Delta, Z = NULL, data, stratified = FALSE, trapezoidal_rule = FALSE, surv_between = "carry-forward", surv_beyond = "exponential") {
+cmi_km <- function(W, Delta, Z = NULL, data, stratified = TRUE, trapezoidal_rule = FALSE, surv_between = "carry-forward", surv_beyond = "exponential") {
   # Fit the Kaplan-Meier estimator for S(W)
   fit_formula <- as.formula(paste0("Surv(time = ", W, ", event = ", Delta, ") ~ 1"))
   

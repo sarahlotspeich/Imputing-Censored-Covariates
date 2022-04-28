@@ -9,7 +9,7 @@ cmi_km(
   Delta,
   Z = NULL,
   data,
-  stratified = FALSE,
+  stratified = TRUE,
   trapezoidal_rule = FALSE,
   surv_between = "carry-forward",
   surv_beyond = "exponential"
@@ -24,7 +24,7 @@ cmi_km(
 
 \item{data}{Dataframe or named matrix containing columns \code{W}, \code{Delta}, and \code{Z}.}
 
-\item{stratified}{A logical input for whether the Kaplan-Meier estimator should be stratified on \code{Z}.}
+\item{stratified}{A logical input for whether the Kaplan-Meier estimator should be stratified on \code{Z}. Default is \code{TRUE}.}
 
 \item{trapezoidal_rule}{A logical input for whether the trapezoidal rule should be used to approximate the integral in the imputed values. Default is \code{FALSE}.}
 
