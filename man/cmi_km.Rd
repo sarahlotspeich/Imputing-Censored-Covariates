@@ -9,6 +9,7 @@ cmi_km(
   Delta,
   Z = NULL,
   data,
+  stratified = FALSE,
   trapezoidal_rule = FALSE,
   surv_between = "carry-forward",
   surv_beyond = "exponential"
@@ -19,9 +20,11 @@ cmi_km(
 
 \item{Delta}{Column name of censoring indicators. Note that \code{Delta = 0} is interpreted as a censored observation.}
 
-\item{Z}{(Optional) Column name of additional fully observed binary covariate. If provided, the Kaplan-Meier estimator will be stratified on \code{Z}.}
+\item{Z}{Column name of additional fully observed binary covariate. If provided and \code{stratified = TRUE}, the Kaplan-Meier estimator will be stratified on \code{Z}.}
 
 \item{data}{Dataframe or named matrix containing columns \code{W}, \code{Delta}, and \code{Z}.}
+
+\item{stratified}{A logical input for whether the Kaplan-Meier estimator should be stratified on \code{Z}.}
 
 \item{trapezoidal_rule}{A logical input for whether the trapezoidal rule should be used to approximate the integral in the imputed values. Default is \code{FALSE}.}
 
