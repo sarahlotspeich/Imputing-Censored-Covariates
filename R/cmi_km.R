@@ -19,11 +19,30 @@
 
 cmi_km <- function(W, Delta, Z = NULL, data, trapezoidal_rule = FALSE, surv_between = "carry-forward", surv_beyond = "exponential") {
   # Fit the Kaplan-Meier estimator for S(W)
-  fit_formula <- as.formula(paste0("Surv(time = ", W, ", event = ", Delta, ") ~ strata(", Z, ")"))
-  fit <- survfit(formula = fit_formula, 
-                 data = data)
-  surv_df <- data.frame(x = fit$time, surv = fit$surv)
-  colnames(surv_df)[1] <- W
+  fit_formula <- as.formula(paste0("Surv(time = ", W, ", event = ", Delta, ") ~ 1"))
+  
+  # If (binary) Z is supplied, fit separate models for Z = 0/ Z = 1
+  if (!is.null(Z)) {
+    # Z = 0
+    fit0 <- survfit(formula = fit_formula, 
+                    data = data[data[, Z] == 0, ])
+    surv_df0 <- data.frame(x = fit0$time, z = 0, surv = fit0$surv)
+    colnames(surv_df0)[1:2] <- c(W, Z)
+    
+    # Z = 0
+    fit1 <- survfit(formula = fit_formula, 
+                    data = data[data[, Z] == 1, ])
+    surv_df1 <- data.frame(x = fit1$time, z = 1, surv = fit1$surv)
+    colnames(surv_df1)[1:2] <- c(W, Z)
+    
+    # Combine 
+    surv_df <- rbind(surv_df0, surv_df1)
+  } else {
+    fit <- survfit(formula = fit_formula, 
+                   data = data)
+    surv_df <- data.frame(x = fit$time, surv = fit$surv)
+    colnames(surv_df)[1] <- W
+  }
   
   # Merge survival estimates into data
   data <- merge(x = data, y = surv_df, all.x = TRUE, sort = FALSE)
@@ -246,12 +265,5 @@ cmi_km <- function(W, Delta, Z = NULL, data, trapezoidal_rule = FALSE, surv_betw
   }
   
   # Return input dataset with appended column imp containing imputed values 
-  if (any(is.na(data$imp))) {
-    return(list(imputed_data = data, code = FALSE))    
-  } else {
-    return(list(imputed_data = data, code = TRUE))
-  }
-  
-  # Return input dataset with appended column imp containing imputed values 
-  return(data)
+  return(list(imputed_data = data, code = !any(is.na(data$imp))))
 }
