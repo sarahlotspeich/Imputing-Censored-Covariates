@@ -62,7 +62,7 @@ cmi_sp <- function(W, Delta, Z, data, fit = NULL, stratified = FALSE, trapezoida
     suppressWarnings(
       split_lp <- predict(fit, reference="sample") + sum(coef(fit) * fit$means, na.rm = TRUE)
     )
-    agg_lp <- aggregate(formula = split_lp ~ split_dat$id, FUN = sum)
+    agg_lp <- aggregate(x = split_lp ~ split_dat$id, FUN = sum)
     lp <- agg_lp[, 2]
   } else {
     lp <- predict(fit, reference="sample") + sum(coef(fit) * fit$means, na.rm = TRUE)
