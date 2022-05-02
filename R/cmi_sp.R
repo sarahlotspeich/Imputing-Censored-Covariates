@@ -52,6 +52,8 @@ cmi_sp <- function(W, Delta, Z, data, fit = NULL, stratified = FALSE, trapezoida
       testPH <- capture.output(print(cox.zph(fit = fit))[1, 3])
       pval <- as.numeric(substr(x = testPH[4], start = 5, stop = nchar(testPH[4])))
     }
+  } else if (stratified) {
+    split_dat <- data
   }
   
   # Calculate linear predictor \lambda %*% Z for Cox model
