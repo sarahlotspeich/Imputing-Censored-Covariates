@@ -24,14 +24,16 @@
 #' @importFrom survival cox.zph
 
 cmi_sp <- function(W, Delta, Z, data, fit = NULL, stratified = FALSE, trapezoidal_rule = FALSE, surv_between = "carry-forward", surv_beyond = "exponential") {
+  fit_internally <- is.null(fit)
+  
   # If no imputation model was supplied, fit a Cox PH using main effects
-  if (is.null(fit)) {
+  if (fit_internally) {
     fit_formula <- as.formula(paste0("Surv(time = ", W, ", event = ", Delta, ") ~ ", paste0(Z, collapse = " + ")))
     fit <- coxph(formula = fit_formula, 
                  data = data)
   }
   
-  if (stratified) {
+  if (stratified & fit_internally) {
     # Find the smallest number of splits needed for PH to be upheld
     splits <- 1
     testPH <- capture.output(print(cox.zph(fit = fit))[1, 3])
@@ -54,13 +56,12 @@ cmi_sp <- function(W, Delta, Z, data, fit = NULL, stratified = FALSE, trapezoida
   
   # Calculate linear predictor \lambda %*% Z for Cox model
   if (stratified) {
-    if (splits > 1) {
-      suppressWarnings(
-        split_lp <- predict(fit, reference="sample") + sum(coef(fit) * fit$means, na.rm = TRUE)
-      )
-      agg_lp <- aggregate(formula = split_lp ~ split_dat$id, FUN = sum)
-      lp <- agg_lp[, 2]
-    }
+    #if (splits > 1) {}
+    suppressWarnings(
+      split_lp <- predict(fit, reference="sample") + sum(coef(fit) * fit$means, na.rm = TRUE)
+    )
+    agg_lp <- aggregate(formula = split_lp ~ split_dat$id, FUN = sum)
+    lp <- agg_lp[, 2]
   } else {
     lp <- predict(fit, reference="sample") + sum(coef(fit) * fit$means, na.rm = TRUE)
   }
@@ -76,6 +77,7 @@ cmi_sp <- function(W, Delta, Z, data, fit = NULL, stratified = FALSE, trapezoida
                           data = data)
   surv_df <- with(be, data.frame(t = times, surv0 = basesurv))
   colnames(surv_df)[1] <- W
+  
   ## Merge baseline survival estimates into data
   data <- merge(x = data, y = surv_df, all.x = TRUE, sort = FALSE)
   
