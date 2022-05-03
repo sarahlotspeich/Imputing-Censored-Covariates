@@ -15,13 +15,9 @@
 #' @param surv_beyond (If \code{est_surv = "KM"}, \code{"SP"}, or \code{"NP"}) A string for the method to be used to extrapolate the survival curve beyond the last observed event. Options include \code{"drop-off"}, \code{"exponential"} (default), or \code{"weibull"}.
 #' @param useSURV (If \code{est_surv = "custom"}) Assumed survival function for \code{W} given \code{Z}. The only arguments to \code{useSURV} should be \code{W} and \code{Z}, in that order.
 #' @param B Number of bootstrap resampling replicates. Default is \code{B = 100}.
-#'
-#' @return A dataframe containing the following information for the coefficients of \code{analysis_model}:
-#' \item{Coeff}{Variable name, corresponding to the user-specified model \code{analysis_model}.}
-#' \item{SE}{Bootstrapped standard errors (empirical standard deviation of the bootstrapped estimates).}
-#' \item{LB}{Lowerbound of bootstrapped confidence interval (based on quantiles of bootstrapped estimates).}
-#' \item{UB}{Upperbound of bootstrapped confidence interval (based on quantiles of bootstrapped estimates).}
-#'
+#' @return A list containing the following for the coefficients of \code{analysis_model}:
+#' \item{table}{A dataframe containing the bootstrapped standard errors and 95\% quantile intervals.}
+#' \item{vcov}{An estimate of the covariance matrix.}
 #' @export
 
 bootstrap_cmi <- function(analysis_model, W, Delta, Z, data, est_surv, trapezoidal_rule = FALSE, dist = "weibull", stratified = FALSE, surv_between = "carry-forward", surv_beyond = "exponential", useSURV, B = 1000) {
@@ -40,31 +36,49 @@ bootstrap_cmi <- function(analysis_model, W, Delta, Z, data, est_surv, trapezoid
     if (sum(re_data[, Delta]) < n) {
       if (est_surv == "FP") {
         # Use imputeCensRd::cmi_fp() to impute censored x in re_data ------
-        re_data_imp <- cmi_fp(W = W, Delta = Delta, Z = Z, data = re_data, 
-                              fit = NULL, dist = dist, trapezoidal_rule = trapezoidal_rule)
+        re_data_imp <- cmi_fp(W = W, 
+                              Delta = Delta, 
+                              Z = Z, 
+                              data = re_data,
+                              dist = dist, 
+                              trapezoidal_rule = trapezoidal_rule)
       } else if (est_surv == "KM") {
         # Use imputeCensRd::cmi_km() to impute censored x in re_data ------
-        re_data_imp <- cmi_km(W = W, Delta = Delta, Z = Z, data = re_data, 
+        re_data_imp <- cmi_km(W = W, 
+                              Delta = Delta, 
+                              Z = Z, 
+                              data = re_data, 
                               trapezoidal_rule = trapezoidal_rule,
-                              surv_between = surv_between, surv_beyond = surv_beyond)
+                              surv_between = surv_between, 
+                              surv_beyond = surv_beyond)
       } else if (est_surv == "SP") {
         # Use imputeCensRd::cmi_sp() to impute censored x in re_data ------
-        re_data_imp <- cmi_sp(W = W, Delta = Delta, Z = Z, data = re_data, 
-                              fit = NULL, stratified = stratified, trapezoidal_rule = trapezoidal_rule,
-                              surv_between = surv_between, surv_beyond = surv_beyond)
+        re_data_imp <- cmi_sp(W = W, 
+                              Delta = Delta, 
+                              Z = Z, 
+                              data = re_data,
+                              stratified = stratified, 
+                              trapezoidal_rule = trapezoidal_rule,
+                              surv_between = surv_between, 
+                              surv_beyond = surv_beyond)
       } else if (est_surv == "NP") {
         # Use imputeCensRd::cmi_np() to impute censored x in re_data ------
         # re_data_imp <- cmi_np(W = W, Delta = Delta, Z = Z, data = re_data, 
         #                      trapezoidal_rule = trapezoidal_rule)
       } else if (est_surv == "custom") {
         # Use imputeCensRd::cmi_custom() to impute censored x in re_data --
-        re_data_imp <- cmi_custom(W = W, Delta = Delta, Z = Z, data = re_data, 
-                                  useSURV = useSURV, trapezoidal_rule = trapezoidal_rule)
+        re_data_imp <- cmi_custom(W = W, 
+                                  Delta = Delta, 
+                                  Z = Z, 
+                                  data = re_data, 
+                                  useSURV = useSURV, 
+                                  trapezoidal_rule = trapezoidal_rule)
       }
       
       # If imputation was successful, fit the analysis model ------------
       if (re_data_imp$code) {
-        re_fit <- lm(formula = analysis_model, data = re_data_imp$imputed_data) 
+        re_fit <- lm(formula = analysis_model, 
+                     data = re_data_imp$imputed_data) 
         ## Save coefficients to results matrix
         re_res[b, ] <- re_fit$coefficients
       }
@@ -78,12 +92,21 @@ bootstrap_cmi <- function(analysis_model, W, Delta, Z, data, est_surv, trapezoid
   }
   
   # Calculate SE estimate
-  se <- apply(X = re_res, MARGIN = 2, FUN = sd, na.rm = TRUE)
+  se <- apply(X = re_res, 
+              MARGIN = 2, 
+              FUN = sd, 
+              na.rm = TRUE)
   
   # Calculate 95% quantile interval
-  lb <- apply(X = re_res, MARGIN = 2, FUN = function(x) quantile(x = x, probs = 0.025, na.rm = TRUE))
-  ub <- apply(X = re_res, MARGIN = 2, FUN = function(x) quantile(x = x, probs = 0.975, na.rm = TRUE))
+  lb <- apply(X = re_res, 
+              MARGIN = 2, 
+              FUN = function(x) quantile(x = x, probs = 0.025, na.rm = TRUE))
+  ub <- apply(X = re_res, 
+              MARGIN = 2, 
+              FUN = function(x) quantile(x = x, probs = 0.975, na.rm = TRUE))
   
   # Return SE and 95% interval
-  return(data.frame(Coeff = names(re_fit$coefficients), SE = se, LB = lb, UB = ub))
+  return(list(table = data.frame(Coeff = names(re_fit$coefficients), 
+                                 SE = se, LB = lb, UB = ub), 
+              vcov = cov(re_res)))
 }

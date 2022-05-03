@@ -48,11 +48,9 @@ bootstrap_cmi(
 \item{B}{Number of bootstrap resampling replicates. Default is \code{B = 100}.}
 }
 \value{
-A dataframe containing the following information for the coefficients of \code{analysis_model}:
-\item{Coeff}{Variable name, corresponding to the user-specified model \code{analysis_model}.}
-\item{SE}{Bootstrapped standard errors (empirical standard deviation of the bootstrapped estimates).}
-\item{LB}{Lowerbound of bootstrapped confidence interval (based on quantiles of bootstrapped estimates).}
-\item{UB}{Upperbound of bootstrapped confidence interval (based on quantiles of bootstrapped estimates).}
+A list containing the following for the coefficients of \code{analysis_model}:
+\item{table}{A dataframe containing the bootstrapped standard errors and 95\% quantile intervals.}
+\item{vcov}{An estimate of the covariance matrix.}
 }
 \description{
 Bootstrap standard errors / confidence intervals for conditional mean imputation (CMI) for a censored predictor.
