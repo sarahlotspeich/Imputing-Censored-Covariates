@@ -68,6 +68,8 @@ constr_weibull_hessian <- function(t, I_event, Xtilde, rho, alpha) {
 }
 
 constr_weibull_mle <- function(t, I_event, Xtilde, rho, alpha0, tol = 1E-4, max_iter = 1E3) {
+  t[t == 0] <- 1E-4
+  
   suppressWarnings(
     nlm_res <- nlm(f = constr_weibull_loglik, 
                    p = alpha0, 
