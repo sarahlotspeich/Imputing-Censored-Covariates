@@ -76,7 +76,7 @@ constr_weibull_mle <- function(t, I_event, Xtilde, rho, alpha0, tol = 1E-4, max_
                    Xtilde = Xtilde, 
                    rho = rho)
   )
-  conv <- nlm_res$code <= 2
+  conv <- nlm_res$code <= 2 & nlm_res$iterations > 0 
   
   if (conv) {
     alpha1 <- nlm_res$estimate
