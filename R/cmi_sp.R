@@ -2,7 +2,7 @@
 #'
 #' Semiparametric conditional mean imputation (CMI) for a censored predictor using a Cox proportional hazards model and the Breslow estimator to estimate conditional survival.
 #'
-#' @param W Column name of observed predictor values (including censored opens). 
+#' @param W Column name of observed (possibly censored) predictor values. 
 #' @param Delta Column name of censoring indicators. Note that \code{data[, Delta] = 0} is interpreted as a censored observation. 
 #' @param Z Column name of additional fully observed covariates.
 #' @param data Dataframe or named matrix containing columns \code{W}, \code{Delta}, and \code{Z}.
@@ -10,6 +10,7 @@
 #' @param stratified If \code{TRUE}, stratification in \code{W} is used to construct time-varying coefficients. Default is \code{FALSE}. 
 #' @param split_data (Optional) If \code{stratified = TRUE} and \code{fit} is supplied, additional dataframe of stratified data.
 #' @param trapezoidal_rule A logical input for whether the trapezoidal rule should be used to approximate the integral in the imputed values. Default is \code{FALSE}.
+#' @param Xmax (Optional) Upper limit of the domain of the censored predictor. Default is \code{Xmax = Inf}.
 #' @param surv_between A string for the method to be used to interpolate for censored values between events. Options include \code{"carry-forward"} (default), \code{"linear"}, or \code{"mean"}.
 #' @param surv_beyond A string for the method to be used to extrapolate the survival curve beyond the last observed event. Options include \code{"drop-off"}, \code{"exponential"} (default), or \code{"weibull"}.
 #'
@@ -24,7 +25,7 @@
 #' @importFrom survival survSplit
 #' @importFrom survival cox.zph
 
-cmi_sp <- function(W, Delta, Z, data, fit = NULL, stratified = FALSE, split_data = NULL, trapezoidal_rule = FALSE, surv_between = "carry-forward", surv_beyond = "exponential") {
+cmi_sp <- function(W, Delta, Z, data, fit = NULL, stratified = FALSE, split_data = NULL, trapezoidal_rule = FALSE, Xmax = Inf, surv_between = "carry-forward", surv_beyond = "exponential") {
   fit_internally <- is.null(fit)
   
   # If no imputation model was supplied, fit a Cox PH using main effects
@@ -172,7 +173,7 @@ cmi_sp <- function(W, Delta, Z, data, fit = NULL, stratified = FALSE, split_data
       FUN = function(i) { 
         tryCatch(expr = integrate(f = to_integrate, 
                                   lower = data[i, W], 
-                                  upper = Inf, 
+                                  upper = Xmax, 
                                   subdivisions = 2000, 
                                   hr = data[i, "HR"])$value,
                  error = function(e) return(NA))

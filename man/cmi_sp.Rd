@@ -13,12 +13,13 @@ cmi_sp(
   stratified = FALSE,
   split_data = NULL,
   trapezoidal_rule = FALSE,
+  Xmax = Inf,
   surv_between = "carry-forward",
   surv_beyond = "exponential"
 )
 }
 \arguments{
-\item{W}{Column name of observed predictor values (including censored opens).}
+\item{W}{Column name of observed (possibly censored) predictor values.}
 
 \item{Delta}{Column name of censoring indicators. Note that \code{data[, Delta] = 0} is interpreted as a censored observation.}
 
@@ -33,6 +34,8 @@ cmi_sp(
 \item{split_data}{(Optional) If \code{stratified = TRUE} and \code{fit} is supplied, additional dataframe of stratified data.}
 
 \item{trapezoidal_rule}{A logical input for whether the trapezoidal rule should be used to approximate the integral in the imputed values. Default is \code{FALSE}.}
+
+\item{Xmax}{(Optional) Upper limit of the domain of the censored predictor. Default is \code{Xmax = Inf}.}
 
 \item{surv_between}{A string for the method to be used to interpolate for censored values between events. Options include \code{"carry-forward"} (default), \code{"linear"}, or \code{"mean"}.}
 
