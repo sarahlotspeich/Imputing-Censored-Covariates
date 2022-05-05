@@ -8,6 +8,7 @@
 #' @param data Dataframe or named matrix containing columns \code{W}, \code{Delta}, and \code{Z}.
 #' @param stratified A logical input for whether the Kaplan-Meier estimator should be stratified on \code{Z}. Default is \code{TRUE}.
 #' @param trapezoidal_rule A logical input for whether the trapezoidal rule should be used to approximate the integral in the imputed values. Default is \code{FALSE}.
+#' @param Xmax (Optional) Upper limit of the domain of the censored predictor. Default is \code{Xmax = Inf}.
 #' @param surv_between A string for the method to be used to interpolate for censored values between events. Options include \code{"carry-forward"} (default), \code{"linear"}, or \code{"mean"}.
 #' @param surv_beyond A string for the method to be used to extrapolate the survival curve beyond the last observed event. Options include \code{"drop-off"}, \code{"exponential"} (default), or \code{"weibull"}.
 #'
@@ -18,7 +19,7 @@
 #' @importFrom survival survfit
 #' @importFrom survival strata
 
-cmi_km <- function(W, Delta, Z = NULL, data, stratified = TRUE, trapezoidal_rule = FALSE, surv_between = "carry-forward", surv_beyond = "exponential") {
+cmi_km <- function(W, Delta, Z = NULL, data, stratified = TRUE, trapezoidal_rule = FALSE, Xmax = Inf, surv_between = "carry-forward", surv_beyond = "exponential") {
   # Fit the Kaplan-Meier estimator for S(W)
   fit_formula <- as.formula(paste0("Surv(time = ", W, ", event = ", Delta, ") ~ 1"))
   
@@ -152,7 +153,7 @@ cmi_km <- function(W, Delta, Z = NULL, data, stratified = TRUE, trapezoidal_rule
             FUN = function(i) { 
               tryCatch(expr = integrate(f = to_integrate, 
                                         lower = data[i, W], 
-                                        upper = Inf, 
+                                        upper = Xmax, 
                                         subdivisions = 2000)$value,
                        error = function(e) return(NA))
             }
@@ -246,7 +247,7 @@ cmi_km <- function(W, Delta, Z = NULL, data, stratified = TRUE, trapezoidal_rule
         FUN = function(i) { 
           tryCatch(expr = integrate(f = to_integrate, 
                                     lower = data[i, W], 
-                                    upper = Inf, 
+                                    upper = Xmax, 
                                     subdivisions = 2000)$value,
                    error = function(e) return(NA))
         }
