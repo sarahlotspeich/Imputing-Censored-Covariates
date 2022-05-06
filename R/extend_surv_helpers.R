@@ -67,26 +67,33 @@ constr_weibull_hessian <- function(t, I_event, Xtilde, rho, alpha) {
   return(H)
 }
 
-constr_weibull_mle <- function(t, I_event, Xtilde, rho, alpha0, tol = 1E-4, max_iter = 1E3) {
+constr_weibull_mle <- function(t, I_event, Xtilde, rho, alpha0, Xmax = Inf, tol = 1E-4, max_iter = 1E3) {
   t[t == 0] <- 1E-4
   
-  suppressWarnings(
-    nlm_res <- nlm(f = constr_weibull_loglik, 
-                   p = alpha0, 
-                   t = t, 
-                   I_event = I_event, 
-                   Xtilde = Xtilde, 
-                   rho = rho)
-  )
-  conv <- nlm_res$code <= 2 & nlm_res$iterations > 0 
-  
-  if (conv) {
-    alpha1 <- nlm_res$estimate
+  if (Xmax == Inf) {
+    suppressWarnings(
+      nlm_res <- nlm(f = constr_weibull_loglik, 
+                     p = alpha0, 
+                     t = t, 
+                     I_event = I_event, 
+                     Xtilde = Xtilde, 
+                     rho = rho)
+    )
+    conv <- nlm_res$code <= 2 & nlm_res$iterations > 0 
+    if (conv) {
+      alpha1 <- nlm_res$estimate
+      lambda1 <- - log(rho) / (Xtilde ^ alpha1)
+      return(c(alpha1, lambda1))  
+    } else {
+      return(c(NA, NA))
+    }
+  } else {
+    alpha1 <- log(log(rho - 1E-4) - Xtilde / Xmax) 
     lambda1 <- - log(rho) / (Xtilde ^ alpha1)
     return(c(alpha1, lambda1))  
-  } else {
-    return(c(NA, NA))
   }
+  
+  
 }
 
 extrap_surv_beyond <- function(x, t, surv, surv_beyond, weibull_params = NULL) {
