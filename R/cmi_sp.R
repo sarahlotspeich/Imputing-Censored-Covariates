@@ -109,7 +109,18 @@ cmi_sp <- function(W, Delta, Z, data, fit = NULL, stratified = FALSE, split_data
   if (surv_beyond == "weibull") {
     # Estimate Weibull parameters using constrained MLE
     SURVmax <- data[max(which(uncens)), "surv0"]
-    weibull_params <- constr_weibull_mle(t = data[, W], I_event = data[, Delta], Xtilde = Xtilde, rho = SURVmax, alpha0 = 1E-4)
+    
+    if (Xmax < Inf) {
+      weibull_params <- dbl_constr_weibull(Xtilde = Xtilde, 
+                                           rho = SURVmax, 
+                                           Xmax = Xmax)
+    } else {
+      weibull_params <- constr_weibull_mle(t = data[, W], 
+                                           I_event = data[, Delta], 
+                                           Xtilde = Xtilde, 
+                                           rho = SURVmax, 
+                                           alpha0 = 1E-4)
+    }
     
     # If weibull params don't converge, quit 
     if (any(is.na(weibull_params))) {
