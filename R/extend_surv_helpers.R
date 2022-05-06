@@ -68,6 +68,28 @@ constr_weibull_mle <- function(t, I_event, Xtilde, rho, alpha0, tol = 1E-4, max_
   }
 }
 
+surv_omega <- function(alpha, Xtilde, rho, Xmax, approx0) {
+  lambda <- - log(rho) / Xtilde ^ alpha
+  exp(- lambda * Xmax ^ alpha) - approx0
+}
+
+dbl_constr_weibull <- function(Xtilde, rho, Xmax, alpha_l = 1E-4, alpha_u = 10, tol = 1E-4, approx0 = 1E-4) {
+  find_root <- uniroot(f = surv_omega, 
+                       lower = alpha_l, 
+                       upper = alpha_u, 
+                       rho = rho,
+                       Xtilde = Xtilde, 
+                       Xmax = Xmax,
+                       approx0 = approx0)
+  if (find_root$estim.prec < tol) {
+    alpha_c <- find_root$root
+    lambda_c <- - log(rho) / Xtilde ^ alpha_c
+    return(c(alpha_c, lambda_c))
+  } else {
+    return(c(NA, NA))
+  }
+}
+
 extrap_surv_beyond <- function(x, t, surv, surv_beyond, weibull_params = NULL) {
   if (surv_beyond == "carry-forward") {
     before <- which(t <= x)
