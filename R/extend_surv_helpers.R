@@ -48,52 +48,24 @@ constr_weibull_loglik <- function(alpha, t, I_event, Xtilde, rho) {
   weibull_loglik(alpha = alpha, lambda = lambda, t = t, I_event = I_event)
 }
 
-constr_weibull_gradient <- function(t, I_event, Xtilde, rho, alpha) {
-  n1 <- sum(I_event)
-  g <- log(rho) * (Xtilde ^ - alpha) * log(Xtilde) * sum(t ^ alpha)
-  g <- g + log(rho) * (Xtilde ^ - alpha) * sum(t ^ alpha * log(t))
-  g <- g + sum(I_event * log(t))
-  g <- g - n1 * log(Xtilde) + (n1 / alpha)
-  return(g)
-}
-
-constr_weibull_hessian <- function(t, I_event, Xtilde, rho, alpha) {
-  n1 <- sum(I_event)
-  H <- log(rho) * (Xtilde ^ (- alpha)) * (log(Xtilde) ^ 2) * sum(t ^ alpha)
-  H <- H + log(rho) * (Xtilde ^ (- alpha)) * log(Xtilde) * sum(t ^ alpha * log(t))
-  H <- H + log(rho) * (Xtilde ^ (- alpha)) * log(Xtilde) * sum(t ^ alpha * log(t))
-  H <- H + log(rho) * (Xtilde ^ (- alpha)) * sum(t ^ alpha * log(t) ^ 2)
-  H <- H - n1 / (alpha ^ 2)
-  return(H)
-}
-
-constr_weibull_mle <- function(t, I_event, Xtilde, rho, alpha0, Xmax = Inf, tol = 1E-4, max_iter = 1E3) {
+constr_weibull_mle <- function(t, I_event, Xtilde, rho, alpha0, tol = 1E-4, max_iter = 1E3) {
   t[t == 0] <- 1E-4
-  
-  if (Xmax == Inf) {
-    suppressWarnings(
-      nlm_res <- nlm(f = constr_weibull_loglik, 
-                     p = alpha0, 
-                     t = t, 
-                     I_event = I_event, 
-                     Xtilde = Xtilde, 
-                     rho = rho)
-    )
-    conv <- nlm_res$code <= 2 & nlm_res$iterations > 0 
-    if (conv) {
-      alpha1 <- nlm_res$estimate
-      lambda1 <- - log(rho) / (Xtilde ^ alpha1)
-      return(c(alpha1, lambda1))  
-    } else {
-      return(c(NA, NA))
-    }
-  } else {
-    alpha1 <- log(log(rho - 1E-4) - Xtilde / Xmax) 
+  suppressWarnings(
+    nlm_res <- nlm(f = constr_weibull_loglik, 
+                   p = alpha0, 
+                   t = t, 
+                   I_event = I_event, 
+                   Xtilde = Xtilde, 
+                   rho = rho)
+  )
+  conv <- nlm_res$code <= 2 & nlm_res$iterations > 0 
+  if (conv) {
+    alpha1 <- nlm_res$estimate
     lambda1 <- - log(rho) / (Xtilde ^ alpha1)
     return(c(alpha1, lambda1))  
+  } else {
+    return(c(NA, NA))
   }
-  
-  
 }
 
 extrap_surv_beyond <- function(x, t, surv, surv_beyond, weibull_params = NULL) {
