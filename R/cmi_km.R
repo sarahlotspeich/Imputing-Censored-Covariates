@@ -86,11 +86,18 @@ cmi_km <- function(W, Delta, Z = NULL, data, stratified = TRUE, trapezoidal_rule
         # Estimate Weibull parameters using constrained MLE
         Xtilde <- data[max(which(uncens & data[, Z] == z)), W] 
         SURVmax <- data[max(which(uncens & data[, Z] == z)), "surv"]
-        weibull_params <- constr_weibull_mle(t = data[which(data[, Z] == z), W], 
-                                             I_event = data[which(data[, Z] == z), Delta], 
-                                             Xtilde = Xtilde, 
-                                             rho = SURVmax, 
-                                             alpha0 = 1E-4)
+        
+        if (Xmax < Inf) {
+          weibull_params <- dbl_constr_weibull(Xtilde = Xtilde, 
+                                               rho = SURVmax, 
+                                               Xmax = Xmax)
+        } else {
+          weibull_params <- constr_weibull_mle(t = data[which(data[, Z] == z), W], 
+                                               I_event = data[which(data[, Z] == z), Delta], 
+                                               Xtilde = Xtilde, 
+                                               rho = SURVmax, 
+                                               alpha0 = 1E-4)
+        }
         
         # If weibull params don't converge, quit 
         if (any(is.na(weibull_params))) {
