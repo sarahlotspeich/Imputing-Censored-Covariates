@@ -73,7 +73,7 @@ surv_omega <- function(alpha, Xtilde, rho, Xmax, approx0) {
   exp(- lambda * Xmax ^ alpha) - approx0
 }
 
-dbl_constr_weibull <- function(Xtilde, rho, Xmax, alpha_l = 1E-4, alpha_u = 10, tol = 1E-4, approx0 = 1E-4) {
+dbl_constr_weibull <- function(Xtilde, rho, Xmax, alpha_l = 1E-4, alpha_u = 10, tol = 1E-2, approx0 = 1E-4) {
   find_root <- uniroot(f = surv_omega, 
                        lower = alpha_l, 
                        upper = alpha_u, 
