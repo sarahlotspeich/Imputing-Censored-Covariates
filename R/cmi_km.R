@@ -47,7 +47,10 @@ cmi_km <- function(W, Delta, Z = NULL, data, stratified = TRUE, trapezoidal_rule
   }
   
   # Merge survival estimates into data
-  data <- merge(x = data, y = surv_df, all.x = TRUE, sort = FALSE)
+  data <- merge(x = data, 
+                y = surv_df, 
+                all.x = TRUE, 
+                sort = FALSE)
   
   # Order data by W
   data <- data[order(data[, W]), ]
