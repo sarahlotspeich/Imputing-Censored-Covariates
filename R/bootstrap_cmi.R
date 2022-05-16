@@ -123,5 +123,5 @@ bootstrap_cmi <- function(analysis_model, transform_imp = NULL, W, Delta, Z, dat
   # Return SE and 95% interval
   return(list(table = data.frame(Coeff = names(re_fit$coefficients), 
                                  SE = se, LB = lb, UB = ub), 
-              vcov = cov(re_res, na.rm = TRUE)))
+              vcov = cov(re_res, use = "complete.obs")))
 }
