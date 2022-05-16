@@ -74,14 +74,15 @@ surv_omega <- function(alpha, Xtilde, rho, Xmax, approx0) {
 }
 
 dbl_constr_weibull <- function(Xtilde, rho, Xmax, alpha_l = 1E-4, alpha_u = 10, tol = 1E-2, approx0 = 1E-4) {
-  find_root <- uniroot(f = surv_omega, 
-                       lower = alpha_l, 
-                       upper = alpha_u, 
-                       extendInt = "yes",
-                       rho = rho,
-                       Xtilde = Xtilde, 
-                       Xmax = Xmax,
-                       approx0 = approx0)
+  find_root <- tryCatch(expr = uniroot(f = surv_omega, 
+                                       lower = alpha_l, 
+                                       upper = alpha_u, 
+                                       extendInt = "yes",
+                                       rho = rho,
+                                       Xtilde = Xtilde, 
+                                       Xmax = Xmax,
+                                       approx0 = approx0),
+                        error = function(e) return(list(estim.prec = 99999)))
   if (find_root$estim.prec < tol) {
     alpha_c <- find_root$root
     lambda_c <- - log(rho) / Xtilde ^ alpha_c
