@@ -21,7 +21,7 @@ cmi_km(
 
 \item{Delta}{Column name of censoring indicators. Note that \code{Delta = 0} is interpreted as a censored observation.}
 
-\item{Z}{Column name of additional fully observed binary covariate. If provided and \code{stratified = TRUE}, the Kaplan-Meier estimator will be stratified on \code{Z}.}
+\item{Z}{Column name of additional fully observed categorical covariate. If provided and \code{stratified = TRUE}, the Kaplan-Meier estimator will be stratified on \code{Z}.}
 
 \item{data}{Dataframe or named matrix containing columns \code{W}, \code{Delta}, and \code{Z}.}
 

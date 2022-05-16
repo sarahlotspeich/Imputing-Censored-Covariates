@@ -4,7 +4,7 @@
 #'
 #' @param W Column name of observed predictor values (including censored opens). 
 #' @param Delta Column name of censoring indicators. Note that \code{Delta = 0} is interpreted as a censored observation. 
-#' @param Z Column name of additional fully observed binary covariate. If provided and \code{stratified = TRUE}, the Kaplan-Meier estimator will be stratified on \code{Z}.
+#' @param Z Column name of additional fully observed categorical covariate. If provided and \code{stratified = TRUE}, the Kaplan-Meier estimator will be stratified on \code{Z}.
 #' @param data Dataframe or named matrix containing columns \code{W}, \code{Delta}, and \code{Z}.
 #' @param stratified A logical input for whether the Kaplan-Meier estimator should be stratified on \code{Z}. Default is \code{TRUE}.
 #' @param trapezoidal_rule A logical input for whether the trapezoidal rule should be used to approximate the integral in the imputed values. Default is \code{FALSE}.
@@ -17,28 +17,26 @@
 #' @export
 #' @importFrom survival Surv
 #' @importFrom survival survfit
-#' @importFrom survival strata
 
 cmi_km <- function(W, Delta, Z = NULL, data, stratified = TRUE, trapezoidal_rule = FALSE, Xmax = Inf, surv_between = "carry-forward", surv_beyond = "exponential") {
   # Fit the Kaplan-Meier estimator for S(W)
   fit_formula <- as.formula(paste0("Surv(time = ", W, ", event = ", Delta, ") ~ 1"))
   
-  # If (binary) Z is supplied, fit separate models for Z = 0/ Z = 1
+  # If (categorical) Z is supplied, fit separate models for Z = 0/ Z = 1
   if (!is.null(Z) & stratified) {
-    # Z = 0
-    fit0 <- survfit(formula = fit_formula, 
-                    data = data[data[, Z] == 0, ])
-    surv_df0 <- data.frame(x = fit0$time, z = 0, surv = fit0$surv)
-    colnames(surv_df0)[1:2] <- c(W, Z)
+    levelsZ <- unique(data[, Z])
+    surv_df <- data.frame()
     
-    # Z = 0
-    fit1 <- survfit(formula = fit_formula, 
-                    data = data[data[, Z] == 1, ])
-    surv_df1 <- data.frame(x = fit1$time, z = 1, surv = fit1$surv)
-    colnames(surv_df1)[1:2] <- c(W, Z)
-    
-    # Combine 
-    surv_df <- rbind(surv_df0, surv_df1)
+    for (z in levelsZ) {
+      # Z = z
+      fit_z <- survfit(formula = fit_formula, 
+                     data = data[data[, Z] == z, ])
+      surv_df_z <- data.frame(x = fit_z$time, z, surv = fit_z$surv)
+      colnames(surv_df_z)[1:2] <- c(W, Z)
+      
+      # Combine 
+      surv_df <- rbind(surv_df, surv_df_z)
+    }
   } else {
     fit <- survfit(formula = fit_formula, 
                    data = data)
@@ -69,7 +67,6 @@ cmi_km <- function(W, Delta, Z = NULL, data, stratified = TRUE, trapezoidal_rule
   
   # If stratifying on Z, do the following within strata Z = 0 / Z = 1
   if (!is.null(Z) & stratified) {
-    levelsZ <- unique(data[, Z])
     for (z in levelsZ) {
       # Assume survival at censored W < min(X) = 1
       minX <- data[min(which(uncens & data[, Z] == z)), W] 
