@@ -56,7 +56,6 @@ bootstrap_cmi <- function(analysis_model, transform_imp = NULL, W, Delta, Z, dat
                               Delta = Delta, 
                               Z = Z, 
                               data = re_data,
-                              stratified = stratified, 
                               trapezoidal_rule = trapezoidal_rule,
                               Xmax = Xmax,
                               surv_between = surv_between, 
