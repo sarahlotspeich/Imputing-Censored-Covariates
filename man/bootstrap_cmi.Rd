@@ -6,6 +6,7 @@
 \usage{
 bootstrap_cmi(
   analysis_model,
+  transform_imp = NULL,
   W,
   Delta,
   Z,
@@ -21,7 +22,9 @@ bootstrap_cmi(
 )
 }
 \arguments{
-\item{analysis_model}{A formula input for the final analysis model of interest. Note that}
+\item{analysis_model}{A formula input for the final analysis model of interest.}
+
+\item{transform_imp}{(Optional) A function to transform the imputed values before fitting \code{analysis_model}.}
 
 \item{W}{Column name of observed predictor values (including censored opens).}
 

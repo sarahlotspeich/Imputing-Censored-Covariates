@@ -2,7 +2,8 @@
 #'
 #' Bootstrap standard errors / confidence intervals for conditional mean imputation (CMI) for a censored predictor.
 #'
-#' @param analysis_model A formula input for the final analysis model of interest. Note that  
+#' @param analysis_model A formula input for the final analysis model of interest.
+#' @param transform_imp (Optional) A function to transform the imputed values before fitting \code{analysis_model}.
 #' @param W Column name of observed predictor values (including censored opens). 
 #' @param Delta Column name of censoring indicators. Note that \code{Delta = 0} is interpreted as a censored observation. 
 #' @param Z Column name of additional fully observed covariates.
@@ -20,7 +21,7 @@
 #' \item{vcov}{An estimate of the covariance matrix.}
 #' @export
 
-bootstrap_cmi <- function(analysis_model, W, Delta, Z, data, est_surv, trapezoidal_rule = FALSE, Xmax = Inf, dist = "weibull", surv_between = "carry-forward", surv_beyond = "exponential", useSURV, B = 1000) {
+bootstrap_cmi <- function(analysis_model, transform_imp = NULL, W, Delta, Z, data, est_surv, trapezoidal_rule = FALSE, Xmax = Inf, dist = "weibull", surv_between = "carry-forward", surv_beyond = "exponential", useSURV, B = 1000) {
   # Create matrix to hold results from bootstrap replicates 
   re_res <- matrix(data = NA, nrow = B, ncol = (length(Z) + 2))
   
@@ -79,6 +80,9 @@ bootstrap_cmi <- function(analysis_model, W, Delta, Z, data, est_surv, trapezoid
       
       # If imputation was successful, fit the analysis model ------------
       if (re_data_imp$code) {
+        if (!is.null(transform_imp)) {
+          re_data_imp$imputed_data$imp <- transform_imp(re_data_imp$imputed_data$imp)
+        }
         re_fit <- lm(formula = analysis_model, 
                      data = re_data_imp$imputed_data) 
         ## Save coefficients to results matrix
