@@ -22,9 +22,6 @@
 #' @export
 
 bootstrap_cmi <- function(analysis_model, transform_imp = NULL, W, Delta, Z, data, est_surv, trapezoidal_rule = FALSE, Xmax = Inf, dist = "weibull", surv_between = "carry-forward", surv_beyond = "exponential", useSURV, B = 1000) {
-  # Create matrix to hold results from bootstrap replicates 
-  re_res <- matrix(data = NA, nrow = B, ncol = (length(Z) + 2))
-  
   # Size of resample
   n <- nrow(data)
   
@@ -84,7 +81,13 @@ bootstrap_cmi <- function(analysis_model, transform_imp = NULL, W, Delta, Z, dat
           re_data_imp$imputed_data$imp <- transform_imp(re_data_imp$imputed_data$imp)
         }
         re_fit <- lm(formula = analysis_model, 
-                     data = re_data_imp$imputed_data) 
+                     data = re_data_imp$imputed_data)
+        
+        ## Create matrix to hold results from bootstrap replicates 
+        if (b == 1) {
+          re_res <- matrix(data = NA, nrow = B, ncol = length(re_fit$coefficients))
+        }
+        
         ## Save coefficients to results matrix
         re_res[b, ] <- re_fit$coefficients
       }
@@ -92,6 +95,12 @@ bootstrap_cmi <- function(analysis_model, transform_imp = NULL, W, Delta, Z, dat
       # If no censored, just fit the usual model
       re_data$imp <- re_data[, W]
       re_fit <- lm(formula = analysis_model, data = re_data) 
+      
+      ## Create matrix to hold results from bootstrap replicates 
+      if (b == 1) {
+        re_res <- matrix(data = NA, nrow = B, ncol = length(re_fit$coefficients))
+      }
+      
       ## Save coefficients to results matrix
       re_res[b, ] <- re_fit$coefficients
     }
