@@ -28,9 +28,10 @@ cmi_km <- function(W, Delta, Z = NULL, data, stratified = TRUE, trapezoidal_rule
     surv_df <- data.frame()
     
     for (z in levelsZ) {
-      # Z = z
+      # Fit KM within strata with Z = z
+      has_z <- data[, Z] == z
       fit_z <- survfit(formula = fit_formula, 
-                     data = data[data[, Z] == z, ])
+                     data = data[has_z, ])
       surv_df_z <- data.frame(x = fit_z$time, z, surv = fit_z$surv)
       colnames(surv_df_z)[1:2] <- c(W, Z)
       
@@ -68,200 +69,49 @@ cmi_km <- function(W, Delta, Z = NULL, data, stratified = TRUE, trapezoidal_rule
   # If stratifying on Z, do the following within strata Z = 0 / Z = 1
   if (!is.null(Z) & stratified) {
     for (z in levelsZ) {
-      # Assume survival at censored W < min(X) = 1
-      minX <- data[min(which(uncens & data[, Z] == z)), W] 
-      data[which(data[, W] < minX & data[, Z] == z), "surv"] <- 1
+      # Indicator for having Z = z
+      has_z <- data[, Z] == z
       
-      # Interpolate baseline survival at censored W < \widetilde{X}
-      Xtilde <- data[max(which(uncens & data[, Z] == z)), W] 
-      needs_interp <- which(is.na(data[, "surv"]) & data[, Z] == z & data[, W] < Xtilde)
-      data[needs_interp, "surv"] <- sapply(X = data[needs_interp, W], 
-                                           FUN = interp_surv_between, 
-                                           t = km_surv[which(km_surv[, Z] == z), W], 
-                                           surv = km_surv[which(km_surv[, Z] == z), "surv"], 
-                                           surv_between = surv_between)
+      # Subset to data having Z = z
+      data_z <- data[has_z, ]
       
-      # Extrapolate baseline survival at censored W > \widetilde{X}
-      if (surv_beyond == "weibull") {
-        # Estimate Weibull parameters using constrained MLE
-        Xtilde <- data[max(which(uncens & data[, Z] == z)), W] 
-        SURVmax <- data[max(which(uncens & data[, Z] == z)), "surv"]
-        
-        if (Xmax < Inf) {
-          weibull_params <- dbl_constr_weibull(Xtilde = Xtilde, 
-                                               rho = SURVmax, 
-                                               Xmax = Xmax)
-        } else {
-          weibull_params <- constr_weibull_mle(t = data[which(data[, Z] == z), W], 
-                                               I_event = data[which(data[, Z] == z), Delta], 
-                                               Xtilde = Xtilde, 
-                                               rho = SURVmax, 
-                                               alpha0 = 1E-4)
-        }
-        
-        # If weibull params don't converge, quit 
-        if (any(is.na(weibull_params))) {
-          data$imp <- NA
-          return(list(imputed_data = data, code = FALSE))   
-        }
-        
-        # If they do, extrapolate with them 
-        needs_extrap <- which(!uncens & data[, W] > Xtilde & data[, Z] == z)
-        data[needs_extrap, "surv"] <- sapply(X = data[needs_extrap, W], 
-                                             FUN = extrap_surv_beyond, 
-                                             t = km_surv[which(km_surv[, Z] == z), W], 
-                                             surv = km_surv[which(km_surv[, Z] == z), "surv"], 
-                                             surv_beyond = surv_beyond, 
-                                             weibull_params = weibull_params)
+      # Extend survival curve and impute censored W
+      res <- extend_and_impute(data = data_z, 
+                               W = W, 
+                               Delta = Delta, 
+                               Z = Z, 
+                               S = "surv", 
+                               S0 = NULL, 
+                               Xmax = Xmax, 
+                               trapezoidal_rule = trapezoidal_rule, 
+                               surv_between = surv_between, 
+                               surv_beyond = surv_beyond)
+      
+      # Combine imputed data_z with the rest of data 
+      if (res$code) {
+        data <- rbind(data[!has_z, ], res$data)
       } else {
-        needs_extrap <- which(!uncens & data[, W] > Xtilde & data[, Z] == z)
-        data[needs_extrap, "surv"] <- sapply(X = data[needs_extrap, W], 
-                                             FUN = extrap_surv_beyond, 
-                                             t = km_surv[which(km_surv[, Z] == z), W], 
-                                             surv = km_surv[which(km_surv[, Z] == z), "surv"], 
-                                             surv_beyond = surv_beyond)
-        weibull_params <- NULL
-      }
-      
-      # Calculate imputed values E(X|X>W,Z)
-      needs_impute <- which(!uncens & data[, Z] == z) # Row IDs in need of imputation with Z = z
-      if (length(needs_impute) > 0) {
-        if (trapezoidal_rule) {
-          # Distinct rows (in case of non-unique obs values)
-          data_dist <- unique(data[which(data[, Z] == z), c(W, Delta, Z, "surv")])
-          
-          # [T_{(i+1)} - T_{(i)}]
-          t_diff <- data_dist[- 1, W] - data_dist[- nrow(data_dist), W]
-          
-          # S(t+1) + S(t)
-          surv_sum <- data_dist[-1, "surv"] + data_dist[- nrow(data_dist), "surv"]
-          
-          # Use trapezoidal approximation for integral
-          for (i in needs_impute) {
-            sum_surv_i <- sum((data_dist[- nrow(data_dist), W] >= as.numeric(data[i, W])) * surv_sum * t_diff)
-            data$imp[i] <- data$imp[i] + (1 / 2) * (sum_surv_i /  data[i, "surv"])
-          }
-        } else {
-          # Builds on the extend_surv function by raising S(t)
-          to_integrate <- function(t) {
-            surv <- sapply(X = t, 
-                           FUN = extend_surv, 
-                           t = km_surv[which(km_surv[, Z] == z), W], 
-                           surv = km_surv[which(km_surv[, Z] == z), "surv"],
-                           surv_between = surv_between, 
-                           surv_beyond = surv_beyond, 
-                           weibull_params = weibull_params)  
-            surv
-          }
-          
-          ## Use integrate() to approximate integral from W to \infty of S(t)
-          int_surv <- sapply(
-            X = needs_impute, 
-            FUN = function(i) { 
-              tryCatch(expr = integrate(f = to_integrate, 
-                                        lower = data[i, W], 
-                                        upper = Xmax, 
-                                        subdivisions = 2000)$value,
-                       error = function(e) return(NA))
-            }
-          )
-          
-          ## Calculate E(X|X>W) = W + int_surv / surv(W)
-          data$imp[needs_impute] <- data[needs_impute, W] + int_surv / data[needs_impute, "surv"]
-        }  
+        data$imp <- NA
+        return(list(imputed_data = data, code = FALSE))
       }
     }
   } else {
-    # Assume survival at censored W < min(X) = 1
-    minX <- data[min(which(uncens)), W] 
-    data[which(data[, W] < minX), "surv"] <- 1
-    
-    # Interpolate baseline survival at censored W < \widetilde{X}
-    Xtilde <- data[max(which(uncens)), W] 
-    needs_interp <- which(is.na(data[, "surv"]) & data[, W] < Xtilde)
-    data[needs_interp, "surv"] <- sapply(X = data[needs_interp, W], 
-                                         FUN = interp_surv_between, 
-                                         t = km_surv[, W], 
-                                         surv = km_surv[, "surv"], 
-                                         surv_between = surv_between)
-    
-    # Extrapolate baseline survival at censored W > \widetilde{X}
-    if (surv_beyond == "weibull") {
-      # Estimate Weibull parameters using constrained MLE
-      SURVmax <- data[max(which(uncens)), "surv"]
-      weibull_params <- constr_weibull_mle(t = data[, W], 
-                                           I_event = data[, Delta], 
-                                           Xtilde = Xtilde, 
-                                           rho = SURVmax, 
-                                           alpha0 = 1E-4)
-      
-      # If weibull params don't converge, quit 
-      if (any(is.na(weibull_params))) {
-        data$imp <- NA
-        return(list(imputed_data = data, code = FALSE))   
-      }
-      
-      # If they do, extrapolate with them 
-      needs_extrap <- which(!uncens & data[, W] > Xtilde)
-      data[needs_extrap, "surv"] <- sapply(X = data[needs_extrap, W], 
-                                           FUN = extrap_surv_beyond, 
-                                           t = km_surv[, W], 
-                                           surv = km_surv[, "surv"], 
-                                           surv_beyond = surv_beyond, 
-                                           weibull_params = weibull_params)
+    # Extend survival curve and impute censored W
+    res <- extend_and_impute(data = data, 
+                             W = W, 
+                             Delta = Delta, 
+                             Z = Z, 
+                             S = "surv", 
+                             S0 = NULL, 
+                             Xmax = Xmax, 
+                             trapezoidal_rule = trapezoidal_rule, 
+                             surv_between = surv_between, 
+                             surv_beyond = surv_beyond)
+    if (res$code) {
+      data <- res$data
     } else {
-      needs_extrap <- which(!uncens & data[, W] > Xtilde)
-      data[needs_extrap, "surv"] <- sapply(X = data[needs_extrap, W], 
-                                           FUN = extrap_surv_beyond, 
-                                           t = km_surv[, W], 
-                                           surv = km_surv[, "surv"], 
-                                           surv_beyond = surv_beyond)
-      weibull_params <- NULL
-    }
-    
-    # Calculate imputed values E(X|X>W)
-    if (trapezoidal_rule) {
-      # Distinct rows (in case of non-unique obs values)
-      data_dist <- unique(data[, c(W, Delta, Z, "surv")])
-      
-      # [T_{(i+1)} - T_{(i)}]
-      t_diff <- data_dist[- 1, W] - data_dist[- nrow(data_dist), W]
-      
-      # S(t+1) + S(t)
-      surv_sum <- data_dist[-1, "surv"] + data_dist[- nrow(data_dist), "surv"]
-      
-      # Use trapezoidal approximation for integral
-      for (i in which(!uncens)) {
-        sum_surv_i <- sum((data_dist[- nrow(data_dist), W] >= as.numeric(data[i, W])) * surv_sum * t_diff)
-        data$imp[i] <- data$imp[i] + (1 / 2) * (sum_surv_i /  data[i, "surv"])
-      }
-    } else {
-      # Builds on the extend_surv function by raising S(t)
-      to_integrate <- function(t) {
-        surv <- sapply(X = t, 
-                       FUN = extend_surv, 
-                       t = surv_df[, W], 
-                       surv = surv_df[, "surv"], 
-                       surv_between = surv_between, 
-                       surv_beyond = surv_beyond, 
-                       weibull_params = weibull_params)  
-        surv
-      }
-      
-      ## Use integrate() to approximate integral from W to \infty of S(t)
-      int_surv <- sapply(
-        X = which(!uncens), 
-        FUN = function(i) { 
-          tryCatch(expr = integrate(f = to_integrate, 
-                                    lower = data[i, W], 
-                                    upper = Xmax, 
-                                    subdivisions = 2000)$value,
-                   error = function(e) return(NA))
-        }
-      )
-      
-      ## Calculate E(X|X>W) = W + int_surv / surv(W)
-      data$imp[which(!uncens)] <- data[which(!uncens), W] + int_surv / data[which(!uncens), "surv"]
+      data$imp <- NA
+      return(list(imputed_data = data, code = FALSE))
     }
   }
   
