@@ -126,5 +126,6 @@ cmi_km <- function(W, Delta, Z = NULL, data, stratified = TRUE, trapezoidal_rule
   }
   
   # Return input dataset with appended column imp containing imputed values 
-  return(list(imputed_data = data, code = !any(is.na(data$imp))))
+  return(list(imputed_data = data, 
+              code = !any(is.na(data$imp))))
 }
