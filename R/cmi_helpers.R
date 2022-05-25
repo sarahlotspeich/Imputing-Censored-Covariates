@@ -85,76 +85,79 @@ impute_cens_W <- function(data, W, Delta, Z, S, S0, Xmax, trapezoidal_rule, surv
   # Row IDs in need of imputation
   needs_impute <- which(data[, Delta] == 0) 
   
-  # Calculate imputed values 
-  if (trapezoidal_rule) {
-    # Distinct rows (in case of non-unique obs values)
-    data_dist <- unique(data[, c(W, Delta, Z, S)])
-    
-    # [T_{(i+1)} - T_{(i)}]
-    t_diff <- data_dist[- 1, W] - data_dist[- nrow(data_dist), W]
-    
-    # S(t+1) + S(t)
-    surv_sum <- data_dist[-1, S] + data_dist[- nrow(data_dist), S]
-    
-    # Use trapezoidal approximation for integral
-    for (i in needs_impute) {
-      sum_surv_i <- sum((data_dist[- nrow(data_dist), W] >= as.numeric(data[i, W])) * surv_sum * t_diff)
-      data$imp[i] <- data$imp[i] + (1 / 2) * (sum_surv_i /  data[i, S])
-    }
-  } else {
-    
-    if (!is.null(S0)) {
-      # Builds on the extend_surv function by raising S_0(t) ^ HR = S(t|Z)
-      to_integrate <- function(t, hr) {
-        basesurv <- sapply(X = t, 
-                           FUN = extend_surv, 
-                           t = surv_df[, W], 
-                           surv = surv_df[, S0], 
-                           surv_between = surv_between, 
-                           surv_beyond = surv_beyond, 
-                           weibull_params = weibull_params)  
-        basesurv ^ as.numeric(hr)
+  # Check that imputation is needed
+  if (length(needs_impute) > 0) {
+    # Calculate imputed values 
+    if (trapezoidal_rule) {
+      # Distinct rows (in case of non-unique obs values)
+      data_dist <- unique(data[, c(W, Delta, Z, S)])
+      
+      # [T_{(i+1)} - T_{(i)}]
+      t_diff <- data_dist[- 1, W] - data_dist[- nrow(data_dist), W]
+      
+      # S(t+1) + S(t)
+      surv_sum <- data_dist[-1, S] + data_dist[- nrow(data_dist), S]
+      
+      # Use trapezoidal approximation for integral
+      for (i in needs_impute) {
+        sum_surv_i <- sum((data_dist[- nrow(data_dist), W] >= as.numeric(data[i, W])) * surv_sum * t_diff)
+        data$imp[i] <- data$imp[i] + (1 / 2) * (sum_surv_i /  data[i, S])
+      }
+    } else {
+      
+      if (!is.null(S0)) {
+        # Builds on the extend_surv function by raising S_0(t) ^ HR = S(t|Z)
+        to_integrate <- function(t, hr) {
+          basesurv <- sapply(X = t, 
+                             FUN = extend_surv, 
+                             t = surv_df[, W], 
+                             surv = surv_df[, S0], 
+                             surv_between = surv_between, 
+                             surv_beyond = surv_beyond, 
+                             weibull_params = weibull_params)  
+          basesurv ^ as.numeric(hr)
+        }
+        
+        ## Use integrate() to approximate integral from W to Xmax of S(t|Z)
+        int_surv <- sapply(
+          X = needs_impute, 
+          FUN = function(i) { 
+            tryCatch(expr = integrate(f = to_integrate, 
+                                      lower = data[i, W], 
+                                      upper = Xmax, 
+                                      subdivisions = 2000, 
+                                      hr = data[i, "HR"])$value,
+                     error = function(e) return(NA))
+          }
+        )
+      } else {
+        to_integrate <- function(t) {
+          surv <- sapply(X = t, 
+                         FUN = extend_surv, 
+                         t = surv_df[, W], 
+                         surv = surv_df[, S],
+                         surv_between = surv_between, 
+                         surv_beyond = surv_beyond, 
+                         weibull_params = weibull_params)  
+          surv
+        } 
+        
+        ## Use integrate() to approximate integral from W to Xmax of S(t)
+        int_surv <- sapply(
+          X = needs_impute, 
+          FUN = function(i) { 
+            tryCatch(expr = integrate(f = to_integrate, 
+                                      lower = data[i, W], 
+                                      upper = Xmax, 
+                                      subdivisions = 2000)$value,
+                     error = function(e) return(NA))
+          }
+        )
       }
       
-      ## Use integrate() to approximate integral from W to Xmax of S(t|Z)
-      int_surv <- sapply(
-        X = needs_impute, 
-        FUN = function(i) { 
-          tryCatch(expr = integrate(f = to_integrate, 
-                                    lower = data[i, W], 
-                                    upper = Xmax, 
-                                    subdivisions = 2000, 
-                                    hr = data[i, "HR"])$value,
-                   error = function(e) return(NA))
-        }
-      )
-    } else {
-      to_integrate <- function(t) {
-        surv <- sapply(X = t, 
-                       FUN = extend_surv, 
-                       t = surv_df[, W], 
-                       surv = surv_df[, S],
-                       surv_between = surv_between, 
-                       surv_beyond = surv_beyond, 
-                       weibull_params = weibull_params)  
-        surv
-      } 
-      
-      ## Use integrate() to approximate integral from W to Xmax of S(t)
-      int_surv <- sapply(
-        X = needs_impute, 
-        FUN = function(i) { 
-          tryCatch(expr = integrate(f = to_integrate, 
-                                    lower = data[i, W], 
-                                    upper = Xmax, 
-                                    subdivisions = 2000)$value,
-                   error = function(e) return(NA))
-        }
-      )
+      ## Calculate E(X|X>W) = W + int_surv / surv(W)
+      data$imp[needs_impute] <- data[needs_impute, W] + int_surv / data[needs_impute, S]
     }
-    
-    ## Calculate E(X|X>W) = W + int_surv / surv(W)
-    data$imp[needs_impute] <- data[needs_impute, W] + int_surv / data[needs_impute, S]
   }
   
   # Return data with imputed predictors (imp)
