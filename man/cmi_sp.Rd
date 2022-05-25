@@ -9,9 +9,6 @@ cmi_sp(
   Delta,
   Z,
   data,
-  fit = NULL,
-  stratified = FALSE,
-  split_data = NULL,
   trapezoidal_rule = FALSE,
   Xmax = Inf,
   surv_between = "carry-forward",
@@ -26,12 +23,6 @@ cmi_sp(
 \item{Z}{Column name of additional fully observed covariates.}
 
 \item{data}{Dataframe or named matrix containing columns \code{W}, \code{Delta}, and \code{Z}.}
-
-\item{fit}{(Optional) A \code{coxph} imputation model object modeling \code{W} on \code{Z}. If \code{fit = NULL} (default), the Cox model with only main effects for \code{Z} is used.}
-
-\item{stratified}{If \code{TRUE}, stratification in \code{W} is used to construct time-varying coefficients. Default is \code{FALSE}.}
-
-\item{split_data}{(Optional) If \code{stratified = TRUE} and \code{fit} is supplied, additional dataframe of stratified data.}
 
 \item{trapezoidal_rule}{A logical input for whether the trapezoidal rule should be used to approximate the integral in the imputed values. Default is \code{FALSE}.}
 
