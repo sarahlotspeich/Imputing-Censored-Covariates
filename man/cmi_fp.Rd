@@ -12,6 +12,7 @@ cmi_fp(
   fit = NULL,
   dist = "weibull",
   trapezoidal_rule = FALSE,
+  Xmax = Inf,
   maxiter = 100
 )
 }
@@ -29,6 +30,8 @@ cmi_fp(
 \item{dist}{Assumed distribution for \code{W} in the AFT model, passed to \code{survival::survreg()}. Default is \code{"weibull"}.}
 
 \item{trapezoidal_rule}{A logical input for whether the trapezoidal rule should be used to approximate the integral in the imputed values. Default is \code{FALSE}.}
+
+\item{Xmax}{(Optional) Upper limit of the domain of the censored predictor. Default is \code{Xmax = Inf}.}
 
 \item{max_iter}{Maximum iterations allowed in call to \code{survival::survreg()}. Default is \code{100}.}
 }

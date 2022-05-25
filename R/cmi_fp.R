@@ -9,6 +9,7 @@
 #' @param fit A \code{survreg} imputation model object modeling \code{W} on \code{Z}. If \code{fit = NULL} (default), the AFT model with only main effects for \code{Z} and assuming a Weibull distribution is fit internally and used.
 #' @param dist Assumed distribution for \code{W} in the AFT model, passed to \code{survival::survreg()}. Default is \code{"weibull"}.
 #' @param trapezoidal_rule A logical input for whether the trapezoidal rule should be used to approximate the integral in the imputed values. Default is \code{FALSE}.
+#' @param Xmax (Optional) Upper limit of the domain of the censored predictor. Default is \code{Xmax = Inf}.
 #' @param max_iter Maximum iterations allowed in call to \code{survival::survreg()}. Default is \code{100}.
 #'
 #' @return 
@@ -20,7 +21,7 @@
 #' @importFrom survival Surv 
 #' @importFrom survival psurvreg
 
-cmi_fp <- function(W, Delta, Z, data, fit = NULL, dist = "weibull", trapezoidal_rule = FALSE, maxiter = 100) {
+cmi_fp <- function(W, Delta, Z, data, fit = NULL, dist = "weibull", trapezoidal_rule = FALSE, Xmax = Inf, maxiter = 100) {
   # If no imputation model was supplied, fit an AFT model using main effects
   if (is.null(fit)) {
     fit_formula <- as.formula(paste0("Surv(time = ", W, ", event = ", Delta, ") ~ ", paste0(Z, collapse = " + ")))
@@ -71,7 +72,9 @@ cmi_fp <- function(W, Delta, Z, data, fit = NULL, dist = "weibull", trapezoidal_
     int_surv <- sapply(
       X = which(!uncens), 
       FUN = function(i) { 
-        tryCatch(expr = integrate(f = function(t) 1 - psurvreg(q = t, mean = lp[i], scale = fit$scale, distribution = dist), lower = data[i, W], upper = Inf)$value,
+        tryCatch(expr = integrate(f = function(t) 1 - psurvreg(q = t, mean = lp[i], scale = fit$scale, distribution = dist), 
+                                  lower = data[i, W], 
+                                  upper = Xmax)$value,
                  error = function(e) return(NA))
       }
     )
