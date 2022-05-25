@@ -12,7 +12,9 @@
 #' @param surv_between A string for the method to be used to interpolate for censored values between events. Options include \code{"carry-forward"} (default), \code{"linear"}, or \code{"mean"}.
 #' @param surv_beyond A string for the method to be used to extrapolate the survival curve beyond the last observed event. Options include \code{"drop-off"}, \code{"exponential"} (default), or \code{"weibull"}.
 #'
-#' @return A copy of \code{data} with added column \code{imp} containing the imputed values.
+#' @return 
+#' \item{imputed_data}{A copy of \code{data} with added column \code{imp} containing the imputed values.}
+#' \item{code}{Indicator of algorithm status (\code{TRUE} or \code{FALSE}).}
 #'
 #' @export
 #' @importFrom survival Surv

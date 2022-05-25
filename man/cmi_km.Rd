@@ -36,7 +36,8 @@ cmi_km(
 \item{surv_beyond}{A string for the method to be used to extrapolate the survival curve beyond the last observed event. Options include \code{"drop-off"}, \code{"exponential"} (default), or \code{"weibull"}.}
 }
 \value{
-A copy of \code{data} with added column \code{imp} containing the imputed values.
+\item{imputed_data}{A copy of \code{data} with added column \code{imp} containing the imputed values.}
+\item{code}{Indicator of algorithm status (\code{TRUE} or \code{FALSE}).}
 }
 \description{
 Nonparametric conditional mean imputation (CMI) for a censored predictor using a Kaplan-Meier product-limit estimator for estimate survival.
