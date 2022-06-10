@@ -14,7 +14,6 @@
 #' @return 
 #' \item{imputed_data}{A copy of \code{data} with added column \code{imp} containing the imputed values.}
 #' \item{code}{Indicator of algorithm status (\code{TRUE} or \code{FALSE}).}
-#' \item{splits}{(If \code{stratified = TRUE}) The number of strata used.}
 #'
 #' @export
 #' @importFrom survival coxph 

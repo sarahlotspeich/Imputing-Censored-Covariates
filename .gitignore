@@ -12,3 +12,5 @@ imputeCensoRd/imputeCensoRd.Rproj
 imputeCensoRd/.Rbuildignore
 
 imputeCensRd/.RData
+
+.RData
