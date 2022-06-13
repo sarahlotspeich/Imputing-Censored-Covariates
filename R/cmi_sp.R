@@ -48,14 +48,13 @@ cmi_sp <- function (W, Delta, Z, data, trapezoidal_rule = FALSE, Xmax = Inf, sur
                                         t = surv_df[, W], 
                                         surv = surv_df[, "surv0"], 
                                         surv_between = surv_between)
-  if (surv_beyond == "weibull") {
+  if (surv_beyond == "w") {
     SURVmax <- data[max(which(uncens)), "surv0"]
     if (Xmax < Inf) {
       weibull_params <- dbl_constr_weibull(Xtilde = Xtilde, 
                                            rho = SURVmax, 
                                            Xmax = Xmax)
-    }
-    else {
+    } else {
       weibull_params <- constr_weibull_mle(t = data[, W], 
                                            I_event = data[, Delta], 
                                            Xtilde = Xtilde, 
