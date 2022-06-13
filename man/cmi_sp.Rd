@@ -11,8 +11,8 @@ cmi_sp(
   data,
   trapezoidal_rule = FALSE,
   Xmax = Inf,
-  surv_between = "carry-forward",
-  surv_beyond = "exponential"
+  surv_between = "cf",
+  surv_beyond = "e"
 )
 }
 \arguments{
@@ -28,9 +28,9 @@ cmi_sp(
 
 \item{Xmax}{(Optional) Upper limit of the domain of the censored predictor. Default is \code{Xmax = Inf}.}
 
-\item{surv_between}{A string for the method to be used to interpolate for censored values between events. Options include \code{"carry-forward"} (default), \code{"linear"}, or \code{"mean"}.}
+\item{surv_between}{A string for the method to be used to interpolate for censored values between events. Options include \code{"cf"} (carry forward, the default), \code{"wm"} (weighted mean), or \code{"m"} (mean).}
 
-\item{surv_beyond}{A string for the method to be used to extrapolate the survival curve beyond the last observed event. Options include \code{"drop-off"}, \code{"exponential"} (default), or \code{"weibull"}.}
+\item{surv_beyond}{A string for the method to be used to extrapolate the survival curve beyond the last observed event. Options include \code{"d"} (immediate drop off), \code{"e"} (exponential extension, the default), or \code{"w"} (weibull extension).}
 }
 \value{
 \item{imputed_data}{A copy of \code{data} with added column \code{imp} containing the imputed values.}

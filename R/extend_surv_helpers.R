@@ -1,10 +1,10 @@
 interp_surv_between <- function(x, t, surv, surv_between) {
-  if (surv_between == "carry-forward") {
+  if (surv_between == "cf") {
     # Indices of event times before x
     before <- which(t <= x)
     ## corresponding survival estimate
     surv[max(before)]
-  } else if (surv_between == "linear") {
+  } else if (surv_between == "wm") {
     # Indices of event times before x
     before <- which(t <= x)
     ## Greatest event time before x
@@ -19,7 +19,7 @@ interp_surv_between <- function(x, t, surv, surv_between) {
     surv_after <- surv[min(after)]
     # Linear interpolation of survival estimates before and after
     surv_before + (surv_after - surv_before) / (t_after - t_before) * (x - t_before)
-  } else if (surv_between == "mean") {
+  } else if (surv_between == "m") {
     # Indices of event times before x
     before <- which(t <= x)
     ## corresponding survival estimate
@@ -93,14 +93,14 @@ dbl_constr_weibull <- function(Xtilde, rho, Xmax, alpha_l = 1E-4, alpha_u = 10, 
 }
 
 extrap_surv_beyond <- function(x, t, surv, surv_beyond, weibull_params = NULL) {
-  if (surv_beyond == "carry-forward") {
+  if (surv_beyond == "cf") {
     before <- which(t <= x)
     surv[max(before)]
-  } else if (surv_beyond == "drop-off") {
+  } else if (surv_beyond == "d") {
     0 
-  } else if (surv_beyond == "exponential") {
+  } else if (surv_beyond == "e") {
     exp(x * log(surv[length(surv)]) / t[length(t)])
-  } else if (surv_beyond == "weibull") {
+  } else if (surv_beyond == "w") {
     alpha_hat <- weibull_params[1]
     lambda_hat <- weibull_params[2]
     exp(- lambda_hat * x ^ alpha_hat)

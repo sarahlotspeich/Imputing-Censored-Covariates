@@ -8,8 +8,8 @@
 #' @param data Dataframe or named matrix containing columns \code{W}, \code{Delta}, and \code{Z}.
 #' @param trapezoidal_rule A logical input for whether the trapezoidal rule should be used to approximate the integral in the imputed values. Default is \code{FALSE}.
 #' @param Xmax (Optional) Upper limit of the domain of the censored predictor. Default is \code{Xmax = Inf}.
-#' @param surv_between A string for the method to be used to interpolate for censored values between events. Options include \code{"carry-forward"} (default), \code{"linear"}, or \code{"mean"}.
-#' @param surv_beyond A string for the method to be used to extrapolate the survival curve beyond the last observed event. Options include \code{"drop-off"}, \code{"exponential"} (default), or \code{"weibull"}.
+#' @param surv_between A string for the method to be used to interpolate for censored values between events. Options include \code{"cf"} (carry forward, the default), \code{"wm"} (weighted mean), or \code{"m"} (mean).
+#' @param surv_beyond A string for the method to be used to extrapolate the survival curve beyond the last observed event. Options include \code{"d"} (immediate drop off), \code{"e"} (exponential extension, the default), or \code{"w"} (weibull extension).
 #'
 #' @return 
 #' \item{imputed_data}{A copy of \code{data} with added column \code{imp} containing the imputed values.}
@@ -19,7 +19,7 @@
 #' @importFrom survival coxph 
 #' @importFrom survival Surv
 
-cmi_sp <- function (W, Delta, Z, data, trapezoidal_rule = FALSE, Xmax = Inf, surv_between = "carry-forward", surv_beyond = "exponential") {
+cmi_sp <- function (W, Delta, Z, data, trapezoidal_rule = FALSE, Xmax = Inf, surv_between = "cf", surv_beyond = "e") {
   fit_formula <- as.formula(paste0("Surv(time = ", W, ", event = ", Delta, ") ~ ", paste0(Z, collapse = " + ")))
   fit <- coxph(formula = fit_formula, data = data)
   lp <- predict(fit, reference = "sample") + sum(coef(fit) *fit$means, na.rm = TRUE)
