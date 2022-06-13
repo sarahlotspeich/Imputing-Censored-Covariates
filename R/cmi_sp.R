@@ -121,5 +121,5 @@ cmi_sp <- function (W, Delta, Z, data, trapezoidal_rule = FALSE, Xmax = Inf, sur
     data$imp[which(data$imp == Inf)] <- data[which(data$imp == Inf), W]
   }
   
-  return(list(imputed_data = data, code = !is.na(data$imp)))
+  return(list(imputed_data = data, code = !any(is.na(data$imp))))
 }
