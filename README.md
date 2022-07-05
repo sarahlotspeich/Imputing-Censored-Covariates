@@ -1,6 +1,5 @@
-# Advancing Conditional Mean Imputation for Censored Predictors: 
-## New Developments on Robustness, Consistency, and Efficiency
-### Lotspeich, Grosser, El-Zaatari & Garcia (2022+)
+# Conditional Mean Imputation for Censored Covariates 
+### Lotspeich, Grosser & Garcia (2022+)
 
 # Installation 
 
