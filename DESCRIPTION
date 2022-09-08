@@ -1,17 +1,18 @@
 Package: imputeCensRd
 Type: Package
-Title: Conditional mean imputation for censored predictors
+Title: Conditional mean imputation for censored covariates
 Version: 0.1.0
-Author: Sarah C. Lotspeich and Kyle F. Grosser
-Maintainer: Sarah Lotspeich <slotspeich@unc.edu>
-Description: More about what it does (maybe more than one line)
-    Use four spaces when indenting paragraphs within the Description.
+Author: Jane Doe
+Maintainer: Jane Doe <email@email.com>
+Description: This package contains functions for conditional mean imputation of censored covariates using a variety of different methods, including two versions of the conditional mean calculation using adaptive quadrature or the trapezoidal rule.
 Imports: 
-  survival
-License: What license is it under?
+  survival,
+  magrittr, 
+  dplyr
+License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true
-RoxygenNote: 7.1.2
+RoxygenNote: 7.2.1
 Suggests: 
     testthat (>= 3.0.0)
 Config/testthat/edition: 3
