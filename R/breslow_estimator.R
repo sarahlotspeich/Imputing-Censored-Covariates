@@ -14,7 +14,7 @@
 #' \item{basehaz}{baseline cumulative hazard estimates}
 #'
 #' @export
-#' @import magrittr
+#' @importFrom magrittr "%>%"
 #' @importFrom dplyr group_by summarize
 
 breslow_estimator <- function (x = NULL, time, event, hr, data)
