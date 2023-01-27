@@ -14,19 +14,28 @@
 #' @param surv_beyond A string for the method to be used to extrapolate the survival curve beyond the last observed event. Options include \code{"d"} (immediate drop off), \code{"e"} (exponential extension, the default), or \code{"w"} (weibull extension).
 #' 
 #' @return 
-#' \item{imputed_data}{A copy of \code{data} with added column \code{imp} containing the imputed values.}
-#' \item{code}{Indicator of algorithm status (\code{TRUE} or \code{FALSE}).}
+#' \item{imputed_datasets}{An list of length m, containing copies of \code{data} each with added column \code{imp} containing the imputed values.}
 #'
 #' @export
 #' @importFrom survival coxph 
 #' @importFrom survival Surv
 #' @importFrom MASS mvrnorm
-cmi_sp_resample <- function (W, Delta, Z, data, trapezoidal_rule = FALSE, Xmax = Inf, surv_between = "cf", surv_beyond = "e") {
+cmi_sp_resample <- function (W, Delta, Z, data, M = 1, trapezoidal_rule = FALSE, Xmax = Inf, surv_between = "cf", surv_beyond = "e") {
   fit_formula <- as.formula(paste0("Surv(time = ", W, ", event = ", Delta, ") ~ ", paste0(Z, collapse = " + ")))
   fit <- coxph(formula = fit_formula, data = data)
   
-  sampled_coef <- mvrnorm(n = 1, coef(fit), vcov(fit))
-  lp <- as.matrix(x = data[, Z]) %*% sampled_coef
+  # resample Cox coefficients from estimated normal distribution
+  if (M == 1) {
+    Cox_coef <- as.matrix(coef(fit), ncol = 1)
+  } else {
+    Cox_coef <- t(mvrnorm(n = M, coef(fit), vcov(fit)))
+    }
+  
+  # store imputed datasets in list
+  imputed_datasets = list()
+  
+  for (m in 1:M) {
+  lp <- as.matrix(x = data[, Z]) %*% Cox_coef[, m]
   
   data$HR <- exp(lp)
   be <- breslow_estimator(x = NULL, 
@@ -126,5 +135,8 @@ cmi_sp_resample <- function (W, Delta, Z, data, trapezoidal_rule = FALSE, Xmax =
     data$imp[which(data$imp == Inf)] <- data[which(data$imp == Inf), W]
   }
   
-  return(list(imputed_data = data, code = !any(is.na(data$imp))))
+  imputed_datasets[[m]] = data
+  }
+  
+  return(imputed_datasets)
 }

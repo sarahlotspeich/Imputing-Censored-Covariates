@@ -9,6 +9,7 @@ cmi_sp_resample(
   Delta,
   Z,
   data,
+  M = 1,
   trapezoidal_rule = FALSE,
   Xmax = Inf,
   surv_between = "cf",
@@ -24,6 +25,8 @@ cmi_sp_resample(
 
 \item{data}{Dataframe or named matrix containing columns \code{W}, \code{Delta}, and \code{Z}.}
 
+\item{M}{Number of times to resample Cox model coefficients}
+
 \item{trapezoidal_rule}{A logical input for whether the trapezoidal rule should be used to approximate the integral in the imputed values. Default is \code{FALSE}.}
 
 \item{Xmax}{(Optional) Upper limit of the domain of the censored predictor. Default is \code{Xmax = Inf}.}
@@ -31,8 +34,6 @@ cmi_sp_resample(
 \item{surv_between}{A string for the method to be used to interpolate for censored values between events. Options include \code{"cf"} (carry forward, the default), \code{"wm"} (weighted mean), or \code{"m"} (mean).}
 
 \item{surv_beyond}{A string for the method to be used to extrapolate the survival curve beyond the last observed event. Options include \code{"d"} (immediate drop off), \code{"e"} (exponential extension, the default), or \code{"w"} (weibull extension).}
-
-\item{M}{Number of times to resample Cox model coefficients}
 }
 \value{
 \item{imputed_data}{A copy of \code{data} with added column \code{imp} containing the imputed values.}
