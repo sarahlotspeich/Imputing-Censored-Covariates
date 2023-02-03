@@ -5,6 +5,6 @@ The `R` package `imputeCensRd` which implements statistical methods to impute ce
 
 ```{r}
 # Run once: install.packages("devtools")
-devtools::install_github(repo = "<BLINDED>/Imputing-Censored-Covariates/imputeCensRd", ref = "main")
+devtools::install_github(repo = "sarahlotspeich/Imputing-Censored-Covariates/imputeCensRd", ref = "main")
 library(imputeCensoRd)
 ```
