@@ -38,8 +38,7 @@ bootstrap_cmi <- function(analysis_model, transform_imp = NULL, W, Delta, Z, dat
                               Delta = Delta, 
                               Z = Z, 
                               data = re_data,
-                              dist = dist, 
-                              trapezoidal_rule = trapezoidal_rule)
+                              dist = dist)
       } else if (est_surv == "KM") {
         # Use imputeCensRd::cmi_km() to impute censored x in re_data ------
         re_data_imp <- cmi_km(W = W, 
