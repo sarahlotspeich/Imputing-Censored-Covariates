@@ -11,29 +11,26 @@ cmi_fp(
   data,
   fit = NULL,
   dist = "weibull",
-  trapezoidal_rule = FALSE,
-  Xmax = Inf,
+  infinite_integral = TRUE,
   maxiter = 100
 )
 }
 \arguments{
-\item{W}{Column name of observed predictor values (including censored opens).}
+\item{W}{character, column name for observed values of the censored covariate}
 
-\item{Delta}{Column name of censoring indicators. Note that \code{Delta = 0} is interpreted as a censored observation.}
+\item{Delta}{character, column name for censoring indicators. Note that \code{Delta = 0} is interpreted as a censored observation.}
 
-\item{Z}{Column name of additional fully observed covariates.}
+\item{Z}{character vector, column name(s) of additional fully observed covariate(s).}
 
 \item{data}{Dataframe or named matrix containing columns \code{W}, \code{Delta}, and \code{Z}.}
 
-\item{fit}{A \code{survreg} imputation model object modeling \code{W} on \code{Z}. If \code{fit = NULL} (default), the AFT model with only main effects for \code{Z} and assuming a Weibull distribution is fit internally and used.}
+\item{fit}{\code{survreg} fit, imputation model object modeling \code{W} on \code{Z}. If \code{fit = NULL} (default), the AFT model with only main effects for \code{Z} and assuming distribution \code{dist} is fit internally and used.}
 
-\item{dist}{Assumed distribution for \code{W} in the AFT model, passed to \code{survival::survreg()}. Default is \code{"weibull"}.}
+\item{dist}{(optional) character, assumed distribution for \code{W} in the AFT model, passed to \code{survival::survreg()}. If \code{fit} is supplied, no need to supply \code{dist}; if \code{fit} is not supplied, default is \code{dist = "weibull"}.}
 
-\item{trapezoidal_rule}{A logical input for whether the trapezoidal rule should be used to approximate the integral in the imputed values. Default is \code{FALSE}.}
+\item{infinite_integral}{(optional) logical, if \code{infinite_integral = TRUE} (default) then conditional means are found by integrating from \code{W} to \code{Inf}}
 
-\item{Xmax}{(Optional) Upper limit of the domain of the censored predictor. Default is \code{Xmax = Inf}.}
-
-\item{max_iter}{Maximum iterations allowed in call to \code{survival::survreg()}. Default is \code{100}.}
+\item{max_iter}{(optional) numeric, maximum iterations allowed in call to \code{survival::survreg()}. Default is \code{100}.}
 }
 \value{
 \item{imputed_data}{A copy of \code{data} with added column \code{imp} containing the imputed values.}
