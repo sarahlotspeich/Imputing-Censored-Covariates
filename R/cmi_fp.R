@@ -38,13 +38,14 @@ cmi_fp = function(W, Delta, Z, data, fit = NULL, dist = "weibull",
   }
   
   # Calculate linear predictor \lambda %*% Z for AFT model
-  lp = fit$coefficients[1] + 
-    data.matrix(data[, Z]) %*% matrix(data = fit$coefficients[- 1], ncol = 1)
+  # lp = fit$coefficients[1] + 
+  #   data.matrix(data[, Z]) %*% matrix(data = fit$coefficients[- 1], ncol = 1)
  
   # Calculate survival with original model coefficients using built-in function psurvreg (returns CDF)
   data = data.frame(data, 
                     surv = 1 - psurvreg(q = data[, W], 
-                                        mean = lp, scale = fit$scale, 
+                                        mean = fit$linear.predictors, 
+                                        scale = fit$scale, 
                                         distribution = dist))
 
   # Order data by W
@@ -61,7 +62,7 @@ cmi_fp = function(W, Delta, Z, data, fit = NULL, dist = "weibull",
     int_surv = sapply(
       X = which(!uncens), 
       FUN = function(i) { 
-        tryCatch(expr = integrate(f = function(t) 1 - psurvreg(q = t, mean = lp[i], scale = fit$scale, distribution = dist), 
+        tryCatch(expr = integrate(f = function(t) 1 - psurvreg(q = t, mean = fit$linear.predictors[i], scale = fit$scale, distribution = dist), 
                                   lower = data[i, W], 
                                   upper = Inf)$value,
                  error = function(e) return(NA))
@@ -70,7 +71,7 @@ cmi_fp = function(W, Delta, Z, data, fit = NULL, dist = "weibull",
   } else {
     ## Calculate mean life = integral from 0 to \infty of S(t|Z)
     if (dist %in% c("weibull", "exponential", "rayleigh")) {
-      est_ml = exp(lp) * gamma(1 + fit$scale)
+      est_ml = exp(fit$linear.predictors[!uncens]) * gamma(1 + fit$scale)
     } #else if (dist %in% c("lognormal", "loggaussian")) {}
     
     ## Use integrate() to approximate integral from 0 to W of S(t|Z)
@@ -78,7 +79,7 @@ cmi_fp = function(W, Delta, Z, data, fit = NULL, dist = "weibull",
       X = which(!uncens), 
       FUN = function(i) { 
         tryCatch(expr = integrate(f = function(t) 1 - psurvreg(q = t, 
-                                                               mean = lp[i], 
+                                                               mean = fit$linear.predictors[i], 
                                                                scale = fit$scale, 
                                                                distribution = dist), 
                                   lower = 0, 
