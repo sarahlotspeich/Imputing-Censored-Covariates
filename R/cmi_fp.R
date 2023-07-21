@@ -62,7 +62,7 @@ cmi_fp = function(W, Delta, Z, data, fit = NULL, dist = "weibull",
     int_surv = sapply(
       X = which(!uncens), 
       FUN = function(i) { 
-        tryCatch(expr = integrate(f = function(t) 1 - psurvreg(q = t, mean = lp[i], scale = fit$scale, distribution = dist), 
+        tryCatch(expr = integrate(f = function(t) { 1 - psurvreg(q = t, mean = lp[i], scale = fit$scale, distribution = dist) }, 
                                   lower = data[i, W], 
                                   upper = Inf)$value,
                  error = function(e) return(NA))
@@ -71,17 +71,14 @@ cmi_fp = function(W, Delta, Z, data, fit = NULL, dist = "weibull",
   } else {
     ## Calculate mean life = integral from 0 to \infty of S(t|Z)
     if (dist %in% c("weibull", "exponential", "rayleigh")) {
-      est_ml = exp(fit$linear.predictors[!uncens]) * gamma(1 + fit$scale)
+      est_ml = exp(lp[!uncens]) * gamma(1 + fit$scale)
     } #else if (dist %in% c("lognormal", "loggaussian")) {}
     
     ## Use integrate() to approximate integral from 0 to W of S(t|Z)
     int_surv = sapply(
       X = which(!uncens), 
       FUN = function(i) { 
-        tryCatch(expr = integrate(f = function(t) 1 - psurvreg(q = t, 
-                                                               mean = fit$linear.predictors[i], 
-                                                               scale = fit$scale, 
-                                                               distribution = dist), 
+        tryCatch(expr = integrate(function(t) { 1 - psurvreg(q = t, mean = lp[i], scale = fit$scale, distribution = dist) }, 
                                   lower = 0, 
                                   upper = data[i, W])$value,
                  error = function(e) return(NA))
