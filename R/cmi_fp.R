@@ -38,13 +38,13 @@ cmi_fp = function(W, Delta, Z, data, fit = NULL, dist = "weibull",
   }
   
   # Calculate linear predictor \lambda %*% Z for AFT model
-  # lp = fit$coefficients[1] + 
-  #   data.matrix(data[, Z]) %*% matrix(data = fit$coefficients[- 1], ncol = 1)
+  lp = fit$coefficients[1] +
+    data.matrix(data[, Z]) %*% matrix(data = fit$coefficients[- 1], ncol = 1)
  
   # Calculate survival with original model coefficients using built-in function psurvreg (returns CDF)
   data = data.frame(data, 
                     surv = 1 - psurvreg(q = data[, W], 
-                                        mean = fit$linear.predictors, 
+                                        mean = lp, 
                                         scale = fit$scale, 
                                         distribution = dist))
 
@@ -62,7 +62,7 @@ cmi_fp = function(W, Delta, Z, data, fit = NULL, dist = "weibull",
     int_surv = sapply(
       X = which(!uncens), 
       FUN = function(i) { 
-        tryCatch(expr = integrate(f = function(t) 1 - psurvreg(q = t, mean = fit$linear.predictors[i], scale = fit$scale, distribution = dist), 
+        tryCatch(expr = integrate(f = function(t) 1 - psurvreg(q = t, mean = lp[i], scale = fit$scale, distribution = dist), 
                                   lower = data[i, W], 
                                   upper = Inf)$value,
                  error = function(e) return(NA))
