@@ -92,8 +92,12 @@ cmi_fp = function(W, Delta, Z, data, fit = NULL, dist = "weibull",
     int_surv = est_ml - int_surv
   }
   
-  ## Calculate E(X|X>W,Z) = int_surv / surv(W|Z) + W
-  data$imp[which(!uncens)] = data[which(!uncens), W] + int_surv / data[which(!uncens), "surv"]
+  ## Calculate MRL = int_surv / surv(W|Z)
+  data$mrl = 0
+  data$mrl[which(!uncens)] = int_surv / data[which(!uncens), "surv"]
+  
+  ## Calculate E(X|X>W,Z) = W + int_surv / surv(W|Z)
+  data$imp[which(!uncens)] = data[which(!uncens), W] + data$mrl[which(!uncens)]
   
   ## Check for infinite/NA imputed values 
   if (any(is.na(data$imp))) {
