@@ -27,7 +27,7 @@ cmi_fp_weibull_bootstrap = function(imputation_formula, analysis_formula, W, Del
       
       # If imputation was successful, fit the analysis model ------------
       if (re_data_imp$code) {
-        re_fit = lm(formula = analysis_model, 
+        re_fit = lm(formula = analysis_formula, 
                     data = re_data_imp$imputed_data)
       }
     } else {
