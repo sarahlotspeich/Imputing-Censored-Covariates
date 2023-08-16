@@ -14,64 +14,79 @@ cmi_fp_weibull = function(W, Delta, Z, data, fit, infinite_integral = TRUE, maxi
   # Create an indicator variable for being uncensored
   uncens = data[, Delta] == 1
   
-  if (infinite_integral) {
-    # Use adaptive quadrature to estimate
-    ## integral from X = 0 to X = Wi
-    int_surv_W_to_Inf = sapply(
-      X = which(!uncens), 
-      FUN = function(i) { 
-        integrate(f = pweibull, 
-                  lower = data[i, W], 
-                  upper = Inf, 
-                  shape = weib_shape, 
-                  scale = weib_scale[i],
-                  lower.tail = FALSE)$value
-      }
-    )
-
+  if (is.na(infinite_integral)) {
+    # Use closed-form to compute the conditional mean
+    ## Transform parameters to agree with paper's parameterization
+    alpha = weib_shape 
+    lambda = weib_scale ^ (- weib_shape)
     
+    # Use formula from Appendix for right-censored
+    ## Save quantities for use in formula
+    inside_exp = lambda[which(!uncens)] * data[which(!uncens), W] ^ alpha ## inside exp() for Weibull survival function
+    gamma_surv = pgamma(q = inside_exp, 
+                        shape = 1 / alpha, 
+                        scale = 1) ## survival function of a gamma
+    data[which(!uncens), "imp"] = data[which(!uncens), W] * exp(- inside_exp) + 
+      gamma(1 / alpha) / (alpha * lambda[which(!uncens)] ^ (1 / alpha)) * gamma_surv ## start with numerator
+    data[which(!uncens), "imp"] = data[which(!uncens), "imp"] / exp(- inside_exp) ## divide by denominator
   } else {
-    # Calculate mean life = integral from 0 to \infty of S(t|Z)
-    est_ml = weib_scale[which(!uncens)] * gamma(1 + fit$scale) ## using formula for Weibull distribution
+    if (infinite_integral) {
+      # Use adaptive quadrature to estimate
+      ## integral from X = 0 to X = Wi
+      int_surv_W_to_Inf = sapply(
+        X = which(!uncens), 
+        FUN = function(i) { 
+          integrate(f = pweibull, 
+                    lower = data[i, W], 
+                    upper = Inf, 
+                    shape = weib_shape, 
+                    scale = weib_scale[i],
+                    lower.tail = FALSE)$value
+        }
+      )
+    } else if (!infinite_integral) {
+      # Calculate mean life = integral from 0 to \infty of S(t|Z)
+      est_ml = weib_scale[which(!uncens)] * gamma(1 + fit$scale) ## using formula for Weibull distribution
+      
+      # Use adaptive quadrature to estimate
+      ## integral from X = 0 to X = Wi
+      int_surv_0_to_W = sapply(
+        X = which(!uncens), 
+        FUN = function(i) { 
+          integrate(f = pweibull, 
+                    lower = 0, 
+                    upper = data[i, W], 
+                    shape = weib_shape, 
+                    scale = weib_scale[i],
+                    lower.tail = FALSE)$value
+        }
+      )
+      
+      # Subtract integral from mean life to get 
+      ## integral from X = Wi to X = Infinity
+      int_surv_W_to_Inf = est_ml - int_surv_0_to_W
+    }
     
-    # Use adaptive quadrature to estimate
-    ## integral from X = 0 to X = Wi
-    int_surv_0_to_W = sapply(
-      X = which(!uncens), 
-      FUN = function(i) { 
-        integrate(f = pweibull, 
-                  lower = 0, 
-                  upper = data[i, W], 
-                  shape = weib_shape, 
-                  scale = weib_scale[i],
-                  lower.tail = FALSE)$value
-      }
-    )
+    ## Calculate S(W|Z)
+    surv = pweibull(q = data[which(!uncens), W], 
+                    shape = weib_shape, 
+                    scale = weib_scale[which(!uncens)], 
+                    lower.tail = FALSE)
     
-    # Subtract integral from mean life to get 
-    ## integral from X = Wi to X = Infinity
-    int_surv_W_to_Inf = est_ml - int_surv_0_to_W
+    ## Calculate MRL(W) = int_surv / S(W|Z)
+    est_mrl = int_surv_W_to_Inf / surv
+    
+    ## Calculate imputed value E(X|X>W,Z) = W + MRL(W)
+    data[which(!uncens), "imp"] = data[which(!uncens), W] + est_mrl
+    
+    ## Check for infinite/NA imputed values 
+    # if (any(is.na(data$imp))) {
+    #   data$imp[which(is.na(data$imp))] = data[which(is.na(data$imp)), W]
+    # }
+    # if (any(data$imp == Inf)) {
+    #   data$imp[which(data$imp == Inf)] = data[which(data$imp == Inf), W]
+    # }
   }
-  
-  ## Calculate S(W|Z)
-  surv = pweibull(q = data[which(!uncens), W], 
-                  shape = weib_shape, 
-                  scale = weib_scale[which(!uncens)], 
-                  lower.tail = FALSE)
-  
-  ## Calculate MRL(W) = int_surv / S(W|Z)
-  est_mrl = int_surv_W_to_Inf / surv
-  
-  ## Calculate imputed value E(X|X>W,Z) = W + MRL(W)
-  data[which(!uncens), "imp"] = data[which(!uncens), W] + est_mrl
-  
-  ## Check for infinite/NA imputed values 
-  # if (any(is.na(data$imp))) {
-  #   data$imp[which(is.na(data$imp))] = data[which(is.na(data$imp)), W]
-  # }
-  # if (any(data$imp == Inf)) {
-  #   data$imp[which(data$imp == Inf)] = data[which(data$imp == Inf), W]
-  # }
   
   # Return input dataset with appended column imp containing imputed values 
   return(list(imputed_data = data, code = !any(is.na(data$imp))))  
