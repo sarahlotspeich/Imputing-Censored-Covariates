@@ -25,7 +25,8 @@ cmi_fp_weibull = function(W, Delta, Z, data, fit, infinite_integral = TRUE, maxi
     inside_exp = lambda[which(!uncens)] * data[which(!uncens), W] ^ alpha ## inside exp() for Weibull survival function
     gamma_surv = pgamma(q = inside_exp, 
                         shape = 1 / alpha, 
-                        scale = 1) ## survival function of a gamma
+                        scale = 1, 
+                        lower.tail = FALSE) ## survival function of a gamma
     data[which(!uncens), "imp"] = data[which(!uncens), W] * exp(- inside_exp) + 
       gamma(1 / alpha) / (alpha * lambda[which(!uncens)] ^ (1 / alpha)) * gamma_surv ## start with numerator
     data[which(!uncens), "imp"] = data[which(!uncens), "imp"] / exp(- inside_exp) ## divide by denominator
