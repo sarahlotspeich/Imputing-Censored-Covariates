@@ -1,11 +1,17 @@
 #' @export
-cmi_fp_weibull = function(W, Delta, Z, data, fit, infinite_integral = TRUE, maxiter = 100) {
+cmi_fp_weibull = function(imputation_formula, W, Delta, Z, data, infinite_integral = TRUE, maxiter = 100) {
+  # Fit AFT imputation model for X ~ Z 
+  fit = survreg(formula = imputation_formula, 
+                data = data, 
+                dist = "weibull")
+  
   # Initialize imputed values 
   data$imp = data[, W] ## start with imp = W
   
-  # Calculate linear predictor \lambda_0 + \blambda_1 %*% Z for AFT model
-  lp = fit$coefficients[1] +
-    data.matrix(data[, Z]) %*% matrix(data = fit$coefficients[- 1], ncol = 1) ## linear predictors
+  # Calculate linear predictor for AFT imputation model
+  #lp = fit$coefficients[1] +
+  #  data.matrix(data[, Z]) %*% matrix(data = fit$coefficients[- 1], ncol = 1) ## linear predictors
+  lp = fit$linear.predictors ## linear predictors
   
   # Transform parameters to agree with R's weibull parameterization 
   weib_shape = 1 / fit$scale
