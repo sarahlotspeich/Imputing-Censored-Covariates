@@ -1,5 +1,27 @@
-
+#' Multiple, semiparametric conditional mean imputation for a censored covariate
+#'
+#' Multiple, semiparametric conditional mean imputation for a censored covariate using a Cox proportional hazards model and the Breslow's estimator to estimate the conditional survival function.
+#'
+#' @param imputation_formula imputation model formula (or coercible to formula), a formula expression as for other regression models. The response is usually a survival object as returned by the \code{Surv} function. See the documentation for \code{Surv} for details.
+#' @param analysis_formula analysis model formula (or coercible to formula), a formula expression as for other regression models. The response should be a continuous random variable in \code{data}. 
+#' @param W Column name of observed (possibly censored) predictor values. 
+#' @param Delta Column name of censoring indicators. Note that \code{data[, Delta] = 0} is interpreted as a censored observation. 
+#' @param Z Column name of additional fully observed covariates.
+#' @param data Dataframe or named matrix containing columns \code{W}, \code{Delta}, and \code{Z}.
+#' @param trapezoidal_rule A logical input for whether the trapezoidal rule should be used to approximate the integral in the imputed values. Default is \code{FALSE}.
+#' @param Xmax (Optional) Upper limit of the domain of the censored predictor. Default is \code{Xmax = Inf}.
+#' @param surv_between A string for the method to be used to interpolate for censored values between events. Options include \code{"cf"} (carry forward, the default), \code{"wm"} (weighted mean), or \code{"m"} (mean).
+#' @param surv_beyond A string for the method to be used to extrapolate the survival curve beyond the last observed event. Options include \code{"d"} (immediate drop off), \code{"e"} (exponential extension, the default), or \code{"w"} (weibull extension).
+#' @param B numeric, number of imputations. Default is \code{10}. 
+#'
+#' @return 
+#' \item{imputed_data}{A copy of \code{data} with added column \code{imp} containing the imputed values.}
+#' \item{code}{Indicator of algorithm status (\code{TRUE} or \code{FALSE}).}
+#'
 #' @export
+#' @importFrom survival coxph 
+#' @importFrom survival Surv
+
 cmi_sp_bootstrap = function(imputation_formula, analysis_formula, W, Delta, Z, data, trapezoidal_rule = FALSE, Xmax = Inf, surv_between = "cf", surv_beyond = "e", maxiter = 100, B = 10) {
   # Size of resample
   n = nrow(data)
