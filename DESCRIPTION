@@ -2,9 +2,9 @@ Package: imputeCensRd
 Type: Package
 Title: Conditional mean imputation for censored covariates
 Version: 0.1.0
-Author: Jane Doe
-Maintainer: Jane Doe <email@email.com>
-Description: This package contains functions for conditional mean imputation of censored covariates using a variety of different methods, including two versions of the conditional mean calculation using adaptive quadrature or the trapezoidal rule.
+Author: Sarah Lotspeich
+Maintainer: Sarah Lotspeich <lotspes@wfu.edu>
+Description: This package contains functions for conditional mean imputation of censored covariates using a variety of different methods, including nonparametric, semiparametric, and parametric approaches. 
 Imports: 
   survival,
   magrittr, 
