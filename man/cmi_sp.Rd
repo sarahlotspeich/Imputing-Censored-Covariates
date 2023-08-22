@@ -5,6 +5,7 @@
 \title{Semiparametric conditional mean imputation (CMI) for a censored predictor}
 \usage{
 cmi_sp(
+  imputation_formula,
   W,
   Delta,
   Z,
@@ -16,6 +17,8 @@ cmi_sp(
 )
 }
 \arguments{
+\item{imputation_formula}{Formula specification for the Cox proportional hazards imputation model to be fit.}
+
 \item{W}{Column name of observed (possibly censored) predictor values.}
 
 \item{Delta}{Column name of censoring indicators. Note that \code{data[, Delta] = 0} is interpreted as a censored observation.}
