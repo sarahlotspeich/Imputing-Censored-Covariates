@@ -18,7 +18,6 @@ cmi_fp_weibull_bootstrap = function(imputation_formula, analysis_formula, W, Del
                                    Delta = Delta, 
                                    Z = Z, 
                                    data = re_data, 
-                                   fit = re_imp_mod, 
                                    infinite_integral = infinite_integral)
       
       # If imputation was successful, fit the analysis model ------------
