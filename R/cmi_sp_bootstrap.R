@@ -21,6 +21,7 @@
 #' @export
 #' @importFrom survival coxph 
 #' @importFrom survival Surv
+#' @import survival
 
 cmi_sp_bootstrap = function(imputation_formula, analysis_formula, W, Delta, Z, data, trapezoidal_rule = FALSE, Xmax = Inf, surv_between = "cf", surv_beyond = "e", maxiter = 100, B = 10) {
   # Size of resample
