@@ -1,4 +1,6 @@
 #' @export
+#' @importFrom survival survreg 
+#' @importFrom survival Surv 
 cmi_fp_weibull = function(imputation_formula, W, Delta, Z, data, infinite_integral = TRUE, maxiter = 100) {
   # Fit AFT imputation model for X ~ Z 
   fit = survreg(formula = imputation_formula, 
