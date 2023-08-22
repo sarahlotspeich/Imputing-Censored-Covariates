@@ -2,7 +2,7 @@
 % Please edit documentation in R/cmi_fp_weibull.R
 \name{cmi_fp_weibull}
 \alias{cmi_fp_weibull}
-\title{Fully parametric conditional mean imputation (CMI) for a censored covariate (Weibull distribution)}
+\title{Single, fully parametric conditional mean imputation for a censored covariate (Weibull distribution)}
 \usage{
 cmi_fp_weibull(
   imputation_formula,
@@ -27,8 +27,6 @@ cmi_fp_weibull(
 
 \item{infinite_integral}{(optional) logical, if \code{infinite_integral = TRUE} (default) then conditional means are found by integrating from \code{W} to \code{Inf}, whereas if \code{infinite_integral = FALSE} they are found by subtracting the integral from \code{0} to \code{W} from the mean. If \code{infinite_integral = NA} instead, the analytical solutions are used to find the conditional means.}
 
-\item{fit}{\code{survreg} fit, imputation model object modeling \code{W} on \code{Z}. If \code{fit = NULL} (default), the AFT model with only main effects for \code{Z} and assuming distribution \code{dist} is fit internally and used.}
-
 \item{max_iter}{(optional) numeric, maximum iterations allowed in call to \code{survival::survreg()}. Default is \code{100}.}
 }
 \value{
@@ -36,5 +34,5 @@ cmi_fp_weibull(
 \item{code}{Indicator of algorithm status (\code{TRUE} or \code{FALSE}).}
 }
 \description{
-Fully parametric conditional mean imputation (CMI) for a censored covariate using an accelerated failure-time (AFT) model with a Weibull distribution to estimate the conditional survival function.
+Single, fully parametric conditional mean imputation for a censored covariate using an accelerated failure-time model with a Weibull distribution to estimate the conditional survival function.
 }
