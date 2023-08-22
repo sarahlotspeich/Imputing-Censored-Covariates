@@ -12,13 +12,9 @@ cmi_fp_weibull_bootstrap = function(imputation_formula, analysis_formula, W, Del
     
     # Check for censoring in resampled data
     if (sum(re_data[, Delta]) < n) {
-      # Fit AFT imputation model for X ~ Z 
-      re_imp_mod = survreg(formula = imputation_formula, 
-                           data = re_data, 
-                           dist = "weibull")
-      
       # Use imputeCensRd::cmi_fp_weibull() to impute censored x in re_data ------
-      re_data_imp = cmi_fp_weibull(W = W, 
+      re_data_imp = cmi_fp_weibull(imputation_formula = imputation_formula, 
+                                   W = W, 
                                    Delta = Delta, 
                                    Z = Z, 
                                    data = re_data, 
