@@ -17,10 +17,6 @@
 #' \item{code}{Indicator of algorithm status (\code{TRUE} or \code{FALSE}).}
 #'
 #' @export
-#' @importFrom survival survreg 
-#' @importFrom survival Surv 
-#' @import survival
-
 cmi_fp_weibull_bootstrap = function(imputation_formula, analysis_formula, W, Delta, Z, data, infinite_integral = TRUE, maxiter = 100, B = 10) {
   # Size of resample
   n = nrow(data)

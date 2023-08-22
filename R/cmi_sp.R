@@ -17,9 +17,6 @@
 #' \item{code}{Indicator of algorithm status (\code{TRUE} or \code{FALSE}).}
 #'
 #' @export
-#' @importFrom survival coxph 
-#' @importFrom survival Surv
-#' @import survival
 
 cmi_sp = function (imputation_formula, W, Delta, Z, data, trapezoidal_rule = FALSE, Xmax = Inf, surv_between = "cf", surv_beyond = "e") {
   #fit_formula = as.formula(paste0("Surv(time = ", W, ", event = ", Delta, ") ~ ", paste0(Z, collapse = " + ")))
