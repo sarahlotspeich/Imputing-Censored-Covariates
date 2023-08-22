@@ -1,3 +1,20 @@
+#' Fully parametric conditional mean imputation (CMI) for a censored covariate (Weibull distribution)
+#'
+#' Fully parametric conditional mean imputation (CMI) for a censored covariate using an accelerated failure-time (AFT) model with a Weibull distribution to estimate the conditional survival function.
+#'
+#' @param imputation_formula imputation model formula (or coercible to formula), a formula expression as for other regression models. The response is usually a survival object as returned by the \code{Surv} function. See the documentation for \code{Surv} for details.
+#' @param W character, column name for observed values of the censored covariate 
+#' @param Delta character, column name for censoring indicators. Note that \code{Delta = 0} is interpreted as a censored observation. 
+#' @param Z character vector, column name(s) of additional fully observed covariate(s).
+#' @param data Dataframe or named matrix containing columns \code{W}, \code{Delta}, and \code{Z}.
+#' @param fit \code{survreg} fit, imputation model object modeling \code{W} on \code{Z}. If \code{fit = NULL} (default), the AFT model with only main effects for \code{Z} and assuming distribution \code{dist} is fit internally and used.
+#' @param infinite_integral (optional) logical, if \code{infinite_integral = TRUE} (default) then conditional means are found by integrating from \code{W} to \code{Inf}, whereas if \code{infinite_integral = FALSE} they are found by subtracting the integral from \code{0} to \code{W} from the mean. If \code{infinite_integral = NA} instead, the analytical solutions are used to find the conditional means.
+#' @param max_iter (optional) numeric, maximum iterations allowed in call to \code{survival::survreg()}. Default is \code{100}.
+#'
+#' @return 
+#' \item{imputed_data}{A copy of \code{data} with added column \code{imp} containing the imputed values.}
+#' \item{code}{Indicator of algorithm status (\code{TRUE} or \code{FALSE}).}
+#'
 #' @export
 #' @importFrom survival survreg 
 #' @importFrom survival Surv 
