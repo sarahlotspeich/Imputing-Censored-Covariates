@@ -28,7 +28,7 @@ cmi_sp = function (imputation_model, data, trapezoidal_rule = FALSE, Xmax = Inf,
   # Convert data to dataframe (just in case)
   data = data.frame(data)
   
-  # Fit AFT imputation model for X ~ Z 
+  # Fit Cox PH imputation model for X ~ Z 
   fit = coxph(formula = imputation_model, 
               data = data)
   
