@@ -17,9 +17,9 @@ cmi_sp_bootstrap(
 )
 }
 \arguments{
-\item{imputation_model}{imputation model formula (or coercible to formula), a formula expression as for other regression models. The response is usually a survival object as returned by the \code{Surv} function. See the documentation for \code{Surv} for details.}
+\item{imputation_model}{Imputation model formula (or coercible to formula), a formula expression as for other regression models. The response is usually a survival object as returned by the \code{Surv} function. See the documentation for \code{Surv} for details.}
 
-\item{analysis_model}{analysis model formula (or coercible to formula), a formula expression as for other regression models. The response should be a continuous random variable in \code{data}.}
+\item{analysis_model}{Analysis model formula (or coercible to formula), a formula expression as for other regression models. The response should be a continuous outcome for normal linear regression.}
 
 \item{data}{Dataframe or named matrix containing columns \code{W}, \code{Delta}, and \code{Z}.}
 
