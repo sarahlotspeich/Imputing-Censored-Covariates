@@ -5,10 +5,7 @@
 \title{Semiparametric conditional mean imputation (CMI) for a censored predictor}
 \usage{
 cmi_sp(
-  imputation_formula,
-  W,
-  Delta,
-  Z,
+  imputation_model,
   data,
   trapezoidal_rule = FALSE,
   Xmax = Inf,
@@ -17,13 +14,7 @@ cmi_sp(
 )
 }
 \arguments{
-\item{imputation_formula}{Formula specification for the Cox proportional hazards imputation model to be fit.}
-
-\item{W}{Column name of observed (possibly censored) predictor values.}
-
-\item{Delta}{Column name of censoring indicators. Note that \code{data[, Delta] = 0} is interpreted as a censored observation.}
-
-\item{Z}{Column name of additional fully observed covariates.}
+\item{imputation_model}{Imputation model formula (or coercible to formula), a formula expression as for other regression models. The response is usually a survival object as returned by the \code{Surv} function. See the documentation for \code{Surv} for details.}
 
 \item{data}{Dataframe or named matrix containing columns \code{W}, \code{Delta}, and \code{Z}.}
 

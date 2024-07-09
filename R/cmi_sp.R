@@ -2,10 +2,7 @@
 #'
 #' Semiparametric conditional mean imputation (CMI) for a censored predictor using a Cox proportional hazards model and the Breslow estimator to estimate conditional survival.
 #'
-#' @param imputation_formula Formula specification for the Cox proportional hazards imputation model to be fit. 
-#' @param W Column name of observed (possibly censored) predictor values. 
-#' @param Delta Column name of censoring indicators. Note that \code{data[, Delta] = 0} is interpreted as a censored observation. 
-#' @param Z Column name of additional fully observed covariates.
+#' @param imputation_model Imputation model formula (or coercible to formula), a formula expression as for other regression models. The response is usually a survival object as returned by the \code{Surv} function. See the documentation for \code{Surv} for details.
 #' @param data Dataframe or named matrix containing columns \code{W}, \code{Delta}, and \code{Z}.
 #' @param trapezoidal_rule A logical input for whether the trapezoidal rule should be used to approximate the integral in the imputed values. Default is \code{FALSE}.
 #' @param Xmax (Optional) Upper limit of the domain of the censored predictor. Default is \code{Xmax = Inf}.
@@ -18,13 +15,21 @@
 #'
 #' @export
 
-cmi_sp = function (imputation_formula, W, Delta, Z, data, trapezoidal_rule = FALSE, Xmax = Inf, surv_between = "cf", surv_beyond = "e") {
+cmi_sp = function (imputation_model, data, trapezoidal_rule = FALSE, Xmax = Inf, surv_between = "cf", surv_beyond = "e") {
   #fit_formula = as.formula(paste0("Surv(time = ", W, ", event = ", Delta, ") ~ ", paste0(Z, collapse = " + ")))
   #fit = coxph(formula = fit_formula, data = data)
   #lp = predict(fit, reference = "sample") + sum(coef(fit) * fit$means, na.rm = TRUE)
   
+  # Extract variable names from imputation_model
+  W = all.vars(imputation_model)[1] ## censored covariate
+  Delta = all.vars(imputation_model)[2] ## corresponding event indicator
+  Z = all.vars(imputation_model)[-c(1:2)] ## additional covariates
+  
+  # Convert data to dataframe (just in case)
+  data = data.frame(data)
+  
   # Fit AFT imputation model for X ~ Z 
-  fit = coxph(formula = imputation_formula, 
+  fit = coxph(formula = imputation_model, 
               data = data)
   
   # Initialize imputed values 
