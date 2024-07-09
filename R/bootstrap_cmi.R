@@ -2,11 +2,12 @@
 #'
 #' Bootstrap standard errors / confidence intervals for conditional mean imputation (CMI) for a censored predictor.
 #'
+#' @param imputation_model A formula input for the covariate imputation model.
 #' @param analysis_model A formula input for the final analysis model of interest.
 #' @param transform_imp (Optional) A function to transform the imputed values before fitting \code{analysis_model}.
-#' @param W Column name of observed predictor values (including censored opens). 
-#' @param Delta Column name of censoring indicators. Note that \code{Delta = 0} is interpreted as a censored observation. 
-#' @param Z Column name of additional fully observed covariates.
+#' @param W (Optional) Column name of observed predictor values (including censored opens). 
+#' @param Delta (Optional) Column name of censoring indicators. Note that \code{Delta = 0} is interpreted as a censored observation. 
+#' @param Z (Optional) Column name of additional fully observed covariates.
 #' @param data Dataframe or named matrix containing columns \code{W}, \code{Delta}, and \code{Z}.
 #' @param est_surv A string for which CMI approach to be used: fully-parametric (\code{"FP"}), Kaplan-Meier (\code{"KM"}), semiparametric (\code{"SP"}), or nonparametric (\code{"NP"}).
 #' @param trapezoidal_rule A logical input for whether the trapezoidal rule should be used to approximate the integral in the imputed values. Default is \code{FALSE}.
@@ -21,7 +22,7 @@
 #' \item{vcov}{An estimate of the covariance matrix.}
 #' @export
 
-bootstrap_cmi = function(analysis_model, transform_imp = NULL, W, Delta, Z, data, est_surv, trapezoidal_rule = FALSE, Xmax = Inf, dist = "weibull", surv_between = "carry-forward", surv_beyond = "exponential", useSURV, B = 1000) {
+bootstrap_cmi = function(imputation_model, analysis_model, transform_imp = NULL, W = NULL, Delta = NULL, Z = NULL, data, est_surv, trapezoidal_rule = FALSE, Xmax = Inf, dist = "weibull", surv_between = "carry-forward", surv_beyond = "exponential", useSURV, B = 1000) {
   # Size of resample
   n = nrow(data)
   
@@ -51,14 +52,12 @@ bootstrap_cmi = function(analysis_model, transform_imp = NULL, W, Delta, Z, data
                               surv_beyond = surv_beyond)
       } else if (est_surv == "SP") {
         # Use imputeCensRd::cmi_sp() to impute censored x in re_data ------
-        re_data_imp = cmi_sp(W = W, 
-                              Delta = Delta, 
-                              Z = Z, 
-                              data = re_data,
-                              trapezoidal_rule = trapezoidal_rule,
-                              Xmax = Xmax,
-                              surv_between = surv_between, 
-                              surv_beyond = surv_beyond)
+        re_data_imp = cmi_sp(imputation_model = imputation_model, 
+                             data = re_data,
+                             trapezoidal_rule = trapezoidal_rule,
+                             Xmax = Xmax,
+                             surv_between = surv_between, 
+                             surv_beyond = surv_beyond)
       } else if (est_surv == "NP") {
         # Use imputeCensRd::cmi_np() to impute censored x in re_data ------
         # re_data_imp = cmi_np(W = W, Delta = Delta, Z = Z, data = re_data, 
@@ -66,11 +65,11 @@ bootstrap_cmi = function(analysis_model, transform_imp = NULL, W, Delta, Z, data
       } else if (est_surv == "custom") {
         # Use imputeCensRd::cmi_custom() to impute censored x in re_data --
         re_data_imp = cmi_custom(W = W, 
-                                  Delta = Delta, 
-                                  Z = Z, 
-                                  data = re_data, 
-                                  useSURV = useSURV, 
-                                  trapezoidal_rule = trapezoidal_rule)
+                                 Delta = Delta, 
+                                 Z = Z, 
+                                 data = re_data, 
+                                 useSURV = useSURV, 
+                                 trapezoidal_rule = trapezoidal_rule)
       }
       
       # If imputation was successful, fit the analysis model ------------

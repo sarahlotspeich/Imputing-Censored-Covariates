@@ -5,11 +5,12 @@
 \title{Bootstrap conditional mean imputation (CMI) for a censored predictor}
 \usage{
 bootstrap_cmi(
+  imputation_model,
   analysis_model,
   transform_imp = NULL,
-  W,
-  Delta,
-  Z,
+  W = NULL,
+  Delta = NULL,
+  Z = NULL,
   data,
   est_surv,
   trapezoidal_rule = FALSE,
@@ -22,15 +23,17 @@ bootstrap_cmi(
 )
 }
 \arguments{
+\item{imputation_model}{A formula input for the covariate imputation model.}
+
 \item{analysis_model}{A formula input for the final analysis model of interest.}
 
 \item{transform_imp}{(Optional) A function to transform the imputed values before fitting \code{analysis_model}.}
 
-\item{W}{Column name of observed predictor values (including censored opens).}
+\item{W}{(Optional) Column name of observed predictor values (including censored opens).}
 
-\item{Delta}{Column name of censoring indicators. Note that \code{Delta = 0} is interpreted as a censored observation.}
+\item{Delta}{(Optional) Column name of censoring indicators. Note that \code{Delta = 0} is interpreted as a censored observation.}
 
-\item{Z}{Column name of additional fully observed covariates.}
+\item{Z}{(Optional) Column name of additional fully observed covariates.}
 
 \item{data}{Dataframe or named matrix containing columns \code{W}, \code{Delta}, and \code{Z}.}
 
