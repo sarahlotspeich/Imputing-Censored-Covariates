@@ -5,11 +5,8 @@
 \title{Multiple, semiparametric conditional mean imputation for a censored covariate}
 \usage{
 cmi_sp_bootstrap(
-  imputation_formula,
-  analysis_formula,
-  W,
-  Delta,
-  Z,
+  imputation_model,
+  analysis_model,
   data,
   trapezoidal_rule = FALSE,
   Xmax = Inf,
@@ -20,15 +17,9 @@ cmi_sp_bootstrap(
 )
 }
 \arguments{
-\item{imputation_formula}{imputation model formula (or coercible to formula), a formula expression as for other regression models. The response is usually a survival object as returned by the \code{Surv} function. See the documentation for \code{Surv} for details.}
+\item{imputation_model}{imputation model formula (or coercible to formula), a formula expression as for other regression models. The response is usually a survival object as returned by the \code{Surv} function. See the documentation for \code{Surv} for details.}
 
-\item{analysis_formula}{analysis model formula (or coercible to formula), a formula expression as for other regression models. The response should be a continuous random variable in \code{data}.}
-
-\item{W}{Column name of observed (possibly censored) predictor values.}
-
-\item{Delta}{Column name of censoring indicators. Note that \code{data[, Delta] = 0} is interpreted as a censored observation.}
-
-\item{Z}{Column name of additional fully observed covariates.}
+\item{analysis_model}{analysis model formula (or coercible to formula), a formula expression as for other regression models. The response should be a continuous random variable in \code{data}.}
 
 \item{data}{Dataframe or named matrix containing columns \code{W}, \code{Delta}, and \code{Z}.}
 
