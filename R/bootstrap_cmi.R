@@ -21,27 +21,27 @@
 #' \item{vcov}{An estimate of the covariance matrix.}
 #' @export
 
-bootstrap_cmi <- function(analysis_model, transform_imp = NULL, W, Delta, Z, data, est_surv, trapezoidal_rule = FALSE, Xmax = Inf, dist = "weibull", surv_between = "carry-forward", surv_beyond = "exponential", useSURV, B = 1000) {
+bootstrap_cmi = function(analysis_model, transform_imp = NULL, W, Delta, Z, data, est_surv, trapezoidal_rule = FALSE, Xmax = Inf, dist = "weibull", surv_between = "carry-forward", surv_beyond = "exponential", useSURV, B = 1000) {
   # Size of resample
-  n <- nrow(data)
+  n = nrow(data)
   
   # Loop through replicates 
   for (b in 1:B) {
     # Sample with replacement from the original data ------------------
-    re_rows <- ceiling(runif(n = n, min = 0, max = 1) * nrow(data))
-    re_data <- data[re_rows, ]
+    re_rows = ceiling(runif(n = n, min = 0, max = 1) * nrow(data))
+    re_data = data[re_rows, ]
     
     if (sum(re_data[, Delta]) < n) {
       if (est_surv == "FP") {
         # Use imputeCensRd::cmi_fp() to impute censored x in re_data ------
-        re_data_imp <- cmi_fp(W = W, 
+        re_data_imp = cmi_fp(W = W, 
                               Delta = Delta, 
                               Z = Z, 
                               data = re_data,
                               dist = dist)
       } else if (est_surv == "KM") {
         # Use imputeCensRd::cmi_km() to impute censored x in re_data ------
-        re_data_imp <- cmi_km(W = W, 
+        re_data_imp = cmi_km(W = W, 
                               Delta = Delta, 
                               Z = Z, 
                               data = re_data, 
@@ -51,7 +51,7 @@ bootstrap_cmi <- function(analysis_model, transform_imp = NULL, W, Delta, Z, dat
                               surv_beyond = surv_beyond)
       } else if (est_surv == "SP") {
         # Use imputeCensRd::cmi_sp() to impute censored x in re_data ------
-        re_data_imp <- cmi_sp(W = W, 
+        re_data_imp = cmi_sp(W = W, 
                               Delta = Delta, 
                               Z = Z, 
                               data = re_data,
@@ -61,11 +61,11 @@ bootstrap_cmi <- function(analysis_model, transform_imp = NULL, W, Delta, Z, dat
                               surv_beyond = surv_beyond)
       } else if (est_surv == "NP") {
         # Use imputeCensRd::cmi_np() to impute censored x in re_data ------
-        # re_data_imp <- cmi_np(W = W, Delta = Delta, Z = Z, data = re_data, 
+        # re_data_imp = cmi_np(W = W, Delta = Delta, Z = Z, data = re_data, 
         #                      trapezoidal_rule = trapezoidal_rule)
       } else if (est_surv == "custom") {
         # Use imputeCensRd::cmi_custom() to impute censored x in re_data --
-        re_data_imp <- cmi_custom(W = W, 
+        re_data_imp = cmi_custom(W = W, 
                                   Delta = Delta, 
                                   Z = Z, 
                                   data = re_data, 
@@ -76,45 +76,45 @@ bootstrap_cmi <- function(analysis_model, transform_imp = NULL, W, Delta, Z, dat
       # If imputation was successful, fit the analysis model ------------
       if (re_data_imp$code) {
         if (!is.null(transform_imp)) {
-          re_data_imp$imputed_data$imp <- transform_imp(re_data_imp$imputed_data$imp)
+          re_data_imp$imputed_data$imp = transform_imp(re_data_imp$imputed_data$imp)
         }
-        re_fit <- lm(formula = analysis_model, 
+        re_fit = lm(formula = analysis_model, 
                      data = re_data_imp$imputed_data)
         
         ## Create matrix to hold results from bootstrap replicates 
         if (b == 1) {
-          re_res <- matrix(data = NA, nrow = B, ncol = length(re_fit$coefficients))
+          re_res = matrix(data = NA, nrow = B, ncol = length(re_fit$coefficients))
         }
         
         ## Save coefficients to results matrix
-        re_res[b, ] <- re_fit$coefficients
+        re_res[b, ] = re_fit$coefficients
       }
     } else {
       # If no censored, just fit the usual model
-      re_data$imp <- re_data[, W]
-      re_fit <- lm(formula = analysis_model, data = re_data) 
+      re_data$imp = re_data[, W]
+      re_fit = lm(formula = analysis_model, data = re_data) 
       
       ## Create matrix to hold results from bootstrap replicates 
       if (b == 1) {
-        re_res <- matrix(data = NA, nrow = B, ncol = length(re_fit$coefficients))
+        re_res = matrix(data = NA, nrow = B, ncol = length(re_fit$coefficients))
       }
       
       ## Save coefficients to results matrix
-      re_res[b, ] <- re_fit$coefficients
+      re_res[b, ] = re_fit$coefficients
     }
   }
   
   # Calculate SE estimate
-  se <- apply(X = re_res, 
+  se = apply(X = re_res, 
               MARGIN = 2, 
               FUN = sd, 
               na.rm = TRUE)
   
   # Calculate 95% quantile interval
-  lb <- apply(X = re_res, 
+  lb = apply(X = re_res, 
               MARGIN = 2, 
               FUN = function(x) quantile(x = x, probs = 0.025, na.rm = TRUE))
-  ub <- apply(X = re_res, 
+  ub = apply(X = re_res, 
               MARGIN = 2, 
               FUN = function(x) quantile(x = x, probs = 0.975, na.rm = TRUE))
   
