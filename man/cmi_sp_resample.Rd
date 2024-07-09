@@ -5,9 +5,7 @@
 \title{Semiparametric conditional mean imputation (CMI) for a censored predictor}
 \usage{
 cmi_sp_resample(
-  W,
-  Delta,
-  Z,
+  imputation_model,
   data,
   M = 1,
   trapezoidal_rule = FALSE,
@@ -17,13 +15,7 @@ cmi_sp_resample(
 )
 }
 \arguments{
-\item{W}{Column name of observed (possibly censored) predictor values.}
-
-\item{Delta}{Column name of censoring indicators. Note that \code{data[, Delta] = 0} is interpreted as a censored observation.}
-
-\item{Z}{Column name of additional fully observed covariates.}
-
-\item{data}{Dataframe or named matrix containing columns \code{W}, \code{Delta}, and \code{Z}.}
+\item{imputation_model}{Imputation model formula (or coercible to formula), a formula expression as for other regression models. The response is usually a survival object as returned by the \code{Surv} function. See the documentation for \code{Surv} for details.#' @param data Dataframe or named matrix containing columns \code{W}, \code{Delta}, and \code{Z}.}
 
 \item{M}{Number of times to resample Cox model coefficients}
 
