@@ -3,6 +3,7 @@
 #' Semiparametric conditional mean imputation (CMI) for a censored predictor using a Cox proportional hazards model and the Breslow estimator to estimate conditional survival.
 #'
 #' @param imputation_model Imputation model formula (or coercible to formula), a formula expression as for other regression models. The response is usually a survival object as returned by the \code{Surv} function. See the documentation for \code{Surv} for details.
+#' @param logHR Instead of fitting the imputation model internally, users can specify the logHRs. This option is useful with multiple imputation using resampled parameters. 
 #' @param data Dataframe or named matrix containing columns \code{W}, \code{Delta}, and \code{Z}.
 #' @param trapezoidal_rule A logical input for whether the trapezoidal rule should be used to approximate the integral in the imputed values. Default is \code{FALSE}.
 #' @param Xmax (Optional) Upper limit of the domain of the censored predictor. Default is \code{Xmax = Inf}.
@@ -15,11 +16,7 @@
 #'
 #' @export
 
-cmi_sp = function (imputation_model, data, trapezoidal_rule = FALSE, Xmax = Inf, surv_between = "cf", surv_beyond = "e") {
-  #fit_formula = as.formula(paste0("Surv(time = ", W, ", event = ", Delta, ") ~ ", paste0(Z, collapse = " + ")))
-  #fit = coxph(formula = fit_formula, data = data)
-  #lp = predict(fit, reference = "sample") + sum(coef(fit) * fit$means, na.rm = TRUE)
-  
+cmi_sp = function (imputation_model, logHR = NULL, data, trapezoidal_rule = FALSE, Xmax = Inf, surv_between = "cf", surv_beyond = "e") {
   # Extract variable names from imputation_model
   W = all.vars(imputation_model)[1] ## censored covariate
   Delta = all.vars(imputation_model)[2] ## corresponding event indicator
@@ -28,22 +25,28 @@ cmi_sp = function (imputation_model, data, trapezoidal_rule = FALSE, Xmax = Inf,
   # Convert data to dataframe (just in case)
   data = data.frame(data)
   
+  # Initialize imputed values 
+  data$imp = data[, W] ## start with imp = W
+  
   # Fit Cox PH imputation model for X ~ Z 
   fit = coxph(formula = imputation_model, 
               data = data)
   
-  # Initialize imputed values 
-  data$imp = data[, W] ## start with imp = W
+  # If logHRs not provided, take them from the model
+  if (is.null(logHR)) {
+    logHR = coef(fit)
+  }
   
-  # Calculate linear predictor for Cox imputation model
-  lp = predict(fit, reference = "sample") + sum(coef(fit) * fit$means, na.rm = TRUE) ## linear predictors
+  # Calculate linear predictor for Cox imputation model or logHRs provided
+  lp = data[, Z] %*% logHR 
+  #predict(fit, reference = "sample") + sum(logHR * fit$means, na.rm = TRUE) ## linear predictors
   
   data$HR = exp(lp)
   be = breslow_estimator(x = NULL, 
-                          time = W, 
-                          event = Delta, 
-                          hr = "HR", 
-                          data = data)
+                         time = W, 
+                         event = Delta, 
+                         hr = "HR", 
+                         data = data)
   surv_df = with(be, 
                   data.frame(t = times, surv0 = basesurv))
   colnames(surv_df)[1] = W
@@ -87,8 +90,7 @@ cmi_sp = function (imputation_model, data, trapezoidal_rule = FALSE, Xmax = Inf,
                                           surv = surv_df[, "surv0"], 
                                           surv_beyond = surv_beyond, 
                                           weibull_params = weibull_params)
-  }
-  else {
+  } else {
     needs_extrap = which(!uncens & data[, W] > Xtilde)
     data[needs_extrap, "surv0"] = sapply(X = data[needs_extrap, W], 
                                           FUN = extrap_surv_beyond, 
@@ -106,8 +108,7 @@ cmi_sp = function (imputation_model, data, trapezoidal_rule = FALSE, Xmax = Inf,
       sum_surv_i = sum((data_dist[-nrow(data_dist), W] >= as.numeric(data[i, W])) * surv_sum * t_diff)
       data$imp[i] = data$imp[i] + (1/2) * (sum_surv_i/data[i, "surv"])
     }
-  }
-  else {
+  } else {
     to_integrate = function(t, hr) {
       basesurv = sapply(X = t, 
                          FUN = extend_surv, 

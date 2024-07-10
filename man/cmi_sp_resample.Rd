@@ -6,18 +6,22 @@
 \usage{
 cmi_sp_resample(
   imputation_model,
+  analysis_model,
   data,
-  M = 1,
   trapezoidal_rule = FALSE,
   Xmax = Inf,
   surv_between = "cf",
-  surv_beyond = "e"
+  surv_beyond = "e",
+  maxiter = 100,
+  B = 10
 )
 }
 \arguments{
-\item{imputation_model}{Imputation model formula (or coercible to formula), a formula expression as for other regression models. The response is usually a survival object as returned by the \code{Surv} function. See the documentation for \code{Surv} for details.#' @param data Dataframe or named matrix containing columns \code{W}, \code{Delta}, and \code{Z}.}
+\item{imputation_model}{Imputation model formula (or coercible to formula), a formula expression as for other regression models. The response is usually a survival object as returned by the \code{Surv} function. See the documentation for \code{Surv} for details.}
 
-\item{M}{Number of times to resample Cox model coefficients}
+\item{analysis_model}{Analysis model formula (or coercible to formula), a formula expression as for other regression models. The response should be a continuous outcome for normal linear regression.}
+
+\item{data}{Dataframe or named matrix containing columns \code{W}, \code{Delta}, and \code{Z}.}
 
 \item{trapezoidal_rule}{A logical input for whether the trapezoidal rule should be used to approximate the integral in the imputed values. Default is \code{FALSE}.}
 
@@ -26,11 +30,19 @@ cmi_sp_resample(
 \item{surv_between}{A string for the method to be used to interpolate for censored values between events. Options include \code{"cf"} (carry forward, the default), \code{"wm"} (weighted mean), or \code{"m"} (mean).}
 
 \item{surv_beyond}{A string for the method to be used to extrapolate the survival curve beyond the last observed event. Options include \code{"d"} (immediate drop off), \code{"e"} (exponential extension, the default), or \code{"w"} (weibull extension).}
+
+\item{B}{numeric, number of imputations. Default is \code{10}.}
 }
 \value{
-\item{imputed_datasets}{An list of length m, containing copies of \code{data} each with added column \code{imp} containing the imputed values.}
+\item{imputed_data}{A copy of \code{data} with added column \code{imp} containing the imputed values.}
+\item{code}{Indicator of algorithm status (\code{TRUE} or \code{FALSE}).}
 }
 \description{
 Semiparametric conditional mean imputation (CMI) for a censored predictor using a Cox proportional hazards model and the Breslow estimator to estimate conditional survival. 
 Regression coefficients from the Cox model are resampled from their estimated multivariate normal distribution.
+}
+\details{
+Multiple, semiparametric conditional mean imputation for a censored covariate
+
+Multiple, semiparametric conditional mean imputation for a censored covariate using a Cox proportional hazards model and the Breslow's estimator to estimate the conditional survival function.
 }

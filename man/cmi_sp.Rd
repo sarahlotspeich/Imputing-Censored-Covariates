@@ -6,6 +6,7 @@
 \usage{
 cmi_sp(
   imputation_model,
+  logHR = NULL,
   data,
   trapezoidal_rule = FALSE,
   Xmax = Inf,
@@ -15,6 +16,8 @@ cmi_sp(
 }
 \arguments{
 \item{imputation_model}{Imputation model formula (or coercible to formula), a formula expression as for other regression models. The response is usually a survival object as returned by the \code{Surv} function. See the documentation for \code{Surv} for details.}
+
+\item{logHR}{Instead of fitting the imputation model internally, users can specify the logHRs. This option is useful with multiple imputation using resampled parameters.}
 
 \item{data}{Dataframe or named matrix containing columns \code{W}, \code{Delta}, and \code{Z}.}
 
