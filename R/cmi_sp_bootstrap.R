@@ -26,15 +26,18 @@ cmi_sp_bootstrap = function(imputation_model, analysis_model, data, trapezoidal_
   Delta = all.vars(imputation_model)[2] ## corresponding event indicator
   Z = all.vars(imputation_model)[-c(1:2)] ## additional covariates
   
+  # Initialize empty dataframe to hold results 
+  mult_fit = data.frame()
+  
   # Loop through replicates 
   for (b in 1:B) {
-    # Sample with replacement from the original data ------------------
+    # Sample with replacement from the original data ---------------------------
     re_rows = ceiling(runif(n = n, min = 0, max = 1) * nrow(data))
     re_data = data[re_rows, ]
     
     # Check for censoring in resampled data
     if (sum(re_data[, Delta]) < n) {
-      # Use imputeCensRd::cmi_fp_weibull() to impute censored x in re_data ------
+      # Use imputeCensRd::cmi_fp_weibull() to impute censored x in re_data -----
       re_data_imp = cmi_sp(imputation_model = imputation_model, 
                            data = re_data, 
                            trapezoidal_rule = trapezoidal_rule, 
@@ -42,7 +45,7 @@ cmi_sp_bootstrap = function(imputation_model, analysis_model, data, trapezoidal_
                            surv_between = surv_between, 
                            surv_beyond = surv_beyond)
       
-      # If imputation was successful, fit the analysis model ------------
+      # If imputation was successful, fit the analysis model -------------------
       if (re_data_imp$code) {
         re_fit = lm(formula = analysis_model, 
                     data = re_data_imp$imputed_data)
@@ -53,21 +56,29 @@ cmi_sp_bootstrap = function(imputation_model, analysis_model, data, trapezoidal_
       re_fit = lm(formula = analysis_model, data = re_data) 
     }
     
-    ## Create matrix to hold results from bootstrap replicates 
-    if (b == 1) {
-      re_res = re_var = matrix(data = NA, 
-                               nrow = B, 
-                               ncol = length(re_fit$coefficients))
-    }
-    
-    ## Save coefficients to results matrix
-    re_res[b, ] = re_fit$coefficients
-    re_var[b, ] = diag(vcov(re_fit))
+    # Save coefficients to results matrix --------------------------------------
+    mult_fit = rbind(mult_fit, 
+                     summary(re_fit)$coefficients)
   } 
+  
+  ## Pool estimates
+  pooled_est = rowsum(x = mult_fit[, 1],
+                      group = rep(x = 1:length(re_fit$coefficients), times = B)) / B
+  
+  ## Calculate within-imputation variance 
+  within_var = rowsum(x = mult_fit[, 2] ^ 2,
+                      group = rep(x = 1:length(re_fit$coefficients), times = B)) / B
+  
+  ## Calculate between-imputation variance
+  between_var = rowsum(x = (mult_fit[, 1] - rep(pooled_est, times = B)) ^ 2,
+                       group = rep(x = 1:length(re_fit$coefficients), times = B)) / (B - 1)
+  
+  ## Pool variance
+  pooled_var = within_var + between_var + (between_var / B)
   
   # Return table of pooled estimates
   tab = data.frame(Coefficient = names(re_fit$coefficients),
-                   Est = colMeans(re_res),
-                   SE = sqrt(colMeans(re_var) + (B + 1) * colMeans((re_res - colMeans(re_res)) ^ 2)))
+                   Est = pooled_est,
+                   SE = sqrt(pooled_var))
   return(tab)  
 }
