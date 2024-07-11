@@ -3,7 +3,6 @@
 #' Semiparametric conditional mean imputation (CMI) for a censored predictor using a Cox proportional hazards model and the Breslow estimator to estimate conditional survival.
 #'
 #' @param imputation_model Imputation model formula (or coercible to formula), a formula expression as for other regression models. The response is usually a survival object as returned by the \code{Surv} function. See the documentation for \code{Surv} for details.
-#' @param logHR Instead of fitting the imputation model internally, users can specify the logHRs. This option is useful with multiple imputation using resampled parameters. 
 #' @param data Dataframe or named matrix containing columns \code{W}, \code{Delta}, and \code{Z}.
 #' @param trapezoidal_rule A logical input for whether the trapezoidal rule should be used to approximate the integral in the imputed values. Default is \code{FALSE}.
 #' @param Xmax (Optional) Upper limit of the domain of the censored predictor. Default is \code{Xmax = Inf}.
@@ -16,7 +15,7 @@
 #'
 #' @export
 
-cmi_sp = function (imputation_model, logHR = NULL, data, trapezoidal_rule = FALSE, Xmax = Inf, surv_between = "cf", surv_beyond = "e") {
+cmi_sp = function (imputation_model, data, trapezoidal_rule = FALSE, Xmax = Inf, surv_between = "cf", surv_beyond = "e") {
   # Extract variable names from imputation_model
   W = all.vars(imputation_model)[1] ## censored covariate
   Delta = all.vars(imputation_model)[2] ## corresponding event indicator
@@ -32,14 +31,8 @@ cmi_sp = function (imputation_model, logHR = NULL, data, trapezoidal_rule = FALS
   fit = coxph(formula = imputation_model, 
               data = data)
   
-  # If logHRs not provided, take them from the model
-  if (is.null(logHR)) {
-    logHR = coef(fit)
-  }
-  
-  # Calculate linear predictor for Cox imputation model or logHRs provided
-  lp = data[, Z] %*% logHR 
-  #predict(fit, reference = "sample") + sum(logHR * fit$means, na.rm = TRUE) ## linear predictors
+  # Calculate linear predictor for Cox imputation model
+  lp = predict(fit, reference = "sample") + sum(coef(fit) * fit$means, na.rm = TRUE) ## linear predictors
   
   data$HR = exp(lp)
   be = breslow_estimator(x = NULL, 
