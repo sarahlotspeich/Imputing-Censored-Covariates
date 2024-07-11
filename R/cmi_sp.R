@@ -74,10 +74,10 @@ cmi_sp = function (imputation_model, logHR = NULL, data, trapezoidal_rule = FALS
                                            Xmax = Xmax)
     } else {
       weibull_params = constr_weibull_mle(t = data[, W], 
-                                           I_event = data[, Delta], 
-                                           Xtilde = Xtilde, 
-                                           rho = SURVmax, 
-                                           alpha0 = 1e-04)
+                                          I_event = data[, Delta], 
+                                          Xtilde = Xtilde, 
+                                          rho = SURVmax, 
+                                          alpha0 = 1e-04)
     }
     if (any(is.na(weibull_params))) {
       data$imp = NA
