@@ -37,7 +37,7 @@ cmi_sp_bootstrap = function(imputation_model, analysis_model, data, trapezoidal_
     
     # Check for censoring in resampled data
     if (sum(re_data[, Delta]) < n) {
-      # Use imputeCensRd::cmi_fp_weibull() to impute censored x in re_data -----
+      # Use imputeCensRd::cmi_sp() to impute censored x in re_data -------------
       re_data_imp = cmi_sp(imputation_model = imputation_model, 
                            data = re_data, 
                            trapezoidal_rule = trapezoidal_rule, 
@@ -45,13 +45,39 @@ cmi_sp_bootstrap = function(imputation_model, analysis_model, data, trapezoidal_
                            surv_between = surv_between, 
                            surv_beyond = surv_beyond)
       
+      # Check for the Weibull extension not converging -------------------------
+      while (!re_data_imp$code) {
+        # Sample again with replacement from the original data -----------------
+        re_rows = ceiling(runif(n = n, min = 0, max = 1) * nrow(data))
+        re_data = data[re_rows, ]
+        
+        # Check for censoring in resampled data
+        if (sum(re_data[, Delta]) < n) {
+          # Use imputeCensRd::cmi_sp() to impute censored x in re_data ---------
+          re_data_imp = cmi_sp(imputation_model = imputation_model, 
+                               data = re_data, 
+                               trapezoidal_rule = trapezoidal_rule, 
+                               Xmax = Xmax,
+                               surv_between = surv_between, 
+                               surv_beyond = surv_beyond)
+        } else {
+          # If no censored, just fit the usual model ---------------------------
+          re_data$imp = re_data[, W]
+          re_data_imp = list(imputed_data = re_data, 
+                             code = TRUE)
+          re_fit = lm(formula = analysis_model, 
+                      data = re_data) 
+        }
+      }
+      
       # If imputation was successful, fit the analysis model -------------------
       if (re_data_imp$code) {
         re_fit = lm(formula = analysis_model, 
                     data = re_data_imp$imputed_data)
+        
       }
     } else {
-      # If no censored, just fit the usual model
+      # If no censored, just fit the usual model -------------------------------
       re_data$imp = re_data[, W]
       re_fit = lm(formula = analysis_model, data = re_data) 
     }
