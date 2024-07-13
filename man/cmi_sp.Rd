@@ -6,6 +6,7 @@
 \usage{
 cmi_sp(
   imputation_model,
+  lp = NULL,
   data,
   trapezoidal_rule = FALSE,
   Xmax = Inf,
@@ -15,6 +16,8 @@ cmi_sp(
 }
 \arguments{
 \item{imputation_model}{Imputation model formula (or coercible to formula), a formula expression as for other regression models. The response is usually a survival object as returned by the \code{Surv} function. See the documentation for \code{Surv} for details.}
+
+\item{lp}{(Optional) A vector of the linear predictors for the imputation model, in the same order as \code{data}. If \code{lp = NULL} (the default), the linear predictor is extracted from the fitted imputation model.}
 
 \item{data}{Dataframe or named matrix containing columns \code{W}, \code{Delta}, and \code{Z}.}
 

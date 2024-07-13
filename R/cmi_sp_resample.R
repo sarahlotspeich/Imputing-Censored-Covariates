@@ -48,30 +48,47 @@ cmi_sp_resample = function(imputation_model, analysis_model, data, trapezoidal_r
     re_coeff = t(mvrnorm(n = 1, 
                          mu = coef(fit), 
                          Sigma = vcov(fit)))
-
-    # Use imputeCensRd::cmi_sp() to impute censored x using re_coeff -----------
-    re_data_imp = cmi_sp(imputation_model = imputation_model, 
-                         logHR = re_coeff, ## provide resampled parameters 
-                         data = data, 
-                         trapezoidal_rule = trapezoidal_rule, 
-                         Xmax = Xmax,
-                         surv_between = surv_between, 
-                         surv_beyond = surv_beyond)
+    
+    # Calculate linear predict from the resampled coefficients -----------------
+    re_lp = data.matrix(data[, Z]) %*% matrix(data = re_coeff, ncol = 1) 
+    
+    # Use imputeCensRd::cmi_sp() to impute censored x in data ------------------
+    data_imp = cmi_sp(imputation_model = imputation_model, 
+                      lp = re_lp,
+                      data = data, 
+                      trapezoidal_rule = trapezoidal_rule, 
+                      Xmax = Xmax,
+                      surv_between = surv_between, 
+                      surv_beyond = surv_beyond)
+    
+    # Check for the Weibull extension not converging ---------------------------
+    while (!data_imp$code) {
+      # Resample parameters for the imputation model ---------------------------
+      re_coeff = t(mvrnorm(n = 1, 
+                           mu = coef(fit), 
+                           Sigma = vcov(fit)))
+      
+      # Calculate linear predict from the resampled coefficients -----------------
+      re_lp = data.matrix(data[, Z]) %*% matrix(data = re_coeff, ncol = 1) 
+      
+      # Use imputeCensRd::cmi_sp() to impute censored x in data ----------------
+      data_imp = cmi_sp(imputation_model = imputation_model, 
+                        lp = re_lp,
+                        data = data, 
+                        trapezoidal_rule = trapezoidal_rule, 
+                        Xmax = Xmax,
+                        surv_between = surv_between, 
+                        surv_beyond = surv_beyond)
+    }
     
     # If imputation was successful, fit the analysis model ---------------------
-    if (re_data_imp$code) {
+    if (data_imp$code) {
       re_fit = lm(formula = analysis_model, 
-                  data = re_data_imp$imputed_data)
+                  data = data_imp$imputed_data)
+      
     }
     
-    ## Create matrix to hold results from bootstrap replicates 
-    if (b == 1) {
-      re_res = re_var = matrix(data = NA, 
-                               nrow = B, 
-                               ncol = length(re_fit$coefficients))
-    }
-    
-    ## Save coefficients to results matrix
+    # Save coefficients to results matrix --------------------------------------
     mult_fit = rbind(mult_fit, 
                      summary(re_fit)$coefficients)
   } 
