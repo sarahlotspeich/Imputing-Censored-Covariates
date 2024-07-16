@@ -33,8 +33,7 @@ csi_w_boot(
 \item{B}{numeric, number of bootstraps used for standard errors Default is \code{500}.}
 }
 \value{
-\item{imputed_data}{A copy of \code{data} with added column \code{imp} containing the imputed values.}
-\item{code}{Indicator of algorithm status (\code{TRUE} or \code{FALSE}).}
+a \code{dataframe} of pooled coefficient and standard error estimates
 }
 \description{
 Semiparametric single conditional mean imputation (CMI) with bootstrapping for a censored predictor using a Cox proportional hazards model and the Breslow estimator to estimate conditional survival.
