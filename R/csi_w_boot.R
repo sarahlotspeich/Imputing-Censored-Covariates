@@ -25,13 +25,14 @@ csi_w_boot = function (imputation_model, analysis_model, data, trapezoidal_rule 
                     surv_between = surv_between, 
                     surv_beyond = surv_beyond)
   
-  # Size of sample to resample
-  n = nrow(data)
+  # Extract variable names from imputation_model
+  W = all.vars(imputation_model)[1] ## censored covariate
   
-  # Take names and dimension from complete case fit 
-  cc_fit = lm(formula = analysis_model, 
-              data = data) 
-  p = cc_fit$coefficients ## dimension of beta vector 
+  # Take names and dimension from naive fit 
+  data[, "imp"] = data[, W] ## start imputed value with observed 
+  naive_fit = lm(formula = analysis_model, 
+                 data = data) 
+  p = length(naive_fit$coefficients) ## dimension of beta vector 
 
   # Initialize empty matrix to hold coefficient and variance estimates 
   beta_b = vbeta_b = matrix(data = NA, 
@@ -66,12 +67,12 @@ csi_w_boot = function (imputation_model, analysis_model, data, trapezoidal_rule 
     vbeta_pooled = vbeta_within + vbeta_between 
     
     ## Construct table of results 
-    tab = data.frame(Coefficient = names(cc_fit$coefficients),
+    tab = data.frame(Coefficient = names(naive_fit$coefficients),
                      Est = beta_pooled,
                      SE = sqrt(vbeta_pooled))
   } else {
     ## If imputation unsuccessful, return empty table of NA results
-    tab = data.frame(Coefficient = names(cc_fit$coefficients),
+    tab = data.frame(Coefficient = names(naive_fit$coefficients),
                      Est = NA,
                      SE = NA)
   }
