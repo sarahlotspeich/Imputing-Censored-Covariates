@@ -120,7 +120,7 @@ cmi_sp = function (imputation_model, lp = NULL, data, trapezoidal_rule = FALSE, 
                          tryCatch(expr = integrate(f = to_integrate, 
                                                    lower = data[i, W], 
                                                    upper = Xmax, 
-                                                   #subdivisions = 2000, 
+                                                   subdivisions = 2000, 
                                                    hr = data[i, "HR"])$value, 
                                   error = function(e) return(NA))}
     )
