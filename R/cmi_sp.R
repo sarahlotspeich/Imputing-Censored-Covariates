@@ -96,56 +96,35 @@ cmi_sp = function (imputation_model, lp = NULL, data, trapezoidal_rule = FALSE, 
     weibull_params = NULL
   }
   data$surv = data[, "surv0"] ^ data[, "HR"]
-  
-  # If using trapezoidal rule, calculate imputed values 
   if (trapezoidal_rule) {
-    # Calculate integral from W to Wtilde using trapezoidal rule 
-    trap_int = as.vector(x = rep(x = 0, times = nrow(data))) ## create a vector for it 
     data_dist = unique(data[, c(W, Delta, Z, "surv")])
     t_diff = data_dist[-1, W] - data_dist[-nrow(data_dist), W]
     surv_sum = data_dist[-1, "surv"] + data_dist[-nrow(data_dist), "surv"]
     for (i in which(!uncens)) {
-      ind = data_dist[-nrow(data_dist), W] >= as.numeric(data[i, W]) ## I(x >= W_i)
-      sum_surv_i = sum(ind * surv_sum * t_diff)
-      trap_int[i] = (1 / 2) * sum_surv_i
+      sum_surv_i = sum((data_dist[-nrow(data_dist), W] >= as.numeric(data[i, W])) * surv_sum * t_diff)
+      data$imp[i] = data$imp[i] + (1/2) * (sum_surv_i/data[i, "surv"])
     }
-    data$imp = data$imp + trap_int / data$surv
-  } else { # If using adaptive quadrature, further calculate integral from Wtilde to infinity
-    # Calculate integral from W to Xtilde using trapezoidal rule 
-    trap_int = as.vector(x = rep(x = 0, times = nrow(data))) ## create a vector for it 
-    data_dist = unique(data[, c(W, Delta, Z, "surv")])
-    t_diff = data_dist[-1, W] - data_dist[-nrow(data_dist), W]
-    surv_sum = data_dist[-1, "surv"] + data_dist[-nrow(data_dist), "surv"]
-    for (i in which(!uncens)) {
-      ind = data_dist[-nrow(data_dist), W] >= as.numeric(data[i, W]) & 
-        data_dist[-nrow(data_dist), W] <= Xtilde ## I(x >= W_i, x <= Xtilde)
-      sum_surv_i = sum(ind * surv_sum * t_diff)
-      trap_int[i] = (1 / 2) * sum_surv_i
-    }
-    
+  } else {
     to_integrate = function(t, hr) {
       basesurv = sapply(X = t, 
-                        FUN = extend_surv, 
-                        t = surv_df[, W], 
-                        surv = surv_df[, "surv0"], 
-                        surv_between = surv_between, 
-                        surv_beyond = surv_beyond, 
-                        weibull_params = weibull_params)
-      basesurv ^ as.numeric(hr)
+                         FUN = extend_surv, 
+                         t = surv_df[, W], 
+                         surv = surv_df[, "surv0"], 
+                         surv_between = surv_between, 
+                         surv_beyond = surv_beyond, 
+                         weibull_params = weibull_params)
+      basesurv^as.numeric(hr)
     }
     int_surv = sapply(X = which(!uncens), 
                        FUN = function(i) {
                          tryCatch(expr = integrate(f = to_integrate, 
-                                                   lower = Xtilde, 
+                                                   lower = data[i, W], 
                                                    upper = Xmax, 
                                                    subdivisions = 2000, 
                                                    hr = data[i, "HR"])$value, 
                                   error = function(e) return(NA))}
     )
-    
-    
-    data$imp[which(!uncens)] = data[which(!uncens), W] + 
-      (trap_int[which(!uncens)] + int_surv) /data[which(!uncens), "surv"]
+    data$imp[which(!uncens)] = data[which(!uncens), W] + int_surv/data[which(!uncens), "surv"]
   }
   if (any(is.na(data$imp))) {
     data$imp[which(is.na(data$imp))] = data[which(is.na(data$imp)), W]
