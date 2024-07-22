@@ -10,6 +10,7 @@ csi_w_boot(
   data,
   trapezoidal_rule = FALSE,
   Xmax = Inf,
+  subdivisions = 100L,
   surv_between = "cf",
   surv_beyond = "e",
   B = 500
@@ -25,6 +26,8 @@ csi_w_boot(
 \item{trapezoidal_rule}{A logical input for whether the trapezoidal rule should be used to approximate the integral in the imputed values. Default is \code{FALSE}.}
 
 \item{Xmax}{(Optional) Upper limit of the domain of the censored predictor. Default is \code{Xmax = Inf}.}
+
+\item{subdivisions}{(Optional) Passed through to \code{integrate}, the maximum number of subintervals. Default is \code{subdivisions = 100L}.}
 
 \item{surv_between}{A string for the method to be used to interpolate for censored values between events. Options include \code{"cf"} (carry forward, the default), \code{"wm"} (weighted mean), or \code{"m"} (mean).}
 

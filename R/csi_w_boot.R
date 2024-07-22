@@ -7,6 +7,7 @@
 #' @param data Dataframe or named matrix containing columns \code{W}, \code{Delta}, and \code{Z}.
 #' @param trapezoidal_rule A logical input for whether the trapezoidal rule should be used to approximate the integral in the imputed values. Default is \code{FALSE}.
 #' @param Xmax (Optional) Upper limit of the domain of the censored predictor. Default is \code{Xmax = Inf}.
+#' @param subdivisions (Optional) Passed through to \code{integrate}, the maximum number of subintervals. Default is \code{subdivisions = 100L}.
 #' @param surv_between A string for the method to be used to interpolate for censored values between events. Options include \code{"cf"} (carry forward, the default), \code{"wm"} (weighted mean), or \code{"m"} (mean).
 #' @param surv_beyond A string for the method to be used to extrapolate the survival curve beyond the last observed event. Options include \code{"d"} (immediate drop off), \code{"e"} (exponential extension, the default), or \code{"w"} (weibull extension).
 #' @param B numeric, number of bootstraps used for standard errors Default is \code{500}. 
@@ -15,13 +16,14 @@
 #'
 #' @export
 
-csi_w_boot = function (imputation_model, analysis_model, data, trapezoidal_rule = FALSE, Xmax = Inf, surv_between = "cf", surv_beyond = "e", B = 500) {
+csi_w_boot = function (imputation_model, analysis_model, data, trapezoidal_rule = FALSE, Xmax = Inf, subdivisions = 100L, surv_between = "cf", surv_beyond = "e", B = 500) {
   # Impute censored covariates in the original data 
   orig_imp = cmi_sp(imputation_model = imputation_model, 
                     lp = NULL, 
                     data = data, 
                     trapezoidal_rule = trapezoidal_rule, 
                     Xmax = Xmax, 
+                    subdivisions = subdivisions, 
                     surv_between = surv_between, 
                     surv_beyond = surv_beyond)
   
