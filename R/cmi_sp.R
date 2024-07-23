@@ -5,7 +5,7 @@
 #' @param imputation_model Imputation model formula (or coercible to formula), a formula expression as for other regression models. The response is usually a survival object as returned by the \code{Surv} function. See the documentation for \code{Surv} for details.
 #' @param lp (Optional) A vector of the linear predictors for the imputation model, in the same order as \code{data}. If \code{lp = NULL} (the default), the linear predictor is extracted from the fitted imputation model.
 #' @param data Dataframe or named matrix containing columns \code{W}, \code{Delta}, and \code{Z}.
-#' @param trapezoidal_rule A logical input for whether the trapezoidal rule should be used to approximate the integral in the imputed values. Default is \code{FALSE}.
+#' @param integral A string input for how to approximate the integral in the imputed values. Default is \code{integral="AQ"} for adaptive quadrature, but \code{"TR"} (trapezoidal rule) and \code{"A"} (quasi-analytical) are also available.
 #' @param Xmax (Optional) Upper limit of the domain of the censored predictor. Default is \code{Xmax = Inf}.
 #' @param subdivisions (Optional) Passed through to \code{integrate}, the maximum number of subintervals. Default is \code{subdivisions = 100L}.
 #' @param surv_between A string for the method to be used to interpolate for censored values between events. Options include \code{"cf"} (carry forward, the default), \code{"wm"} (weighted mean), or \code{"m"} (mean).
@@ -17,7 +17,7 @@
 #'
 #' @export
 
-cmi_sp = function (imputation_model, lp = NULL, data, trapezoidal_rule = FALSE, Xmax = Inf, subdivisions = 100L, surv_between = "cf", surv_beyond = "e") {
+cmi_sp = function (imputation_model, lp = NULL, data, integral = "AQ", Xmax = Inf, subdivisions = 100L, surv_between = "cf", surv_beyond = "e") {
   # Extract variable names from imputation_model
   W = all.vars(imputation_model)[1] ## censored covariate
   Delta = all.vars(imputation_model)[2] ## corresponding event indicator
@@ -97,24 +97,25 @@ cmi_sp = function (imputation_model, lp = NULL, data, trapezoidal_rule = FALSE, 
     weibull_params = NULL
   }
   data$surv = data[, "surv0"] ^ data[, "HR"]
-  if (trapezoidal_rule) {
+  if (integral == "TR") {
     data_dist = unique(data[, c(W, Delta, Z, "surv")])
     t_diff = data_dist[-1, W] - data_dist[-nrow(data_dist), W]
-    surv_sum = data_dist[-1, "surv"] + data_dist[-nrow(data_dist), "surv"]
     for (i in which(!uncens)) {
-      sum_surv_i = sum((data_dist[-nrow(data_dist), W] >= as.numeric(data[i, W])) * surv_sum * t_diff)
-      data$imp[i] = data$imp[i] + (1/2) * (sum_surv_i/data[i, "surv"])
+      surv_sum_i = data_dist[-1, "surv"] ^ exp(as.numeric(data[i, "HR"])) + 
+        data_dist[-nrow(data_dist), "surv"] ^ exp(as.numeric(data[i, "HR"])) 
+      int_surv_i = 1 / 2 * sum((data_dist[-nrow(data_dist), W] >= as.numeric(data[i, W])) * surv_sum_i * t_diff)
+      data$imp[i] = data$imp[i] + (int_surv_i / data[i, "surv"])
     }
-  } else {
+  } else if (integral == "AQ") {
     to_integrate = function(t, hr) {
       basesurv = sapply(X = t, 
-                         FUN = extend_surv, 
-                         t = surv_df[, W], 
-                         surv = surv_df[, "surv0"], 
-                         surv_between = surv_between, 
-                         surv_beyond = surv_beyond, 
-                         weibull_params = weibull_params)
-      basesurv^as.numeric(hr)
+                        FUN = extend_surv, 
+                        t = surv_df[, W], 
+                        surv = surv_df[, "surv0"], 
+                        surv_between = surv_between, 
+                        surv_beyond = surv_beyond, 
+                        weibull_params = weibull_params)
+      basesurv ^ as.numeric(hr)
     }
     int_surv = sapply(X = which(!uncens), 
                        FUN = function(i) {
@@ -126,6 +127,18 @@ cmi_sp = function (imputation_model, lp = NULL, data, trapezoidal_rule = FALSE, 
                                   error = function(e) return(NA))}
     )
     data$imp[which(!uncens)] = data[which(!uncens), W] + int_surv/data[which(!uncens), "surv"]
+  } else if (integral == "A") {
+    # Estimate the integral up to Xtilde using the trapezoidal rule 
+    data_dist = unique(data[uncens, c(W, Delta, Z, "surv")])
+    t_diff = data_dist[-1, W] - data_dist[-nrow(data_dist), W]
+    tr = as.vector(x = rep(0, times = sum(!uncens)))
+    for (i in which(!uncens)) {
+      surv_sum_i = data_dist[-1, "surv"] ^ exp(as.numeric(data[i, "HR"])) + 
+        data_dist[-nrow(data_dist), "surv"] ^ exp(as.numeric(data[i, "HR"])) 
+      tr[i] = 1 / 2 * sum((data_dist[-nrow(data_dist), W] >= as.numeric(data[i, W])) * surv_sum_i * t_diff)
+    }
+    
+    # Estimate the integral from Xtilde to infinity using the trapezoidal rule 
   }
   if (any(is.na(data$imp))) {
     data$imp[which(is.na(data$imp))] = data[which(is.na(data$imp)), W]
