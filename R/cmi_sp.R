@@ -142,8 +142,8 @@ cmi_sp = function (imputation_model, lp = NULL, data, integral = "AQ", Xmax = In
     # Estimate the integral from Xtilde to infinity using the trapezoidal rule 
     if (surv_beyond == "w") {
       ## Get parameter estimates 
-      alpha_hat = alpha_lambda[1]
-      lambda_tilde = alpha_lambda[2] * data[which(!uncens), "HR"]
+      alpha_hat = weibull_params[1]
+      lambda_tilde = weibull_params[2] * data[which(!uncens), "HR"]
       
       ## Get integral estimates 
       ### Integral from Xtilde to infinity
