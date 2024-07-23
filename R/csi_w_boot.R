@@ -5,7 +5,7 @@
 #' @param imputation_model Imputation model formula (or coercible to formula), a formula expression as for other regression models. The response is usually a survival object as returned by the \code{Surv} function. See the documentation for \code{Surv} for details.
 #' @param analysis_model Analysis model formula (or coercible to formula), a formula expression as for other regression models. The response should be a continuous outcome for normal linear regression.
 #' @param data Dataframe or named matrix containing columns \code{W}, \code{Delta}, and \code{Z}.
-#' @param trapezoidal_rule A logical input for whether the trapezoidal rule should be used to approximate the integral in the imputed values. Default is \code{FALSE}.
+#' @param integral A string input for how to approximate the integral in the imputed values. Default is \code{integral="AQ"} for adaptive quadrature, but \code{"TR"} (trapezoidal rule) and \code{"A"} (quasi-analytical) are also available.
 #' @param Xmax (Optional) Upper limit of the domain of the censored predictor. Default is \code{Xmax = Inf}.
 #' @param subdivisions (Optional) Passed through to \code{integrate}, the maximum number of subintervals. Default is \code{subdivisions = 100L}.
 #' @param surv_between A string for the method to be used to interpolate for censored values between events. Options include \code{"cf"} (carry forward, the default), \code{"wm"} (weighted mean), or \code{"m"} (mean).
@@ -16,12 +16,12 @@
 #'
 #' @export
 
-csi_w_boot = function (imputation_model, analysis_model, data, trapezoidal_rule = FALSE, Xmax = Inf, subdivisions = 100L, surv_between = "cf", surv_beyond = "e", B = 500) {
+csi_w_boot = function (imputation_model, analysis_model, data, integral = "AQ", Xmax = Inf, subdivisions = 100L, surv_between = "cf", surv_beyond = "e", B = 500) {
   # Impute censored covariates in the original data 
   orig_imp = cmi_sp(imputation_model = imputation_model, 
                     lp = NULL, 
                     data = data, 
-                    trapezoidal_rule = trapezoidal_rule, 
+                    integral = integral,
                     Xmax = Xmax, 
                     subdivisions = subdivisions, 
                     surv_between = surv_between, 

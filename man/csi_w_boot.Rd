@@ -8,7 +8,7 @@ csi_w_boot(
   imputation_model,
   analysis_model,
   data,
-  trapezoidal_rule = FALSE,
+  integral = "AQ",
   Xmax = Inf,
   subdivisions = 100L,
   surv_between = "cf",
@@ -23,7 +23,7 @@ csi_w_boot(
 
 \item{data}{Dataframe or named matrix containing columns \code{W}, \code{Delta}, and \code{Z}.}
 
-\item{trapezoidal_rule}{A logical input for whether the trapezoidal rule should be used to approximate the integral in the imputed values. Default is \code{FALSE}.}
+\item{integral}{A string input for how to approximate the integral in the imputed values. Default is \code{integral="AQ"} for adaptive quadrature, but \code{"TR"} (trapezoidal rule) and \code{"A"} (quasi-analytical) are also available.}
 
 \item{Xmax}{(Optional) Upper limit of the domain of the censored predictor. Default is \code{Xmax = Inf}.}
 
