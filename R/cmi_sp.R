@@ -132,11 +132,12 @@ cmi_sp = function (imputation_model, lp = NULL, data, integral = "AQ", Xmax = In
     # Estimate the integral up to Xtilde using the trapezoidal rule 
     data_dist = unique(data[uncens, c(W, Delta, Z, "surv")])
     t_diff = data_dist[-1, W] - data_dist[-nrow(data_dist), W]
-    tr = as.vector(x = rep(0, times = sum(!uncens)))
+    tr = vector()
     for (i in which(!uncens)) {
       surv_sum_i = data_dist[-1, "surv"] ^ exp(as.numeric(data[i, "HR"])) + 
         data_dist[-nrow(data_dist), "surv"] ^ exp(as.numeric(data[i, "HR"])) 
-      tr[i] = 1 / 2 * sum((data_dist[-nrow(data_dist), W] >= as.numeric(data[i, W])) * surv_sum_i * t_diff)
+      tr = append(tr, 
+                  1 / 2 * sum((data_dist[-nrow(data_dist), W] >= as.numeric(data[i, W])) * surv_sum_i * t_diff))
     }
     
     # Estimate the integral from Xtilde to infinity using the trapezoidal rule 
