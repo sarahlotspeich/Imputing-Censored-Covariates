@@ -5,11 +5,11 @@ Version: 0.1.0
 Author: Sarah Lotspeich
 Maintainer: Sarah Lotspeich <lotspes@wfu.edu>
 Description: This package contains functions for conditional mean imputation of censored covariates using a variety of different methods, including nonparametric, semiparametric, and parametric approaches. 
-Imports: 
+Depends:
+  survival,
+  expint,
   magrittr, 
   dplyr
-Depends:
-  survival
 License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true
