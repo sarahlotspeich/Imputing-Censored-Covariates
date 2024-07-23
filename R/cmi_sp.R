@@ -16,6 +16,7 @@
 #' \item{code}{Indicator of algorithm status (\code{TRUE} or \code{FALSE}).}
 #'
 #' @export
+#' @importFrom expint gammainc
 
 cmi_sp = function (imputation_model, lp = NULL, data, integral = "AQ", Xmax = Inf, subdivisions = 100L, surv_between = "cf", surv_beyond = "e") {
   # Extract variable names from imputation_model
@@ -82,18 +83,18 @@ cmi_sp = function (imputation_model, lp = NULL, data, integral = "AQ", Xmax = In
     }
     needs_extrap = which(!uncens & data[, W] > Xtilde)
     data[needs_extrap, "surv0"] = sapply(X = data[needs_extrap, W], 
-                                          FUN = extrap_surv_beyond, 
-                                          t = surv_df[, W], 
-                                          surv = surv_df[, "surv0"], 
-                                          surv_beyond = surv_beyond, 
-                                          weibull_params = weibull_params)
+                                         FUN = extrap_surv_beyond, 
+                                         t = surv_df[, W], 
+                                         surv = surv_df[, "surv0"], 
+                                         surv_beyond = surv_beyond, 
+                                         weibull_params = weibull_params)
   } else {
     needs_extrap = which(!uncens & data[, W] > Xtilde)
     data[needs_extrap, "surv0"] = sapply(X = data[needs_extrap, W], 
-                                          FUN = extrap_surv_beyond, 
-                                          t = surv_df[, W], 
-                                          surv = surv_df[, "surv0"], 
-                                          surv_beyond = surv_beyond)
+                                         FUN = extrap_surv_beyond, 
+                                         t = surv_df[, W], 
+                                         surv = surv_df[, "surv0"], 
+                                         surv_beyond = surv_beyond)
     weibull_params = NULL
   }
   data$surv = data[, "surv0"] ^ data[, "HR"]
@@ -139,6 +140,39 @@ cmi_sp = function (imputation_model, lp = NULL, data, integral = "AQ", Xmax = In
     }
     
     # Estimate the integral from Xtilde to infinity using the trapezoidal rule 
+    if (surv_beyond == "w") {
+      ## Get parameter estimates 
+      alpha_hat = alpha_lambda[1]
+      lambda_tilde = alpha_lambda[2] * data[which(!uncens), "HR"]
+      
+      ## Get integral estimates 
+      ### Integral from Xtilde to infinity
+      a1 = gammainc(a = 1 / alpha_hat, x = lambda_tilde * Xtilde ^ alpha_hat) / 
+        (lambda_tilde * Xtilde ^ (1 / alpha_hat))
+      ### Integral from Wi to infinity
+      a2 = gammainc(a = 1 / alpha_hat, x = lambda_tilde * data[which(!uncens), "w"] ^ alpha_hat) / 
+        (lambda_tilde * data[which(!uncens), "w"] ^ (1 / alpha_hat))
+      ### If Wi <= Xtilde, take a1; If Wi > Xtilde; take a2
+      a = pmin(a1, a2)
+    } else if (surv_beyond == "e") {
+      ## Get parameter estimates 
+      rho_hat = - Xtilde / log(SURVmax)
+      rho_tilde = data[which(!uncens), "HR"] / rho_hat 
+      
+      ## Get integral estimates 
+      ### Integral from Xtilde to infinity
+      a1 = exp(- rho_tilde * Xtilde) / rho_tilde
+      ### Integral from Wi to infinity
+      a2 = exp(- rho_tilde * data[which(!uncens), "w"]) / rho_tilde
+      ### If Wi <= Xtilde, take a1; If Wi > Xtilde; take a2
+      a = pmin(a1, a2)
+    }
+    
+    # Take sum of integrals
+    int_surv = tr + a
+    
+    # Compute conditional means
+    data$imp[which(!uncens)] = data[which(!uncens), W] + int_surv / data[which(!uncens), "surv"]
   }
   if (any(is.na(data$imp))) {
     data$imp[which(is.na(data$imp))] = data[which(is.na(data$imp)), W]
