@@ -102,8 +102,8 @@ cmi_sp = function (imputation_model, lp = NULL, data, integral = "AQ", Xmax = In
     data_dist = unique(data[, c(W, Delta, Z, "surv0")])
     t_diff = data_dist[-1, W] - data_dist[-nrow(data_dist), W]
     for (i in which(!uncens)) {
-      surv_sum_i = data_dist[-1, "surv0"] ^ exp(as.numeric(data[i, "HR"])) + 
-        data_dist[-nrow(data_dist), "surv0"] ^ exp(as.numeric(data[i, "HR"])) 
+      surv_sum_i = data_dist[-1, "surv0"] ^ as.numeric(data[i, "HR"]) + 
+        data_dist[-nrow(data_dist), "surv0"] ^ as.numeric(data[i, "HR"]) 
       int_surv_i = 1 / 2 * sum((data_dist[-nrow(data_dist), W] >= as.numeric(data[i, W])) * surv_sum_i * t_diff)
       data$imp[i] = data$imp[i] + (int_surv_i / data[i, "surv"])
     }
@@ -130,34 +130,34 @@ cmi_sp = function (imputation_model, lp = NULL, data, integral = "AQ", Xmax = In
     data$imp[which(!uncens)] = data[which(!uncens), W] + int_surv/data[which(!uncens), "surv"]
   } else if (integral == "A") {
     # Estimate the integral up to Xtilde using the trapezoidal rule 
-    # data_dist = unique(data[uncens, c(W, Delta, Z, "surv0")])
-    # t_diff = data_dist[-1, W] - data_dist[-nrow(data_dist), W]
-    # tr = vector()
-    # for (i in which(!uncens)) {
-    #   surv_sum_i = data_dist[-1, "surv0"] ^ exp(as.numeric(data[i, "HR"])) + 
-    #     data_dist[-nrow(data_dist), "surv0"] ^ exp(as.numeric(data[i, "HR"])) 
-    #   tr = append(tr, 
-    #               1 / 2 * sum((data_dist[-nrow(data_dist), W] >= as.numeric(data[i, W])) * surv_sum_i * t_diff))
-    # }
-    to_integrate = function(t, hr) {
-      basesurv = sapply(X = t, 
-                        FUN = extend_surv, 
-                        t = surv_df[, W], 
-                        surv = surv_df[, "surv0"], 
-                        surv_between = surv_between, 
-                        surv_beyond = surv_beyond, 
-                        weibull_params = weibull_params)
-      basesurv ^ as.numeric(hr)
+    data_dist = unique(data[uncens, c(W, Delta, Z, "surv0")])
+    t_diff = data_dist[-1, W] - data_dist[-nrow(data_dist), W]
+    tr = vector()
+    for (i in which(!uncens)) {
+      surv_sum_i = data_dist[-1, "surv0"] ^ as.numeric(data[i, "HR"]) +
+        data_dist[-nrow(data_dist), "surv0"] ^ as.numeric(data[i, "HR"])
+      tr = append(tr,
+                  1 / 2 * sum((data_dist[-nrow(data_dist), W] >= as.numeric(data[i, W])) * surv_sum_i * t_diff))
     }
-    aq = sapply(X = which(!uncens), 
-                FUN = function(i) {
-                  tryCatch(expr = integrate(f = to_integrate, 
-                                            lower = data[i, W], 
-                                            upper = Xtilde, 
-                                            subdivisions = subdivisions, 
-                                            hr = data[i, "HR"])$value, 
-                           error = function(e) return(NA))}
-                )
+    # to_integrate = function(t, hr) {
+    #   basesurv = sapply(X = t, 
+    #                     FUN = extend_surv, 
+    #                     t = surv_df[, W], 
+    #                     surv = surv_df[, "surv0"], 
+    #                     surv_between = surv_between, 
+    #                     surv_beyond = surv_beyond, 
+    #                     weibull_params = weibull_params)
+    #   basesurv ^ as.numeric(hr)
+    # }
+    # aq = sapply(X = which(!uncens), 
+    #             FUN = function(i) {
+    #               tryCatch(expr = integrate(f = to_integrate, 
+    #                                         lower = data[i, W], 
+    #                                         upper = Xtilde, 
+    #                                         subdivisions = subdivisions, 
+    #                                         hr = data[i, "HR"])$value, 
+    #                        error = function(e) return(NA))}
+    #             )
     
     # Estimate the integral from Xtilde to infinity using the trapezoidal rule 
     if (surv_beyond == "w") {
@@ -189,7 +189,8 @@ cmi_sp = function (imputation_model, lp = NULL, data, integral = "AQ", Xmax = In
     }
     
     # Take sum of integrals
-    int_surv = aq + a #tr + a
+    # int_surv = aq + a 
+    int_surv = tr + a
     
     # Compute conditional means
     data$imp[which(!uncens)] = data[which(!uncens), W] + int_surv / data[which(!uncens), "surv"]
