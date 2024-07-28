@@ -18,13 +18,19 @@
 #' @export
 
 cmi_sp_bootstrap = function(imputation_model, analysis_model, data, integral = "AQ", Xmax = Inf, surv_between = "cf", surv_beyond = "e", maxiter = 100, B = 10) {
-  # Size of resample
-  n = nrow(data)
-  
-  # Extract variable names from imputation_model
+  # Extract variable names from imputation_model -------------------------------
   W = all.vars(imputation_model)[1] ## censored covariate
   Delta = all.vars(imputation_model)[2] ## corresponding event indicator
   Z = all.vars(imputation_model)[-c(1:2)] ## additional covariates
+  
+  # Size of resample -----------------------------------------------------------
+  n = nrow(data) ## total
+  n1 = sum(data[, Delta]) ## uncensored
+  n0 = n - n1 ## censored 
+  
+  # Define separate objects for censored and uncensored observations -----------
+  uncens_data = data[data[, Delta] == 1, ]
+  cens_data = data[data[, Delta] == 0, ]
   
   # Initialize empty dataframe to hold results 
   mult_fit = data.frame()
@@ -32,8 +38,16 @@ cmi_sp_bootstrap = function(imputation_model, analysis_model, data, integral = "
   # Loop through replicates 
   for (b in 1:B) {
     # Sample with replacement from the original data ---------------------------
-    re_rows = ceiling(runif(n = n, min = 0, max = 1) * nrow(data))
-    re_data = data[re_rows, ]
+    ## Uncensored rows ---------------------------------------------------------
+    re_uncens_rows = ceiling(runif(n = n, min = 0, max = 1) * nrow(uncens_data))
+    re_uncens_data = uncens_data[re_uncens_rows, ]
+    ## Censored rows -----------------------------------------------------------
+    re_cens_rows = ceiling(runif(n = n, min = 0, max = 1) * nrow(cens_data))
+    re_cens_data = cens_data[re_cens_rows, ]
+    ## Put them together -------------------------------------------------------
+    re_data = rbind(re_uncens_data, re_cens_data)
+    # re_rows = ceiling(runif(n = n, min = 0, max = 1) * nrow(data))
+    # re_data = data[re_rows, ]
     
     # Check for censoring in resampled data
     if (sum(re_data[, Delta]) < n) {
@@ -47,9 +61,17 @@ cmi_sp_bootstrap = function(imputation_model, analysis_model, data, integral = "
       
       # Check for the Weibull extension not converging -------------------------
       while (!re_data_imp$code) {
-        # Sample again with replacement from the original data -----------------
-        re_rows = ceiling(runif(n = n, min = 0, max = 1) * nrow(data))
-        re_data = data[re_rows, ]
+        # Sample with replacement from the original data ---------------------------
+        ## Uncensored rows ---------------------------------------------------------
+        re_uncens_rows = ceiling(runif(n = n, min = 0, max = 1) * nrow(uncens_data))
+        re_uncens_data = uncens_data[re_uncens_rows, ]
+        ## Censored rows -----------------------------------------------------------
+        re_cens_rows = ceiling(runif(n = n, min = 0, max = 1) * nrow(cens_data))
+        re_cens_data = cens_data[re_cens_rows, ]
+        ## Put them together -------------------------------------------------------
+        re_data = rbind(re_uncens_data, re_cens_data)
+        # re_rows = ceiling(runif(n = n, min = 0, max = 1) * nrow(data))
+        # re_data = data[re_rows, ]
         
         # Check for censoring in resampled data
         if (sum(re_data[, Delta]) < n) {
