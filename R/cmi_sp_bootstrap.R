@@ -23,14 +23,11 @@ cmi_sp_bootstrap = function(imputation_model, analysis_model, data, integral = "
   Delta = all.vars(imputation_model)[2] ## corresponding event indicator
   Z = all.vars(imputation_model)[-c(1:2)] ## additional covariates
   
-  # Size of resample -----------------------------------------------------------
-  n = nrow(data) ## total
-  n1 = sum(data[, Delta]) ## uncensored
-  n0 = n - n1 ## censored 
-  
-  # Define separate objects for censored and uncensored observations -----------
-  uncens_data = data[data[, Delta] == 1, ]
-  cens_data = data[data[, Delta] == 0, ]
+  # Take names and dimension from naive fit 
+  data[, "imp"] = data[, W] ## start imputed value with observed 
+  naive_fit = lm(formula = analysis_model, 
+                 data = data) 
+  p = length(naive_fit$coefficients) ## dimension of beta vector 
   
   # Initialize empty dataframe to hold results 
   mult_fit = data.frame()
@@ -38,16 +35,8 @@ cmi_sp_bootstrap = function(imputation_model, analysis_model, data, integral = "
   # Loop through replicates 
   for (b in 1:B) {
     # Sample with replacement from the original data ---------------------------
-    ## Uncensored rows ---------------------------------------------------------
-    re_uncens_rows = ceiling(runif(n = n, min = 0, max = 1) * nrow(uncens_data))
-    re_uncens_data = uncens_data[re_uncens_rows, ]
-    ## Censored rows -----------------------------------------------------------
-    re_cens_rows = ceiling(runif(n = n, min = 0, max = 1) * nrow(cens_data))
-    re_cens_data = cens_data[re_cens_rows, ]
-    ## Put them together -------------------------------------------------------
-    re_data = rbind(re_uncens_data, re_cens_data)
-    # re_rows = ceiling(runif(n = n, min = 0, max = 1) * nrow(data))
-    # re_data = data[re_rows, ]
+    re_rows = ceiling(runif(n = n, min = 0, max = 1) * nrow(data))
+    re_data = data[re_rows, ]
     
     # Check for censoring in resampled data
     if (sum(re_data[, Delta]) < n) {
@@ -61,17 +50,9 @@ cmi_sp_bootstrap = function(imputation_model, analysis_model, data, integral = "
       
       # Check for the Weibull extension not converging -------------------------
       while (!re_data_imp$code) {
-        # Sample with replacement from the original data ---------------------------
-        ## Uncensored rows ---------------------------------------------------------
-        re_uncens_rows = ceiling(runif(n = n, min = 0, max = 1) * nrow(uncens_data))
-        re_uncens_data = uncens_data[re_uncens_rows, ]
-        ## Censored rows -----------------------------------------------------------
-        re_cens_rows = ceiling(runif(n = n, min = 0, max = 1) * nrow(cens_data))
-        re_cens_data = cens_data[re_cens_rows, ]
-        ## Put them together -------------------------------------------------------
-        re_data = rbind(re_uncens_data, re_cens_data)
-        # re_rows = ceiling(runif(n = n, min = 0, max = 1) * nrow(data))
-        # re_data = data[re_rows, ]
+        # Sample with replacement from the original data -----------------------
+        re_rows = ceiling(runif(n = n, min = 0, max = 1) * nrow(data))
+        re_data = data[re_rows, ]
         
         # Check for censoring in resampled data
         if (sum(re_data[, Delta]) < n) {
@@ -87,21 +68,17 @@ cmi_sp_bootstrap = function(imputation_model, analysis_model, data, integral = "
           re_data$imp = re_data[, W]
           re_data_imp = list(imputed_data = re_data, 
                              code = TRUE)
-          re_fit = lm(formula = analysis_model, 
-                      data = re_data) 
         }
       }
       
-      # If imputation was successful, fit the analysis model -------------------
-      if (re_data_imp$code) {
-        re_fit = lm(formula = analysis_model, 
-                    data = re_data_imp$imputed_data)
-        
-      }
+      # Once imputation was successful, fit the analysis model -----------------
+      re_fit = lm(formula = analysis_model, 
+                  data = re_data_imp$imputed_data) 
     } else {
       # If no censored, just fit the usual model -------------------------------
       re_data$imp = re_data[, W]
-      re_fit = lm(formula = analysis_model, data = re_data) 
+      re_fit = lm(formula = analysis_model, 
+                  data = re_data) 
     }
     
     # Save coefficients to results matrix --------------------------------------
@@ -111,21 +88,21 @@ cmi_sp_bootstrap = function(imputation_model, analysis_model, data, integral = "
   
   ## Pool estimates
   pooled_est = rowsum(x = mult_fit[, 1],
-                      group = rep(x = 1:length(re_fit$coefficients), times = B)) / B
+                      group = rep(x = 1:p, times = B)) / B
   
   ## Calculate within-imputation variance 
   within_var = rowsum(x = mult_fit[, 2] ^ 2,
-                      group = rep(x = 1:length(re_fit$coefficients), times = B)) / B
+                      group = rep(x = 1:p, times = B)) / B
   
   ## Calculate between-imputation variance
   between_var = rowsum(x = (mult_fit[, 1] - rep(pooled_est, times = B)) ^ 2,
-                       group = rep(x = 1:length(re_fit$coefficients), times = B)) / (B - 1)
+                       group = rep(x = 1:p, times = B)) / (B - 1)
   
   ## Pool variance
   pooled_var = within_var + between_var + (between_var / B)
   
   # Return table of pooled estimates
-  tab = data.frame(Coefficient = names(re_fit$coefficients),
+  tab = data.frame(Coefficient = names(naive_fit$coefficients),
                    Est = pooled_est,
                    SE = sqrt(pooled_var))
   return(tab)  
