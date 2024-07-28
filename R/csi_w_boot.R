@@ -29,6 +29,7 @@ csi_w_boot = function (imputation_model, analysis_model, data, integral = "AQ", 
   
   # Extract variable names from imputation_model
   W = all.vars(imputation_model)[1] ## censored covariate
+  Delta = all.vars(imputation_model)[2] ## corresponding event indicator
   
   # Take names and dimension from naive fit 
   data[, "imp"] = data[, W] ## start imputed value with observed 
@@ -36,6 +37,10 @@ csi_w_boot = function (imputation_model, analysis_model, data, integral = "AQ", 
                  data = data) 
   p = length(naive_fit$coefficients) ## dimension of beta vector 
 
+  # Define separate objects for censored and uncensored observations -----------
+  uncens_data = orig_imp$imputed_data[orig_imp$imputed_data[, Delta] == 1, ]
+  cens_data = orig_imp$imputed_data[orig_imp$imputed_data[, Delta] == 0, ]
+  
   # Initialize empty matrix to hold coefficient and variance estimates 
   beta_b = vbeta_b = matrix(data = NA, 
                             nrow = B, 
@@ -45,9 +50,21 @@ csi_w_boot = function (imputation_model, analysis_model, data, integral = "AQ", 
   if (orig_imp$code) {
     ## Bootstrap
     for (b in 1:B) {
+      # Sample with replacement from the original data ---------------------------
+      ## Uncensored rows ---------------------------------------------------------
+      re_uncens_rows = ceiling(runif(n = n, min = 0, max = 1) * nrow(uncens_data))
+      re_uncens_data = uncens_data[re_uncens_rows, ]
+      ## Censored rows -----------------------------------------------------------
+      re_cens_rows = ceiling(runif(n = n, min = 0, max = 1) * nrow(cens_data))
+      re_cens_data = cens_data[re_cens_rows, ]
+      ## Put them together -------------------------------------------------------
+      re_data = rbind(re_uncens_data, re_cens_data)
+      # re_rows = ceiling(runif(n = n, min = 0, max = 1) * nrow(data))
+      # re_data = data[re_rows, ]
+      
       ### Resample with replacement from orig_imp$imputed_data -----------------
-      re_rows = ceiling(runif(n = n, min = 0, max = 1) * nrow(data))
-      re_data = orig_imp$imputed_data[re_rows, ]
+      # re_rows = ceiling(runif(n = n, min = 0, max = 1) * nrow(data))
+      # re_data = orig_imp$imputed_data[re_rows, ]
       
       ### Fit analysis_model to resampled data ---------------------------------
       re_fit = lm(formula = analysis_model, 
