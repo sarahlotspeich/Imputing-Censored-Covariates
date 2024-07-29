@@ -18,6 +18,9 @@
 #' @export
 
 cmi_sp_bootstrap = function(imputation_model, analysis_model, data, integral = "AQ", Xmax = Inf, surv_between = "cf", surv_beyond = "e", maxiter = 100, B = 10) {
+  # Size of resample -----------------------------------------------------------
+  n = nrow(data)
+  
   # Extract variable names from imputation_model -------------------------------
   W = all.vars(imputation_model)[1] ## censored covariate
   Delta = all.vars(imputation_model)[2] ## corresponding event indicator
@@ -25,8 +28,7 @@ cmi_sp_bootstrap = function(imputation_model, analysis_model, data, integral = "
   
   # Take names and dimension from naive fit 
   data[, "imp"] = data[, W] ## start imputed value with observed 
-  naive_fit = lm(formula = analysis_model, 
-                 data = data) 
+  naive_fit = lm(formula = analysis_model, data = data) ## fit naive model 
   p = length(naive_fit$coefficients) ## dimension of beta vector 
   
   # Initialize empty dataframe to hold results 
@@ -38,8 +40,11 @@ cmi_sp_bootstrap = function(imputation_model, analysis_model, data, integral = "
     re_rows = ceiling(runif(n = n, min = 0, max = 1) * nrow(data))
     re_data = data[re_rows, ]
     
+    # Calculate proportion of censored observations in resampled data ----------
+    re_prop_cens = 1 - mean(re_data[, Delta])
+
     # Check for censoring in resampled data
-    if (sum(re_data[, Delta]) < n) {
+    if (0 < re_prop_cens) {
       # Use imputeCensRd::cmi_sp() to impute censored x in re_data -------------
       re_data_imp = cmi_sp(imputation_model = imputation_model, 
                            data = re_data, 
@@ -54,8 +59,11 @@ cmi_sp_bootstrap = function(imputation_model, analysis_model, data, integral = "
         re_rows = ceiling(runif(n = n, min = 0, max = 1) * nrow(data))
         re_data = data[re_rows, ]
         
+        # Calculate proportion of censored observations in resampled data ------
+        re_prop_cens = 1 - mean(re_data[, Delta])
+        
         # Check for censoring in resampled data
-        if (sum(re_data[, Delta]) < n) {
+        if (0 < re_prop_cens) {
           # Use imputeCensRd::cmi_sp() to impute censored x in re_data ---------
           re_data_imp = cmi_sp(imputation_model = imputation_model, 
                                data = re_data, 
