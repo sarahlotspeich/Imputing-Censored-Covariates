@@ -31,8 +31,13 @@ cmi_sp = function (imputation_model, lp = NULL, data, integral = "AQ", Xmax = In
   data$imp = data[, W] ## start with imp = W
   
   # Fit Cox PH imputation model for X ~ Z 
-  fit = coxph(formula = imputation_model, 
-              data = data)
+  fit = tryCatch(expr = {
+    coxph(formula = imputation_model, 
+          data = data)}, 
+    warning = function(w) {
+      list(coefficients = rep(NA, length(Z)))
+    }
+  )
   
   # Check for NA values in logHRs 
   if (any(is.na(fit$coefficients))) {
