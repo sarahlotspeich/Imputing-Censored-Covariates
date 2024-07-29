@@ -34,6 +34,13 @@ cmi_sp = function (imputation_model, lp = NULL, data, integral = "AQ", Xmax = In
   fit = coxph(formula = imputation_model, 
               data = data)
   
+  # Check for NA values in logHRs 
+  if (any(is.na(fit$coefficients))) {
+    data$imp = NA ## make imp = NA
+    return(list(imputed_data = data, 
+                code = !any(is.na(data$imp))))
+  }
+  
   if (is.null(lp)) {
     # Calculate linear predictor for Cox imputation model
     lp = predict(fit, reference = "sample") + sum(coef(fit) * fit$means, na.rm = TRUE) ## linear predictors
