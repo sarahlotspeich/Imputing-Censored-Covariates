@@ -10,13 +10,14 @@
 #' @param subdivisions (Optional) Passed through to \code{integrate}, the maximum number of subintervals. Default is \code{subdivisions = 100L}.
 #' @param surv_between A string for the method to be used to interpolate for censored values between events. Options include \code{"cf"} (carry forward, the default), \code{"wm"} (weighted mean), or \code{"m"} (mean).
 #' @param surv_beyond A string for the method to be used to extrapolate the survival curve beyond the last observed event. Options include \code{"d"} (immediate drop off), \code{"e"} (exponential extension, the default), or \code{"w"} (weibull extension).
-#' @param B numeric, number of bootstraps used for standard errors Default is \code{500}. 
+#' @param B Numeric, number of bootstraps used for standard errors Default is \code{500}. 
+#' @param stratify Logical, if \code{stratify = FALSE} (the default), the bootstraps resample from the pooled sample. If \code{stratify = TRUE}, the bootstraps resample separately from the censored and uncensored subsamples.
 #'
 #' @return a \code{dataframe} of pooled coefficient and standard error estimates 
 #'
 #' @export
 
-csi_w_boot = function (imputation_model, analysis_model, data, integral = "AQ", Xmax = Inf, subdivisions = 100L, surv_between = "cf", surv_beyond = "e", B = 500) {
+csi_w_boot = function (imputation_model, analysis_model, data, integral = "AQ", Xmax = Inf, subdivisions = 100L, surv_between = "cf", surv_beyond = "e", B = 500, stratify = FALSE) {
   # Impute censored covariates in the original data 
   orig_imp = cmi_sp(imputation_model = imputation_model, 
                     lp = NULL, 
@@ -30,6 +31,10 @@ csi_w_boot = function (imputation_model, analysis_model, data, integral = "AQ", 
   # Extract variable names from imputation_model
   W = all.vars(imputation_model)[1] ## censored covariate
   Delta = all.vars(imputation_model)[2] ## corresponding event indicator
+  
+  # Define separate objects for censored and uncensored observations -----------
+  uncens_data = orig_imp$imputed_data[orig_imp$imputed_data[, Delta] == 1, ]
+  cens_data = orig_imp$imputed_data[orig_imp$imputed_data[, Delta] == 0, ]
   
   # Take names and dimension from naive fit 
   data[, "imp"] = data[, W] ## start imputed value with observed 
@@ -47,8 +52,20 @@ csi_w_boot = function (imputation_model, analysis_model, data, integral = "AQ", 
     ## Bootstrap
     for (b in 1:B) {
       ## Resample with replacement from orig_imp$imputed_data -----------------
-      re_rows = ceiling(runif(n = n, min = 0, max = 1) * nrow(data))
-      re_data = orig_imp$imputed_data[re_rows, ]
+      if (stratify) {
+        ## Uncensored rows ---------------------------------------------------------
+        re_uncens_rows = ceiling(runif(n = n, min = 0, max = 1) * nrow(uncens_data))
+        re_uncens_data = uncens_data[re_uncens_rows, ]
+        ## Censored rows -----------------------------------------------------------
+        re_cens_rows = ceiling(runif(n = n, min = 0, max = 1) * nrow(cens_data))
+        re_cens_data = cens_data[re_cens_rows, ]
+        ## Put them together -------------------------------------------------------
+        re_data = rbind(re_uncens_data, 
+                        re_cens_data)
+      } else {
+        re_rows = ceiling(runif(n = n, min = 0, max = 1) * nrow(data))
+        re_data = orig_imp$imputed_data[re_rows, ]
+      }
       
       ### Fit analysis_model to resampled data ---------------------------------
       re_fit = lm(formula = analysis_model, 

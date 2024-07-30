@@ -13,7 +13,8 @@ csi_w_boot(
   subdivisions = 100L,
   surv_between = "cf",
   surv_beyond = "e",
-  B = 500
+  B = 500,
+  stratify = FALSE
 )
 }
 \arguments{
@@ -33,7 +34,9 @@ csi_w_boot(
 
 \item{surv_beyond}{A string for the method to be used to extrapolate the survival curve beyond the last observed event. Options include \code{"d"} (immediate drop off), \code{"e"} (exponential extension, the default), or \code{"w"} (weibull extension).}
 
-\item{B}{numeric, number of bootstraps used for standard errors Default is \code{500}.}
+\item{B}{Numeric, number of bootstraps used for standard errors Default is \code{500}.}
+
+\item{stratify}{Logical, if \code{stratify = FALSE} (the default), the bootstraps resample from the pooled sample. If \code{stratify = TRUE}, the bootstraps resample separately from the censored and uncensored subsamples.}
 }
 \value{
 a \code{dataframe} of pooled coefficient and standard error estimates
