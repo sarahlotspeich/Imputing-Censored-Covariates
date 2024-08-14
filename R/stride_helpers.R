@@ -9,6 +9,7 @@ VTM<-function(vc, dm){
   matrix(vc, ncol=length(vc), nrow=dm, byrow=T)
 }
 
+#' @export
 sum.I <- function(yy,FUN,Yi,Vi=NULL)   ## sum I(yy FUN Yi)Vi
 {
   if(FUN=="<"|FUN=="<=") { yy <- -yy; Yi <- -Yi}
