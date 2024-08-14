@@ -53,16 +53,16 @@ csi_w_boot = function (imputation_model, analysis_model, data, integral = "AQ", 
       ## Resample with replacement from orig_imp$imputed_data -----------------
       if (stratify) {
         ## Uncensored rows ---------------------------------------------------------
-        re_uncens_rows = ceiling(runif(n = n, min = 0, max = 1) * nrow(uncens_data))
+        re_uncens_rows = ceiling(runif(n = nrow(uncens_data), min = 0, max = 1) * nrow(uncens_data))
         re_uncens_data = uncens_data[re_uncens_rows, ]
         ## Censored rows -----------------------------------------------------------
-        re_cens_rows = ceiling(runif(n = n, min = 0, max = 1) * nrow(cens_data))
+        re_cens_rows = ceiling(runif(n = nrow(cens_data), min = 0, max = 1) * nrow(cens_data))
         re_cens_data = cens_data[re_cens_rows, ]
         ## Put them together -------------------------------------------------------
         re_data = rbind(re_uncens_data, 
                         re_cens_data)
       } else {
-        re_rows = ceiling(runif(n = n, min = 0, max = 1) * nrow(data))
+        re_rows = ceiling(runif(n = nrow(data), min = 0, max = 1) * nrow(data))
         re_data = orig_imp$imputed_data[re_rows, ]
       }
       
