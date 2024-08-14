@@ -37,10 +37,9 @@ csi_w_boot = function (imputation_model, analysis_model, data, integral = "AQ", 
   cens_data = orig_imp$imputed_data[orig_imp$imputed_data[, Delta] == 0, ]
   
   # Take names and dimension from naive fit 
-  data[, "imp"] = data[, W] ## start imputed value with observed 
-  naive_fit = lm(formula = analysis_model, 
-                 data = data) 
-  p = length(naive_fit$coefficients) ## dimension of beta vector 
+  csi_fit = lm(formula = analysis_model, 
+               data = orig_imp$imputed_data) 
+  p = length(csi_fit$coefficients) ## dimension of beta vector 
 
   # Initialize empty matrix to hold coefficient and variance estimates 
   beta_b = vbeta_b = matrix(data = NA, 
@@ -87,18 +86,20 @@ csi_w_boot = function (imputation_model, analysis_model, data, integral = "AQ", 
     vbeta_pooled = vbeta_within + vbeta_between 
     
     ## Construct table of results 
-    tab = data.frame(Coefficient = names(naive_fit$coefficients),
-                     Est = beta_pooled,
-                     SE = sqrt(vbeta_pooled), 
-                     BSE = apply(X = beta_b, 
+    tab = data.frame(Coefficient = names(csi_fit$coefficients),
+                     Est = csi_fit$coefficients, #beta_pooled,
+                     NSE = sqrt(diag(vcov(csi_fit))),
+                     BSE = sqrt(vbeta_pooled), 
+                     QSE = apply(X = beta_b, 
                                  MARGIN = 2, 
                                  FUN = sd))
   } else {
     ## If imputation unsuccessful, return empty table of NA results
-    tab = data.frame(Coefficient = names(naive_fit$coefficients),
+    tab = data.frame(Coefficient = names(csi_fit$coefficients),
                      Est = NA,
-                     SE = NA, 
-                     BSE = NA)
+                     NSE = NA, 
+                     BSE = NA,
+                     QSE = NA)
   }
   
   # Return table of pooled estimates 
