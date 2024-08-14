@@ -87,19 +87,21 @@ csi_w_boot = function (imputation_model, analysis_model, data, integral = "AQ", 
     
     ## Construct table of results 
     tab = data.frame(Coefficient = names(csi_fit$coefficients),
-                     Est = csi_fit$coefficients, #beta_pooled,
+                     Est = csi_fit$coefficients, 
+                     PEst = beta_pooled,
                      NSE = sqrt(diag(vcov(csi_fit))),
                      BSE = sqrt(vbeta_pooled), 
-                     QSE = apply(X = beta_b, 
+                     ESE = apply(X = beta_b, 
                                  MARGIN = 2, 
                                  FUN = sd))
   } else {
     ## If imputation unsuccessful, return empty table of NA results
     tab = data.frame(Coefficient = names(csi_fit$coefficients),
                      Est = NA,
+                     PEst = NA,
                      NSE = NA, 
                      BSE = NA,
-                     QSE = NA)
+                     ESE = NA)
   }
   
   # Return table of pooled estimates 
