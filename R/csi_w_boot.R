@@ -36,18 +36,17 @@ csi_w_boot = function (imputation_model, analysis_model, data, integral = "AQ", 
   uncens_data = orig_imp$imputed_data[orig_imp$imputed_data[, Delta] == 1, ]
   cens_data = orig_imp$imputed_data[orig_imp$imputed_data[, Delta] == 0, ]
   
-  # Take names and dimension from naive fit 
-  csi_fit = lm(formula = analysis_model, 
-               data = orig_imp$imputed_data) 
-  p = length(csi_fit$coefficients) ## dimension of beta vector 
-
-  # Initialize empty matrix to hold coefficient and variance estimates 
-  beta_b = vbeta_b = matrix(data = NA, 
-                            nrow = B, 
-                            ncol = p)
-  
   # Check for successful imputation 
   if (orig_imp$code) {
+    ## Take names and dimension from single imputation fit 
+    csi_fit = lm(formula = analysis_model, 
+                 data = orig_imp$imputed_data) 
+    p = length(csi_fit$coefficients) ## dimension of beta vector 
+    
+    ## Initialize empty matrix to hold coefficient and variance estimates 
+    beta_b = vbeta_b = matrix(data = NA, 
+                              nrow = B, 
+                              ncol = p)
     ## Bootstrap
     for (b in 1:B) {
       ## Resample with replacement from orig_imp$imputed_data -----------------
@@ -95,8 +94,13 @@ csi_w_boot = function (imputation_model, analysis_model, data, integral = "AQ", 
                                  MARGIN = 2, 
                                  FUN = sd))
   } else {
+    ## Take names from naive fit 
+    data[, "imp"] = data[, W]
+    naive_fit = lm(formula = analysis_model, 
+                   data = data) 
+    
     ## If imputation unsuccessful, return empty table of NA results
-    tab = data.frame(Coefficient = names(csi_fit$coefficients),
+    tab = data.frame(Coefficient = names(naive_fit$coefficients),
                      Est = NA,
                      PEst = NA,
                      NSE = NA, 
