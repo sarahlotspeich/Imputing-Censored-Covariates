@@ -7,7 +7,7 @@
 #' @param data Dataframe or named matrix containing columns \code{W}, \code{Delta}, and \code{Z}.
 #' @param integral A string input for how to approximate the integral in the imputed values. Default is \code{integral="AQ"} for adaptive quadrature, but \code{"TR"} (trapezoidal rule) and \code{"A"} (quasi-analytical) are also available.
 #' @param Xmax (Optional) Upper limit of the domain of the censored predictor. Default is \code{Xmax = Inf}.
-#' @param subdivisions (Optional) Passed through to \code{integrate}, the maximum number of subintervals. Default is \code{subdivisions = 100L}.
+#' @param subdivisions (Optional) Passed through to \code{integrate}, the maximum number of subintervals. Default is \code{subdivisions = 2000}.
 #' @param surv_between A string for the method to be used to interpolate for censored values between events. Options include \code{"cf"} (carry forward, the default), \code{"wm"} (weighted mean), or \code{"m"} (mean).
 #' @param surv_beyond A string for the method to be used to extrapolate the survival curve beyond the last observed event. Options include \code{"d"} (immediate drop off), \code{"e"} (exponential extension, the default), or \code{"w"} (weibull extension).
 #'
@@ -18,7 +18,7 @@
 #' @export
 #' @importFrom expint gammainc
 
-cmi_sp = function (imputation_model, lp = NULL, data, integral = "AQ", Xmax = Inf, subdivisions = 100L, surv_between = "cf", surv_beyond = "e") {
+cmi_sp = function (imputation_model, lp = NULL, data, integral = "AQ", Xmax = Inf, subdivisions = 2000, surv_between = "cf", surv_beyond = "e") {
   # Extract variable names from imputation_model
   W = all.vars(imputation_model)[1] ## censored covariate
   Delta = all.vars(imputation_model)[2] ## corresponding event indicator

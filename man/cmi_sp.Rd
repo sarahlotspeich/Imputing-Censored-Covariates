@@ -10,7 +10,7 @@ cmi_sp(
   data,
   integral = "AQ",
   Xmax = Inf,
-  subdivisions = 100L,
+  subdivisions = 2000,
   surv_between = "cf",
   surv_beyond = "e"
 )
@@ -26,7 +26,7 @@ cmi_sp(
 
 \item{Xmax}{(Optional) Upper limit of the domain of the censored predictor. Default is \code{Xmax = Inf}.}
 
-\item{subdivisions}{(Optional) Passed through to \code{integrate}, the maximum number of subintervals. Default is \code{subdivisions = 100L}.}
+\item{subdivisions}{(Optional) Passed through to \code{integrate}, the maximum number of subintervals. Default is \code{subdivisions = 2000}.}
 
 \item{surv_between}{A string for the method to be used to interpolate for censored values between events. Options include \code{"cf"} (carry forward, the default), \code{"wm"} (weighted mean), or \code{"m"} (mean).}
 
