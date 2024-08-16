@@ -8,7 +8,7 @@ cmi_sp(
   imputation_model,
   lp = NULL,
   data,
-  integral = "AQ",
+  integral = "aq",
   Xmax = Inf,
   subdivisions = 2000,
   surv_between = "cf",
@@ -22,7 +22,7 @@ cmi_sp(
 
 \item{data}{Dataframe or named matrix containing columns \code{W}, \code{Delta}, and \code{Z}.}
 
-\item{integral}{A string input for how to approximate the integral in the imputed values. Default is \code{integral="AQ"} for adaptive quadrature, but \code{"TR"} (trapezoidal rule) and \code{"A"} (quasi-analytical) are also available.}
+\item{integral}{A string input for how to approximate the integral in the imputed values. Default is \code{integral="aq"} for adaptive quadrature, but \code{"tr"} (trapezoidal rule) and \code{"a"} (quasi-analytical) are also available.}
 
 \item{Xmax}{(Optional) Upper limit of the domain of the censored predictor. Default is \code{Xmax = Inf}.}
 
