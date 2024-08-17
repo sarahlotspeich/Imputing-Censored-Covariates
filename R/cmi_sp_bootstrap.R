@@ -40,7 +40,7 @@ cmi_sp_bootstrap = function(imputation_model, analysis_model, data, integral = "
   # Loop through replicates 
   for (b in 1:B) {
     # Sample with replacement from the original data ---------------------------
-    re_rows = ceiling(runif(n = n, min = 0, max = 1) * nrow(data))
+    re_rows = ceiling(runif(n = n, min = 0, max = 1) * n)
     re_data = data[re_rows, ]
     
     # Calculate proportion of censored observations in resampled data ----------
@@ -55,42 +55,42 @@ cmi_sp_bootstrap = function(imputation_model, analysis_model, data, integral = "
                            Xmax = Xmax,
                            surv_between = surv_between, 
                            surv_beyond = surv_beyond)
-      
-      # Check for the Weibull extension not converging -------------------------
-      while (!re_data_imp$code) {
-        # Sample with replacement from the original data -----------------------
-        re_rows = ceiling(runif(n = n, min = 0, max = 1) * nrow(data))
-        re_data = data[re_rows, ]
-        
-        # Calculate proportion of censored observations in resampled data ------
-        re_prop_cens = 1 - mean(re_data[, Delta])
-        
-        # Check for censoring in resampled data
-        if (0 < re_prop_cens) {
-          # Use imputeCensRd::cmi_sp() to impute censored x in re_data ---------
-          re_data_imp = cmi_sp(imputation_model = imputation_model, 
-                               data = re_data, 
-                               integral = integral,
-                               Xmax = Xmax,
-                               surv_between = surv_between, 
-                               surv_beyond = surv_beyond)
-        } else {
-          # If no censored, just fit the usual model ---------------------------
-          re_data$imp = re_data[, W]
-          re_data_imp = list(imputed_data = re_data, 
-                             code = TRUE)
-        }
-      }
-      
-      # Once imputation was successful, fit the analysis model -----------------
-      re_fit = lm(formula = analysis_model, 
-                  data = re_data_imp$imputed_data) 
     } else {
-      # If no censored, just fit the usual model -------------------------------
-      re_data$imp = re_data[, W]
-      re_fit = lm(formula = analysis_model, 
-                  data = re_data) 
+      # If no censored, just make imp = W and fit the usual model --------------
+      re_data_imp = list(imputed_data = re_data,
+                         code = TRUE)
+      re_data_imp$imputed_data$imp = re_data[, W]
     }
+    
+    # Check for the Weibull extension not converging -------------------------
+    while (!re_data_imp$code) {
+      # Sample with replacement from the original data ---------------------------
+      re_rows = ceiling(runif(n = n, min = 0, max = 1) * n)
+      re_data = data[re_rows, ]
+      
+      # Calculate proportion of censored observations in resampled data ----------
+      re_prop_cens = 1 - mean(re_data[, Delta])
+      
+      # Check for censoring in resampled data
+      if (0 < re_prop_cens) {
+        # Use imputeCensRd::cmi_sp() to impute censored x in re_data -------------
+        re_data_imp = cmi_sp(imputation_model = imputation_model, 
+                             data = re_data, 
+                             integral = integral, 
+                             Xmax = Xmax,
+                             surv_between = surv_between, 
+                             surv_beyond = surv_beyond)
+      } else {
+        # If no censored, just make imp = W and fit the usual model --------------
+        re_data_imp = list(imputed_data = re_data,
+                           code = TRUE)
+        re_data_imp$imputed_data$imp = re_data[, W]
+      }
+    }
+    
+    # Once imputation was successful, fit the analysis model -----------------
+    re_fit = lm(formula = analysis_model, 
+                data = re_data_imp$imputed_data) 
     
     # Save coefficients to results matrix --------------------------------------
     mult_fit = rbind(mult_fit, 
