@@ -6,9 +6,8 @@
 \usage{
 cmi_sp(
   imputation_model,
-  lp = NULL,
   data,
-  integral = "aq",
+  trapezoidal_rule = TRUE,
   Xmax = Inf,
   subdivisions = 2000,
   surv_between = "cf",
@@ -18,11 +17,9 @@ cmi_sp(
 \arguments{
 \item{imputation_model}{Imputation model formula (or coercible to formula), a formula expression as for other regression models. The response is usually a survival object as returned by the \code{Surv} function. See the documentation for \code{Surv} for details.}
 
-\item{lp}{(Optional) A vector of the linear predictors for the imputation model, in the same order as \code{data}. If \code{lp = NULL} (the default), the linear predictor is extracted from the fitted imputation model.}
-
 \item{data}{Dataframe or named matrix containing columns \code{W}, \code{Delta}, and \code{Z}.}
 
-\item{integral}{A string input for how to approximate the integral in the imputed values. Default is \code{integral="aq"} for adaptive quadrature, but \code{"tr"} (trapezoidal rule) and \code{"a"} (quasi-analytical) are also available.}
+\item{trapezoidal_rule}{A logical input for how to approximate the integral in the imputed values. Default is \code{trapezoidal_rule=FALSE} to use adaptive quadrature, but \code{"tr"}, and \code{trapezoidal_rule=TRUE} will use the trapezoidal rule.}
 
 \item{Xmax}{(Optional) Upper limit of the domain of the censored predictor. Default is \code{Xmax = Inf}.}
 
