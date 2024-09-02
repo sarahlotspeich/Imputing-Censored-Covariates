@@ -8,9 +8,9 @@ csi_w_boot(
   imputation_model,
   analysis_model,
   data,
-  integral = "AQ",
+  integral = "aq",
   Xmax = Inf,
-  subdivisions = 100L,
+  subdivisions = 2000,
   surv_between = "cf",
   surv_beyond = "e",
   B = 500,
@@ -24,11 +24,11 @@ csi_w_boot(
 
 \item{data}{Dataframe or named matrix containing columns \code{W}, \code{Delta}, and \code{Z}.}
 
-\item{integral}{A string input for how to approximate the integral in the imputed values. Default is \code{integral="AQ"} for adaptive quadrature, but \code{"TR"} (trapezoidal rule) and \code{"A"} (quasi-analytical) are also available.}
+\item{integral}{A string input for how to approximate the integral in the imputed values. Default is \code{integral="aq"} for adaptive quadrature, but \code{"tr"} (trapezoidal rule) is also available.}
 
 \item{Xmax}{(Optional) Upper limit of the domain of the censored predictor. Default is \code{Xmax = Inf}.}
 
-\item{subdivisions}{(Optional) Passed through to \code{integrate}, the maximum number of subintervals. Default is \code{subdivisions = 100L}.}
+\item{subdivisions}{(Optional) Passed through to \code{integrate}, the maximum number of subintervals. Default is \code{subdivisions = 2000}.}
 
 \item{surv_between}{A string for the method to be used to interpolate for censored values between events. Options include \code{"cf"} (carry forward, the default), \code{"wm"} (weighted mean), or \code{"m"} (mean).}
 

@@ -5,9 +5,9 @@
 #' @param imputation_model Imputation model formula (or coercible to formula), a formula expression as for other regression models. The response is usually a survival object as returned by the \code{Surv} function. See the documentation for \code{Surv} for details.
 #' @param analysis_model Analysis model formula (or coercible to formula), a formula expression as for other regression models. The response should be a continuous outcome for normal linear regression.
 #' @param data Dataframe or named matrix containing columns \code{W}, \code{Delta}, and \code{Z}.
-#' @param integral A string input for how to approximate the integral in the imputed values. Default is \code{integral="AQ"} for adaptive quadrature, but \code{"TR"} (trapezoidal rule) and \code{"A"} (quasi-analytical) are also available.
+#' @param integral A string input for how to approximate the integral in the imputed values. Default is \code{integral="aq"} for adaptive quadrature, but \code{"tr"} (trapezoidal rule) is also available.
 #' @param Xmax (Optional) Upper limit of the domain of the censored predictor. Default is \code{Xmax = Inf}.
-#' @param subdivisions (Optional) Passed through to \code{integrate}, the maximum number of subintervals. Default is \code{subdivisions = 100L}.
+#' @param subdivisions (Optional) Passed through to \code{integrate}, the maximum number of subintervals. Default is \code{subdivisions = 2000}.
 #' @param surv_between A string for the method to be used to interpolate for censored values between events. Options include \code{"cf"} (carry forward, the default), \code{"wm"} (weighted mean), or \code{"m"} (mean).
 #' @param surv_beyond A string for the method to be used to extrapolate the survival curve beyond the last observed event. Options include \code{"d"} (immediate drop off), \code{"e"} (exponential extension, the default), or \code{"w"} (weibull extension).
 #' @param B Numeric, number of bootstraps used for standard errors Default is \code{500}. 
@@ -17,7 +17,7 @@
 #'
 #' @export
 
-csi_w_boot = function (imputation_model, analysis_model, data, integral = "AQ", Xmax = Inf, subdivisions = 100L, surv_between = "cf", surv_beyond = "e", B = 500, stratify = FALSE) {
+csi_w_boot = function (imputation_model, analysis_model, data, integral = "aq", Xmax = Inf, subdivisions = 2000, surv_between = "cf", surv_beyond = "e", B = 500, stratify = FALSE) {
   # Impute censored covariates in the original data 
   orig_imp = cmi_sp(imputation_model = imputation_model, 
                     lp = NULL, 
@@ -86,13 +86,10 @@ csi_w_boot = function (imputation_model, analysis_model, data, integral = "AQ", 
     
     ## Construct table of results 
     tab = data.frame(Coefficient = names(csi_fit$coefficients),
-                     Est = csi_fit$coefficients, 
-                     PEst = beta_pooled,
+                     NEst = csi_fit$coefficients, 
+                     BEst = beta_pooled,
                      NSE = sqrt(diag(vcov(csi_fit))),
-                     BSE = sqrt(vbeta_pooled), 
-                     ESE = apply(X = beta_b, 
-                                 MARGIN = 2, 
-                                 FUN = sd))
+                     BSE = sqrt(vbeta_pooled))
   } else {
     ## Take names from naive fit 
     data[, "imp"] = data[, W]
@@ -101,11 +98,10 @@ csi_w_boot = function (imputation_model, analysis_model, data, integral = "AQ", 
     
     ## If imputation unsuccessful, return empty table of NA results
     tab = data.frame(Coefficient = names(naive_fit$coefficients),
-                     Est = NA,
-                     PEst = NA,
+                     NEst = NA,
+                     BEst = NA,
                      NSE = NA, 
-                     BSE = NA,
-                     ESE = NA)
+                     BSE = NA)
   }
   
   # Return table of pooled estimates 
