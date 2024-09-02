@@ -131,7 +131,8 @@ cmi_sp = function (imputation_model, data, trapezoidal_rule = TRUE, Xmax = Inf, 
                                                   lower = data[i, W], 
                                                   upper = Xmax, 
                                                   subdivisions = subdivisions, 
-                                                  hr = data[i, "HR"])$value, 
+                                                  hr = data[i, "HR"], 
+                                                  rel.tol = .Machine$double.eps ^ 0.24)$value, 
                                  error = function(e) return(NA))}
     )
     data$imp[which(!uncens)] = data[which(!uncens), W] + int_surv / data[which(!uncens), "surv"]
