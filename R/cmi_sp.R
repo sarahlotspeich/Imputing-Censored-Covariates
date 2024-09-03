@@ -7,6 +7,8 @@
 #' @param trapezoidal_rule A logical input for how to approximate the integral in the imputed values. Default is \code{trapezoidal_rule=FALSE} to use adaptive quadrature, but \code{"tr"}, and \code{trapezoidal_rule=TRUE} will use the trapezoidal rule.
 #' @param Xmax (Optional) Upper limit of the domain of the censored predictor. Default is \code{Xmax = Inf}.
 #' @param subdivisions (Optional) Passed through to \code{integrate}, the maximum number of subintervals. Default is \code{subdivisions = 2000}.
+#' @param rel.tol (Optional) Passed through to \code{integrate}, the relative accuracy requested. Default is \code{rel.tol = .Machine$double.eps ^ 0.25}.
+#' @param abs.tol (Optional) Passed through to \code{integrate}, the absolute accuracy requested. Default is \code{abs.tol = rel.tol}.
 #' @param surv_between A string for the method to be used to interpolate for censored values between events. Options include \code{"cf"} (carry forward, the default), \code{"wm"} (weighted mean), or \code{"m"} (mean).
 #' @param surv_beyond A string for the method to be used to extrapolate the survival curve beyond the last observed event. Options include \code{"d"} (immediate drop off), \code{"e"} (exponential extension, the default), or \code{"w"} (weibull extension).
 #'
@@ -16,7 +18,7 @@
 #'
 #' @export
 
-cmi_sp = function (imputation_model, data, trapezoidal_rule = TRUE, Xmax = Inf, subdivisions = 2000, surv_between = "cf", surv_beyond = "e") {
+cmi_sp = function (imputation_model, data, trapezoidal_rule = TRUE, Xmax = Inf, subdivisions = 2000, rel.tol = .Machine$double.eps ^ 0.25, abs.tol = rel.tol, surv_between = "cf", surv_beyond = "e") {
   # Extract variable names from imputation_model
   W = all.vars(imputation_model)[1] ## censored covariate
   Delta = all.vars(imputation_model)[2] ## corresponding event indicator
@@ -132,7 +134,8 @@ cmi_sp = function (imputation_model, data, trapezoidal_rule = TRUE, Xmax = Inf, 
                                                   upper = Xmax, 
                                                   subdivisions = subdivisions, 
                                                   hr = data[i, "HR"], 
-                                                  rel.tol = .Machine$double.eps ^ 0.24)$value, 
+                                                  rel.tol = rel.tol, 
+                                                  abs.tol = abs.tol)$value, 
                                  error = function(e) return(NA))}
     )
     data$imp[which(!uncens)] = data[which(!uncens), W] + int_surv / data[which(!uncens), "surv"]

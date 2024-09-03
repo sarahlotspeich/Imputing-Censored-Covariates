@@ -10,6 +10,8 @@ cmi_sp(
   trapezoidal_rule = TRUE,
   Xmax = Inf,
   subdivisions = 2000,
+  rel.tol = .Machine$double.eps^0.25,
+  abs.tol = rel.tol,
   surv_between = "cf",
   surv_beyond = "e"
 )
@@ -24,6 +26,10 @@ cmi_sp(
 \item{Xmax}{(Optional) Upper limit of the domain of the censored predictor. Default is \code{Xmax = Inf}.}
 
 \item{subdivisions}{(Optional) Passed through to \code{integrate}, the maximum number of subintervals. Default is \code{subdivisions = 2000}.}
+
+\item{rel.tol}{(Optional) Passed through to \code{integrate}, the relative accuracy requested. Default is \code{rel.tol = .Machine$double.eps ^ 0.25}.}
+
+\item{abs.tol}{(Optional) Passed through to \code{integrate}, the absolute accuracy requested. Default is \code{abs.tol = rel.tol}.}
 
 \item{surv_between}{A string for the method to be used to interpolate for censored values between events. Options include \code{"cf"} (carry forward, the default), \code{"wm"} (weighted mean), or \code{"m"} (mean).}
 
