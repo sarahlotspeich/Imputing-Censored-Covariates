@@ -30,6 +30,9 @@ cmi_sp = function (imputation_model, data, trapezoidal_rule = TRUE, Xmax = Inf, 
   # Initialize imputed values 
   data$imp = data[, W] ## start with imp = W
   
+  # Initialize messages for imputed values
+  data$imp_msg = "" ## start with imp_msg = ""
+  
   # Fit Cox PH imputation model for X ~ Z 
   fit = tryCatch(expr = {
     coxph(formula = imputation_model, 
@@ -77,8 +80,8 @@ cmi_sp = function (imputation_model, data, trapezoidal_rule = TRUE, Xmax = Inf, 
     SURVmax = data[max(which(uncens)), "surv0"]
     if (Xmax < Inf) {
       weibull_params = dbl_constr_weibull(Xtilde = Xtilde, 
-                                           rho = SURVmax, 
-                                           Xmax = Xmax)
+                                          rho = SURVmax, 
+                                          Xmax = Xmax)
     } else {
       weibull_params = constr_weibull_mle(t = data[, W], 
                                           I_event = data[, Delta], 
@@ -127,18 +130,30 @@ cmi_sp = function (imputation_model, data, trapezoidal_rule = TRUE, Xmax = Inf, 
                         weibull_params = weibull_params)
       basesurv ^ as.numeric(hr)
     }
-    int_surv = sapply(X = which(!uncens), 
-                      FUN = function(i) {
-                        tryCatch(expr = integrate(f = to_integrate, 
-                                                  lower = data[i, W], 
-                                                  upper = Xmax, 
-                                                  subdivisions = subdivisions, 
-                                                  hr = data[i, "HR"], 
-                                                  rel.tol = rel.tol, 
-                                                  abs.tol = abs.tol)$value, 
-                                 error = function(e) return(NA))}
-    )
-    data$imp[which(!uncens)] = data[which(!uncens), W] + int_surv / data[which(!uncens), "surv"]
+    
+    for (i in which(!uncens)) {
+      int_surv = myTryCatch(
+        expr = integrate(f = to_integrate, 
+                         lower = data[i, W], 
+                         upper = Xmax, 
+                         subdivisions = subdivisions, 
+                         hr = data[i, "HR"], 
+                         rel.tol = rel.tol, 
+                         abs.tol = abs.tol)$value
+      )
+      if(!is.null(int_surv$error)) {
+        data$imp[i] = NA
+        data$imp_msg[i] = ifelse(test = grepl(pattern = "roundoff", 
+                                              x = int_surv$error), 
+                                 yes = "Roundoff error", 
+                                 no = ifelse(test = grepl(pattern = "divergent", 
+                                                          x = int_surv$error), 
+                                             yes = "Divergent error", 
+                                             no = "Other error"))
+      } else {
+        data$imp[i] = data[i, W] + int_surv$value / data[i, "surv"]  
+      }
+    }
   }
   
   return(list(imputed_data = data, 
